@@ -1,0 +1,59 @@
+name: Release
+
+# A tag `v<version>` on main, matching package.json, publishes that version to
+# npm through trusted publishing (OIDC): no token is stored here. npm knows
+# this repository and this workflow as the package's trusted publisher.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: The tag names the version being released
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match package.json's $version" >&2
+            exit 1
+          fi
+      - name: The tagged commit is on main
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "$GITHUB_REF_NAME is not on main" >&2
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run generate:check
+      - run: npm test
+      - run: npm run build
+      - run: npm run smoke
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install --global npm@11
+      # A prerelease (`0.1.0-beta.1`) goes out under `beta`, so that
+      # `npm install @hubtec/talki` never picks it up by default.
+      - name: Publish
+        run: |
+          case "$(node -p "require('./package.json').version")" in
+            *-*) tag=beta ;;
+            *) tag=latest ;;
+          esac
+          npm publish --provenance --access public --tag "$tag"

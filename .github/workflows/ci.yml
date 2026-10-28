@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# GitHub-hosted runners only: this repository takes pull requests from forks,
+# and those must never run on a machine of ours.
+jobs:
+  checks:
+    name: Lint, types, generated code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      # The committed src/generated must be exactly what the pinned generator
+      # makes of the committed spec.
+      - run: npm run generate:check
+
+  test:
+    name: Tests and build (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      # The built ES modules and CommonJS load through the package's exports.
+      - run: npm run smoke
+      - if: ${{ matrix.node == 22 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  runtimes:
+    name: Smoke (${{ matrix.runtime }})
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [bun, deno]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - if: ${{ matrix.runtime == 'bun' }}
+        uses: oven-sh/setup-bun@v2
+      - if: ${{ matrix.runtime == 'bun' }}
+        run: bun scripts/smoke.mjs && bun scripts/smoke.cjs
+      - if: ${{ matrix.runtime == 'deno' }}
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - if: ${{ matrix.runtime == 'deno' }}
+        run: deno run --allow-read --allow-env scripts/smoke.mjs
