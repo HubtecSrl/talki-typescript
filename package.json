@@ -1,0 +1,90 @@
+{
+  "name": "@hubtec/talki",
+  "version": "0.1.0-beta.1",
+  "description": "The TypeScript client for the Talki API: typed, generated from the published OpenAPI document, with retries, idempotency, paging, webhooks and OAuth.",
+  "license": "MIT",
+  "author": "HubTec S.r.l.",
+  "homepage": "https://developers.talki.it",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HubtecSrl/talki-typescript.git"
+  },
+  "bugs": "https://github.com/HubtecSrl/talki-typescript/issues",
+  "keywords": [
+    "talki",
+    "api",
+    "sdk",
+    "client",
+    "openapi"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./oauth": {
+      "import": {
+        "types": "./dist/esm/oauth.d.ts",
+        "default": "./dist/esm/oauth.js"
+      },
+      "require": {
+        "types": "./dist/cjs/oauth.d.ts",
+        "default": "./dist/cjs/oauth.js"
+      }
+    },
+    "./webhooks": {
+      "import": {
+        "types": "./dist/esm/webhooks.d.ts",
+        "default": "./dist/esm/webhooks.js"
+      },
+      "require": {
+        "types": "./dist/cjs/webhooks.d.ts",
+        "default": "./dist/cjs/webhooks.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "generate:check": "node scripts/generate.mjs --check",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "build": "node scripts/build.mjs",
+    "smoke": "node scripts/smoke.mjs && node scripts/smoke.cjs",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.3",
+    "@types/node": "20.19.43",
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.12",
+    "yaml": "2.9.1"
+  }
+}
