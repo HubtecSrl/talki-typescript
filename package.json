@@ -1,6 +1,6 @@
 {
   "name": "@hubtec/talki",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "The TypeScript client for the Talki API: typed, generated from the published OpenAPI document, with retries, idempotency, paging, webhooks and OAuth.",
   "license": "MIT",
   "author": "HubTec S.r.l.",

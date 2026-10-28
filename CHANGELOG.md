@@ -5,6 +5,11 @@ version each release targets by default is `API_VERSION`.
 
 ## Unreleased
 
+## 0.1.0-beta.2
+
+No changes to the package. The first release published from CI by npm trusted
+publishing, with a provenance attestation.
+
 ## 0.1.0-beta.1
 
 First release, for API version `2026-10-01`.

@@ -71,8 +71,8 @@ but not tested in CI: keep `src/` free of `node:` imports and Node globals
    version with a `-` (`0.1.0-beta.1`) goes out under the `beta` dist-tag, any
    other under `latest`.
 
-Before the first release, the package must exist on npm with this repository
-and `release.yml` registered as its trusted publisher.
+`0.1.0-beta.1` was published by hand to create the package; from `0.1.0-beta.2`
+on, every release goes through `release.yml`.
 
 The package uses semver of its own. `API_VERSION` (the spec's dated version) is
 what it sends as `Talki-Version` by default. Moving to a newer API version is a
