@@ -36,53 +36,53 @@ export interface TalkiOptions {
    * With no credential passed at all, it is read from the `TALKI_API_KEY`
    * environment variable where `process.env` exists.
    */
-  apiKey?: string;
+  apiKey?: string | undefined;
   /** An OAuth installation's access token (`talki_at_…`), when not using an API key. */
-  accessToken?: string;
+  accessToken?: string | undefined;
   /**
    * An installation's whole pair, instead of `accessToken`. With `oauthApp`
    * the pair renews itself: before it expires, and when the API answers that
    * it has. Exactly one of `apiKey`, `accessToken` and `tokens` is required.
    */
-  tokens?: TokenSet;
+  tokens?: TokenSet | undefined;
   /** The app's credentials, to renew `tokens`. */
-  oauthApp?: OAuthApp;
+  oauthApp?: OAuthApp | undefined;
   /**
    * Called with each new pair, before it is used: store it there, and the
    * request waits until you have. The previous refresh token stops working.
    * Only with `oauthApp`.
    */
-  onTokenRefresh?: (tokens: TokenSet) => void | Promise<void>;
+  onTokenRefresh?: ((tokens: TokenSet) => void | Promise<void>) | undefined;
   /**
    * The `Talki-Version` sent on every request. Defaults to `API_VERSION`, the
    * contract this package was generated from; null sends none, and the
    * version pinned on the key or app applies.
    */
-  version?: string | null;
+  version?: string | null | undefined;
   /** The API's origin. */
-  baseUrl?: string;
+  baseUrl?: string | undefined;
   /** Milliseconds each attempt may take, answer included. Defaults to 30 000. */
-  timeout?: number;
+  timeout?: number | undefined;
   /** How often a failed request is tried again; 0 for never. Defaults to 2. */
-  maxRetries?: number;
+  maxRetries?: number | undefined;
   /**
    * Give every write without an `Idempotency-Key` a new one. Pass
    * `idempotencyKey` to a method to choose your own, for instance to retry a
    * write across process restarts. Defaults to true.
    */
-  autoIdempotency?: boolean;
+  autoIdempotency?: boolean | undefined;
   /** The `fetch` requests go out on: the global one by default. */
-  fetch?: Fetch;
+  fetch?: Fetch | undefined;
   /**
    * Your product and version (`acme-crm/2.1`), added after this package's
    * own in the `User-Agent` of every API request. A token renewal carries
    * this package's alone.
    */
-  userAgent?: string;
-  /** Where to log, `console` by default. Nothing is logged unless `logLevel` is set. */
-  logger?: Logger;
-  /** What to log; `"off"`, the default, logs nothing. */
-  logLevel?: LogLevel;
+  userAgent?: string | undefined;
+  /** Where to log: `console` by default. Passing one turns logging on at `info`. */
+  logger?: Logger | undefined;
+  /** What to log: `"off"` by default, `"info"` by default with a `logger`. */
+  logLevel?: LogLevel | undefined;
 }
 
 interface Internal {
@@ -137,7 +137,7 @@ function coreFrom(options: TalkiOptions & Internal): Core {
   const timeout = options.timeout ?? 30_000;
   if (!(timeout > 0)) throw new RangeError("timeout must be a number of milliseconds above 0.");
   const hooks = options[HOOKS];
-  const log = new Log(options.logger, options.logLevel);
+  const log = new Log(options.logger, options.logLevel ?? (options.logger ? "info" : "off"));
   const transport = new Transport({
     fetch: options.fetch ?? ((input, init) => fetch(input, init)),
     maxRetries: options.maxRetries ?? 2,

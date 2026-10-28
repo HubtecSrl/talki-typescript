@@ -2,7 +2,7 @@
 // the `User-Agent`, `TALKI_API_KEY`, and the log.
 
 import { readFileSync } from "node:fs";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Talki, USER_AGENT, VERSION } from "../src/index.js";
 import { OAUTH_USER_AGENT } from "../src/oauth.js";
 import { dropped, empty, json, make, Recorder, refused } from "./helpers.js";
@@ -119,11 +119,27 @@ describe("the log", () => {
     expect(lines[1]?.[1]).toMatch(/^GET \/v1\/calls\/count: ConnectionError after \d+ ms$/);
   });
 
-  it("has nothing at info for a plain answer, and nothing at all by default", async () => {
+  it("has nothing at info for a plain answer", async () => {
     const { lines, logger } = logged();
     await make(new Recorder(count()), { logger, logLevel: "info" }).calls.count();
-    await make(new Recorder(dropped(), count()), { logger }).calls.count();
+    await make(new Recorder(count()), { logger }).calls.count();
     expect(lines).toEqual([]);
+  });
+
+  it("logs from info up to a logger given without a level", async () => {
+    const { lines, logger } = logged();
+    await make(new Recorder(dropped(), count()), { logger }).calls.count();
+    expect(lines.map(([level]) => level)).toEqual(["info"]);
+  });
+
+  it("writes nothing to the console by default", async () => {
+    const spies = (["debug", "info", "warn", "error"] as const).map((level) => vi.spyOn(console, level));
+    try {
+      await make(new Recorder(dropped(), count())).calls.count();
+      for (const spy of spies) expect(spy).not.toHaveBeenCalled();
+    } finally {
+      for (const spy of spies) spy.mockRestore();
+    }
   });
 
   it("refuses an unknown level", () => {

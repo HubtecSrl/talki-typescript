@@ -1,5 +1,6 @@
 /**
- * Where the client writes what it does. Silent unless a `logLevel` is set.
+ * Where the client writes what it does. Silent unless given a `logLevel` or
+ * a `logger`.
  *
  * A request is logged by method and path only: never its query (`phone=`,
  * `q=`), headers or body, nor any key or token.
@@ -15,7 +16,7 @@ export interface Logger {
 /**
  * `debug`: every answer, with its time. `info`: every retry and automatic
  * token renewal. `warn`: a renewal whose outcome is unknown. `error`: a
- * renewal refused for good. `off`, the default: nothing.
+ * renewal refused for good. `off`: nothing.
  */
 export type LogLevel = "debug" | "info" | "warn" | "error" | "off";
 

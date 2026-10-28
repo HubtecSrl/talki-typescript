@@ -3,7 +3,7 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": false,
-    "sourceMap": true,
+    "sourceMap": false,
     "noEmit": false
   },
   "include": ["src"]

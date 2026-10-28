@@ -150,10 +150,11 @@ retries off. A redirect is never followed.
 
 ## Logging
 
-The client is silent until you give it a level:
+The client is silent until you give it a level or a logger:
 
 ```ts
-const talki = new Talki({ apiKey, logLevel: "debug" }); // logs to console; or logger: yourLogger
+const talki = new Talki({ apiKey, logLevel: "debug" }); // to console
+const quiet = new Talki({ apiKey, logger: pino() }); // to your logger, from "info" up
 ```
 
 - `debug`: every answer, as `POST /v1/appointments: 201, request req_… in 182 ms`
