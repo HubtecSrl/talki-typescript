@@ -296,6 +296,43 @@ describe("a pair that renews itself", () => {
     expect(server.apiTokens).toEqual(["talki_at_2"]);
   });
 
+  it("refuses a request made on the same client from onTokenRefresh instead of hanging", async () => {
+    const server = new Server();
+    const seen: unknown[] = [];
+    const talki: Talki = server.talki({
+      onTokenRefresh: async () => {
+        seen.push(await talki.calls.count().catch((caught: unknown) => caught));
+      },
+    });
+    await talki.account.get();
+    expect(seen).toHaveLength(1);
+    expect(String((seen[0] as Error).message)).toContain("onTokenRefresh");
+    // The renewal itself went through, once.
+    expect(server.refreshes).toEqual(["talki_rt_1"]);
+    expect(talki.tokens?.refreshToken).toBe("talki_rt_2");
+  });
+
+  it("never stores a token answer without its tokens", async () => {
+    const stored: TokenSet[] = [];
+    const recorder = new Recorder((seen) =>
+      seen.url.pathname === "/oauth/token" ? json(200, { token_type: "Bearer", expires_in: 3600 }) : json(200, {}),
+    );
+    const talki = new Talki({
+      tokens: tokens(0),
+      oauthApp: new OAuthApp("talki_cid_x", "talki_cs_x", { fetch: recorder.fetch }),
+      onTokenRefresh: (pair) => {
+        stored.push(pair);
+      },
+      fetch: recorder.fetch,
+      maxRetries: 0,
+      [HOOKS]: { sleep: async () => {} },
+    } as TalkiOptions);
+    const error = await talki.account.get().catch((caught: unknown) => caught);
+    expect((error as OAuthError).error).toBe("invalid_response");
+    expect(stored).toEqual([]);
+    expect(talki.tokens?.refreshToken).toBe("talki_rt_1");
+  });
+
   it("waits for an async onTokenRefresh before using the pair", async () => {
     const server = new Server();
     const order: string[] = [];

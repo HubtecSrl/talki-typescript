@@ -132,9 +132,17 @@ export interface TokenSet {
 /** The pair in a `/oauth/token` answer, its expiry counted from ``now`` (milliseconds since the epoch). */
 export function tokenSetFromBody(body: Record<string, unknown>, now: number = Date.now()): TokenSet {
   const expiresIn = body.expires_in;
+  const accessToken = body.access_token;
+  const refreshToken = body.refresh_token;
+  if (typeof accessToken !== "string" || !accessToken || typeof refreshToken !== "string" || !refreshToken) {
+    // Stored, a pair without its tokens would replace the caller's refresh
+    // token with nothing usable, and the next renewal would end the
+    // installation.
+    throw new OAuthError("invalid_response", "The token answer has no access_token or refresh_token.");
+  }
   return {
-    accessToken: String(body.access_token),
-    refreshToken: String(body.refresh_token),
+    accessToken,
+    refreshToken,
     expiresAt: typeof expiresIn === "number" ? now + expiresIn * 1000 : null,
     // Space-delimited, per RFC 6749 §5.1.
     scopes: String(body.scope || "")
@@ -338,6 +346,32 @@ export class OAuthApp {
   }
 }
 
+/** What `AsyncLocalStorage` offers, where the runtime has it (Node, Bun, Deno). */
+interface CallContext {
+  run<R>(store: unknown, callback: () => R): R;
+  getStore(): unknown;
+}
+
+// Marks the code `onTokenRefresh` runs, so that a request it makes on the same
+// client raises instead of waiting forever on the renewal that called it.
+// Without `AsyncLocalStorage` (a browser, Workers without node compatibility)
+// such a request still waits, as the README warns.
+const inCallback: CallContext | null = (() => {
+  try {
+    const runtime = (globalThis as { process?: { getBuiltinModule?: (id: string) => unknown } }).process;
+    const hooks = runtime?.getBuiltinModule?.("node:async_hooks") as
+      | { AsyncLocalStorage?: new () => CallContext }
+      | undefined;
+    return hooks?.AsyncLocalStorage ? new hooks.AsyncLocalStorage() : null;
+  } catch {
+    return null;
+  }
+})();
+
+const REENTRY =
+  "This Talki is renewing its token: do not make a request on it from onTokenRefresh. " +
+  "Store the pair and return; send the request after.";
+
 /** A lock whose holders take turns, first come first served. */
 class Mutex {
   #tail: Promise<void> = Promise.resolve();
@@ -518,7 +552,10 @@ export class TokenRefresh {
    */
   async #store(renewed: TokenSet): Promise<void> {
     this.#pending = renewed;
-    if (this.#onRefresh) await this.#onRefresh(renewed);
+    const onRefresh = this.#onRefresh;
+    if (onRefresh) {
+      await (inCallback ? inCallback.run(this, () => onRefresh(renewed)) : onRefresh(renewed));
+    }
     this.#tokens = renewed;
     this.#pending = null;
     this.#log.info(`Renewed the access token of installation ${renewed.installationId || "(unnamed)"}.`);
@@ -575,6 +612,7 @@ export class TokenRefresh {
    * the token has expired.
    */
   async send(request: OutgoingRequest, transport: Transport): Promise<Answer> {
+    if (inCallback?.getStore() === this) throw new Error(REENTRY);
     this.#check();
     let sent: string | null = null;
     for (const retry of [false, true]) {

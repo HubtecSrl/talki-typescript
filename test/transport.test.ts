@@ -261,6 +261,8 @@ describe("retries", () => {
     expect(seconds).toBeGreaterThanOrEqual(25);
     expect(seconds).toBeLessThanOrEqual(31);
     expect(retryAfterSeconds(new Headers({ "Retry-After": "soon" }))).toBeNull();
+    expect(retryAfterSeconds(new Headers({ "Retry-After": "0x10" }))).toBeNull();
+    expect(retryAfterSeconds(new Headers({ "Retry-After": " 2.5 " }))).toBe(2.5);
     expect(retryAfterSeconds(new Headers())).toBeNull();
   });
 

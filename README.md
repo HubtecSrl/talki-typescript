@@ -120,7 +120,8 @@ A request that got no answer rejects with `ConnectionError`, or
 `RequestTimeoutError` (a subclass) after `timeout`. `sent` is false only when
 the request certainly never left; `idempotencyKey` is the key it carried. An
 abort through your own `signal` rejects with the signal's reason, as `fetch`
-does.
+does, and so carries no key: give a write you may abort its own
+`idempotencyKey` (`newIdempotencyKey()`), to send it again as the same one.
 
 ## Retries
 
@@ -332,8 +333,10 @@ const talki = new Talki({ tokens, oauthApp: app, onTokenRefresh: save });
   never presented again. A process that ends with a pair unstored can renew
   once more with the old refresh token within 60 seconds; after that the
   customer has to reconnect.
-- Never await a request on the same `Talki` inside `onTokenRefresh`: it waits
-  for the renewal, which waits for your callback, and neither ever ends.
+- Never make a request on the same `Talki` inside `onTokenRefresh`: it would
+  wait for the renewal, which waits for your callback. On Node, Bun and Deno
+  it rejects at once instead; where `AsyncLocalStorage` is missing (a browser,
+  Workers without Node compatibility) it waits forever.
 - Once the API refuses the refresh token (`invalid_grant`: the customer
   disconnected, the pair was revoked, or Talki disabled the app) or the app's
   credentials (`invalid_client`), every request rejects with that

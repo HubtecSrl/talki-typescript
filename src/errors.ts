@@ -192,8 +192,9 @@ export function errorFrom(status: number, headers: Headers, body: string): ApiEr
 export function retryAfterSeconds(headers: Headers): number | null {
   const raw = headers.get("Retry-After");
   if (!raw) return null;
-  const seconds = Number(raw);
-  if (raw.trim() !== "" && !Number.isNaN(seconds)) return Math.max(0, seconds);
+  // Seconds as decimal digits, as RFC 9110 writes them: `Number` alone would
+  // also read `0x10` or `1e3`.
+  if (/^\s*\d+(\.\d+)?\s*$/.test(raw)) return Number(raw);
   const when = Date.parse(raw);
   if (Number.isNaN(when)) return null;
   return Math.max(0, (when - Date.now()) / 1000);
