@@ -69,7 +69,10 @@ but not tested in CI: keep `src/` free of `node:` imports and Node globals
    tag matches and is on `main`, runs every check, builds, and publishes by npm
    trusted publishing (OIDC, the `npm` environment; no token is stored). A
    version with a `-` (`0.1.0-beta.1`) goes out under the `beta` dist-tag, any
-   other under `latest`.
+   other under `latest`. Trusted publishing cannot move dist-tags afterwards, so
+   while only prereleases exist `latest` stays on the first one, and a plain
+   `npm install @hubtec/talki` gets it. To make a prerelease the default, the
+   maintainer runs `npm dist-tag add @hubtec/talki@<version> latest` by hand.
 
 `0.1.0-beta.1` was published by hand to create the package; from `0.1.0-beta.2`
 on, every release goes through `release.yml`.
