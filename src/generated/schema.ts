@@ -561,6 +561,122 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List documents
+         * @description Return the knowledge-base documents of every location, or of one, newest first, whatever their `status`: an upload is listed from the moment it is received. `document.*` events report every change, `status` included. Requires `knowledge:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["listDocuments"];
+        put?: never;
+        /**
+         * Create a document
+         * @description Add a text note (`application/json`: `title`, `body`), import a website (`application/json`: `source: "website"`, `url`, optionally `pages`) or upload a file (`multipart/form-data`: `file`) to the knowledge base of the location `location_id` names, the main location's when omitted. A site already imported at one of the locations is refused (`conflict`): import it again with `PUT`. `location_ids` makes a copy at each of those locations too, sharing `copy_group_id`. Answers `202` with the document, `processing`: the assistant uses it once `document.updated` reports it `ready`, or `failed` with `status_error`. The plan's limits apply as in Talki: file size (`payload_too_large`), file type (`unsupported_file_type`), pages per site (`invalid_parameter`) and the account's knowledge storage (`payload_too_large`, or a site `failed` with `status_error`). A JSON field the note or the website does not take is refused (`invalid_parameter`). Requires `Idempotency-Key`. Requires `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 60 document writes per minute, shared by creating, replacing and updating documents and discovering a site's pages.
+         */
+        post: operations["createDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/documents/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a document
+         * @description Return one document of the account, with its indexing `status`. Requires `knowledge:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["getDocument"];
+        /**
+         * Replace a document
+         * @description Replace a note's text (`application/json`: `body`, optionally `title`) or a file (`multipart/form-data`: `file`), keeping the document's id. It turns `processing` and keeps answering with its previous content until the new one is `ready`; a new file's name and size are the document's from then. A website is imported again (`application/json`: `pages`, or omit it to read again the pages it holds). A note can be replaced at any time, and a file again while its new version is still being read: the newer one takes its place. Refused (`document_not_ready`) for a file whose first upload is still `processing` or whose new version has been read and is about to replace the previous one, and for a website being imported; and (`conflict`) for a website whose location holds an older document of the same site. With `also=copies`, its copies at other locations get the same content, and the `document_not_ready` refusals apply to each copy. The JSON body is read as the document's kind: a field that kind does not take, such as `source`, or a note's `body` sent to a website, is refused (`invalid_parameter`) and nothing changes. Requires `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 60 document writes per minute, shared by creating, replacing and updating documents and discovering a site's pages.
+         */
+        put: operations["replaceDocument"];
+        post?: never;
+        /**
+         * Delete a document
+         * @description Delete a document for good; the assistant stops using it at once. A location's FAQ note can be deleted too: the next answer taught there starts a new one. With `also=copies`, its copies at other locations go too; without it they stay. Sends `document.deleted`. Requires `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        delete: operations["deleteDocument"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a document
+         * @description Rename a document, or switch it off (`enabled: false`) so the assistant stops using it while it is kept, and on again. A note's new title is indexed again, as its text is. A file's title cannot change while it is `processing` (`document_not_ready`). A website's title is its address and cannot change. With `also=copies`, its copies at other locations change too, and a rename is refused the same way (`document_not_ready`) while a copy's file is `processing`. Any other field is refused (`invalid_parameter`). A request that changes nothing sends no `document.updated`. Requires `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 60 document writes per minute, shared by creating, replacing and updating documents and discovering a site's pages.
+         */
+        patch: operations["updateDocument"];
+        trace?: never;
+    };
+    "/v1/documents/{document_id}/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a document's text
+         * @description Return a note's text as last written, even while it is `processing`, or the text Talki read from a file or a website, as the assistant searches it: empty until the file or website is first `ready`. The uploaded file itself is `GET /v1/documents/{document_id}/file`. Requires `knowledge:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["getDocumentText"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/documents/{document_id}/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a website's pages
+         * @description Return every page of an imported website as its last import read them, with whether each was read (`status`). Only a website has pages; any other document is refused (`invalid_parameter`). Requires `knowledge:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["listDocumentPages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/documents/{document_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a document's file
+         * @description Return the uploaded file as it was received, with its type and name, when the document's `file_available` is true: shortly after the file is first `ready`, later for a copy at another location. A note, a website, a file whose first upload is not `ready` yet or `failed`, and a file Talki did not keep have none (`resource_not_found`). A file being replaced returns its previous version until the new one has been read, then its new version shortly after it is `ready`. Requires `knowledge:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["getDocumentFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/voices": {
         parameters: {
             query?: never;
@@ -977,6 +1093,46 @@ export interface paths {
         patch: operations["updateCallerRule"];
         trace?: never;
     };
+    "/v1/documents/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Discover a site's pages
+         * @description Look for the pages of the site at `url`, from its sitemap or its links, to choose the `pages` of an import. Imports nothing. `max_pages` is how many one import may read on the account's plan. An address that is not public http or https, or any field besides `url`, is refused (`invalid_parameter`). Requires `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 60 document writes per minute, shared by creating, replacing and updating documents and discovering a site's pages.
+         */
+        post: operations["discoverDocumentPages"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/documents/{document_id}/pages/{page_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a website's page
+         * @description Drop one page of an imported website and what it said; the assistant stops using it once the document is `ready` again. Dropping its last page that was read deletes the document (`document.deleted`). With `also=copies`, its copies at other locations get the result too. Only a website has pages; any other document is refused (`invalid_parameter`). Refused while the site is being imported (`document_not_ready`), and (`conflict`) when dropping it would leave no text to search while other pages are still listed as read: import the site again with the `pages` to keep, or delete the document. Requires `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        delete: operations["deleteDocumentPage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sandbox/scenarios": {
         parameters: {
             query?: never;
@@ -1163,6 +1319,11 @@ export interface components {
             /** @description The location's Talki number, its line that forwards to it, and whether that forwarding has been proven. Read only. The same as `Location.line`. */
             line: components["schemas"]["AccountLine"];
             /**
+             * Call Auto Archive Days
+             * @description How many days after it started a call that has been read is archived on its own: `7`, `30` or `90`, as in the Talki apps. Null when calls are never archived on their own. An unread call is never archived this way. Archiving runs once a night, sends `call.updated` for each call, and can be undone like an archive by hand. The account's own setting: the same at every location.
+             */
+            call_auto_archive_days: (7 | 30 | 90) | null;
+            /**
              * Multi Sede
              * @description True when the account works from several locations, or may add them: show locations (`GET /v1/locations`) to the owner only when true. False for an account that has only ever had its main location and cannot add another; it still has that one location, every record still carries its `location_id`, and nothing changes shape when this turns true. Read only.
              */
@@ -1297,6 +1458,11 @@ export interface components {
              * @description Cannot be null. `false` deletes the stored transcripts of this location's calls in the same request, and they cannot be recovered, so a test-mode credential sending it is refused with `livemode_required`.
              */
             store_transcripts?: boolean | null;
+            /**
+             * Call Auto Archive Days
+             * @description `7`, `30` or `90`, or `null` to stop archiving calls on their own. The account's own setting: refused with `location_id` naming a location other than the main one.
+             */
+            call_auto_archive_days?: (7 | 30 | 90) | null;
             /**
              * Forwarding Number
              * @description Replaces the location's forwarding number: a mobile or landline that can be rung, E.164 or national (read as Italian). Send `null` or an empty string to clear it. Refused if it equals a transfer target of any location, or the line of another location, unless the same request replaces this location's `transfer_numbers`. The main location's cannot be cleared while any location has `transfer_numbers`. A change discards the result of the last forwarding check, and `last_verified_at` reads null until a check of the new number succeeds.
@@ -2323,6 +2489,230 @@ export interface components {
              * @description Which system `external_id` belongs to, e.g. your product's name. Required when `external_id` is given; ignored otherwise.
              */
             system?: string | null;
+        };
+        /**
+         * Document
+         * @description A document of the knowledge base the assistant answers callers from: a text note, an uploaded file or an imported website, at one location. Its copies at other locations are documents of their own, sharing `copy_group_id`. It is used once `status` is `ready`; a document whose content is replaced answers with its previous content until then.
+         */
+        Document: {
+            /**
+             * Id
+             * @description Document identifier.
+             */
+            id: string;
+            /**
+             * Location Id
+             * @description The location whose assistant uses it (`GET /v1/locations`). Never null, and it never changes.
+             */
+            location_id: string;
+            /**
+             * Title
+             * @description The note's title, the uploaded file's name, or the imported site's address.
+             */
+            title: string;
+            /**
+             * Source
+             * @description `text` for a note written as text, `file` for an uploaded file, `website` for pages imported from a site.
+             * @enum {string}
+             */
+            source: "text" | "file" | "website";
+            /**
+             * Mime Type
+             * @description The content type: `text/markdown` for a note, the file's type for a file, `text/html` for a website.
+             */
+            mime_type: string;
+            /**
+             * Size Bytes
+             * @description What it counts against the account's knowledge storage: the note's text, the file as uploaded, or the text extracted from the site. 0 for an upload that failed holding nothing.
+             */
+            size_bytes: number;
+            /**
+             * Chunk Count
+             * @description How many passages its content is searched as. While it is `processing`, the count of the content it still answers with; for a new document, 0 until its content has been read. A new copy may show its count from the start.
+             */
+            chunk_count: number;
+            /**
+             * File Available
+             * @description True when the uploaded file is kept and `GET /v1/documents/{document_id}/file` returns it: shortly after the file is first `ready`, later for a copy at another location. False for a note, a website, a file whose first upload is not `ready` yet or `failed`, and a file Talki did not keep. A file being replaced keeps its previous file until the new one has been read, then has none until shortly after the new version is `ready`.
+             */
+            file_available: boolean;
+            /**
+             * Status
+             * @description `processing` while its latest content is being read and indexed, `ready` once the assistant uses it, `failed` when its latest content could not be indexed (`status_error` says why). A document that was ready before keeps answering with its previous content while `processing` and after `failed`.
+             * @enum {string}
+             */
+            status: "processing" | "ready" | "failed";
+            /**
+             * Status Error
+             * @description Why its latest content could not be indexed. Null unless `status` is `failed`.
+             */
+            status_error: string | null;
+            /**
+             * Enabled
+             * @description False when it is switched off: kept, but the assistant does not use it until it is switched on again.
+             */
+            enabled: boolean;
+            /**
+             * Faq
+             * @description True for the location's FAQ note, which the answers taught with `POST /v1/unresolved_requests/{request_id}/teach` are added to. A location has one at most.
+             */
+            faq: boolean;
+            /**
+             * Copy Group Id
+             * @description Shared by the copies of this document at other locations; null for a document that was never copied.
+             */
+            copy_group_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             * @description RFC 3339 UTC.
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description When its title or content was last written, RFC 3339 UTC: a note's text or title when it is saved, a file's title when it is renamed, and a replaced file's or a website's new content, a dropped page included, when it is `ready`. Sending the same text, file or pages again counts as a write; switching it on or off does not.
+             */
+            updated_at: string;
+        };
+        /**
+         * DocumentDiscover
+         * @description A site to look for pages in before importing it.
+         */
+        DocumentDiscover: {
+            /**
+             * Url
+             * @description The site's address, http or https.
+             */
+            url: string;
+        };
+        /**
+         * DocumentDiscovery
+         * @description The pages found on a site, to choose the `pages` of an import from, and how many one import may read on the account's plan.
+         */
+        DocumentDiscovery: {
+            /**
+             * Url
+             * @description The address looked at.
+             */
+            url: string;
+            /**
+             * Pages
+             * @description The site's pages found from its sitemap or its links, the address itself first.
+             */
+            pages: string[];
+            /**
+             * Max Pages
+             * @description How many pages one import may read on the account's plan; null when there is no limit.
+             */
+            max_pages: number | null;
+        };
+        /**
+         * DocumentList
+         * @description A page of documents, newest first. Loop while `has_more` is true.
+         */
+        DocumentList: {
+            /** Data */
+            data: components["schemas"]["Document"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page, or null on the last page. Pass it back unmodified as `cursor`; do not parse it.
+             */
+            next_cursor: string | null;
+            /**
+             * Has More
+             * @description True when another page is available.
+             * @default false
+             */
+            has_more: boolean;
+        };
+        /**
+         * DocumentPage
+         * @description One page of an imported website, and whether it was read.
+         */
+        DocumentPage: {
+            /**
+             * Id
+             * @description Page identifier.
+             */
+            id: string;
+            /**
+             * Url
+             * @description The page's address.
+             */
+            url: string;
+            /**
+             * Title
+             * @description The page's title, when it has one.
+             */
+            title: string | null;
+            /**
+             * Status
+             * @description `ok` when it was read, `thin` when it was read but holds little text, `blocked` when the site refused it (bot protection), `failed` when it could not be read. Only `ok` and `thin` pages are searched.
+             * @enum {string}
+             */
+            status: "ok" | "thin" | "blocked" | "failed";
+            /**
+             * Char Count
+             * @description Characters of text read from it.
+             */
+            char_count: number;
+            /**
+             * Crawled At
+             * @description When it was read, RFC 3339 UTC.
+             */
+            crawled_at: string | null;
+        };
+        /**
+         * DocumentPageList
+         * @description Every page of an imported website, in the order they were read. Never more than one page of results: `has_more` is always false.
+         */
+        DocumentPageList: {
+            /** Data */
+            data: components["schemas"]["DocumentPage"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page, or null on the last page. Pass it back unmodified as `cursor`; do not parse it.
+             */
+            next_cursor: string | null;
+            /**
+             * Has More
+             * @description True when another page is available.
+             * @default false
+             */
+            has_more: boolean;
+        };
+        /**
+         * DocumentText
+         * @description The text the assistant reads from a document: a note's text as written, or what Talki read from a file or a website, as the assistant searches it. Consecutive passages may repeat a few words where they overlap.
+         */
+        DocumentText: {
+            /**
+             * Document Id
+             * @description The document's identifier.
+             */
+            document_id: string;
+            /**
+             * Text
+             * @description A note's text as last written, even while it is `processing`. For a file or a website, the text read from it, as the assistant searches it: the passages in order, separated by a blank line, and empty until it is first `ready`.
+             */
+            text: string;
+        };
+        /**
+         * DocumentUpdate
+         * @description A partial edit of a document: its title, or whether the assistant uses it.
+         */
+        DocumentUpdate: {
+            /**
+             * Title
+             * @description Its new title. Not for a website, whose title is its address. A note's new title is indexed again, as a change of its text is.
+             */
+            title?: string | null;
+            /**
+             * Enabled
+             * @description Switch it off (`false`) or on again (`true`). Cannot be null.
+             */
+            enabled?: boolean | null;
         };
         /**
          * FakeCallRequest
@@ -3596,11 +3986,128 @@ export interface components {
              */
             slots: components["schemas"]["WorkingHoursSlot"][];
         };
+        /**
+         * DocumentCreate
+         * @description A text note, sent as `application/json`. Its title and text are what the assistant reads.
+         */
+        DocumentCreate: {
+            /**
+             * Source
+             * @description `text`, or omit it. A website is sent with `website`.
+             * @default text
+             * @enum {string}
+             */
+            source?: "text";
+            /**
+             * Title
+             * @description Its title, at most 200 characters. The assistant reads it too.
+             */
+            title: string;
+            /**
+             * Body
+             * @description Its text, at most 100 KB in UTF-8. Plain text or Markdown.
+             */
+            body: string;
+            /**
+             * Location Ids
+             * @description Other locations that get a copy of it, ids from `GET /v1/locations`. Each copy is a document of its own, sharing `copy_group_id`.
+             * @default null
+             */
+            location_ids?: string[] | null;
+        };
+        /**
+         * DocumentSiteCreate
+         * @description A website to import, sent as `application/json` with `source: "website"`: the page at `url`, or the `pages` listed, up to the plan's page limit.
+         */
+        DocumentSiteCreate: {
+            /**
+             * Source
+             * @description `website`.
+             * @enum {string}
+             */
+            source: "website";
+            /**
+             * Url
+             * @description The site's address, http or https. It becomes the document's `title`.
+             */
+            url: string;
+            /**
+             * Pages
+             * @description The pages to read, from `POST /v1/documents/discover` or your own, at most the account plan's page limit. Omit to read the page at `url` alone.
+             * @default null
+             */
+            pages?: string[] | null;
+            /**
+             * Location Ids
+             * @description Other locations that get a copy of it, ids from `GET /v1/locations`. Each copy is a document of its own, sharing `copy_group_id`.
+             * @default null
+             */
+            location_ids?: string[] | null;
+        };
+        /**
+         * DocumentUpload
+         * @description A file, sent as `multipart/form-data`: PDF, DOCX, XLSX, TXT or CSV, at most 10 MB or the plan's lower limit.
+         */
+        DocumentUpload: {
+            /**
+             * File
+             * Format: binary
+             * @description The file: PDF, DOCX, XLSX, TXT or CSV, at most 10 MB or the account plan's lower limit. Its name becomes the document's `title`.
+             */
+            file: Blob;
+            /**
+             * Location Ids
+             * @description Other locations that get a copy of it, ids from `GET /v1/locations`, one form field each.
+             * @default null
+             */
+            location_ids?: string[] | null;
+        };
+        /**
+         * DocumentReplace
+         * @description A note's new text, sent as `application/json`.
+         */
+        DocumentReplace: {
+            /**
+             * Body
+             * @description Its new text, at most 100 KB in UTF-8.
+             */
+            body: string;
+            /**
+             * Title
+             * @description Its new title. Omit to keep the current one.
+             * @default null
+             */
+            title?: string | null;
+        };
+        /**
+         * DocumentSiteReplace
+         * @description A website's new import, sent as `application/json`: the `pages` listed, or else the pages it holds.
+         */
+        DocumentSiteReplace: {
+            /**
+             * Pages
+             * @description The pages to read this time. Omit to read again the pages it holds (`GET /v1/documents/{document_id}/pages`).
+             * @default null
+             */
+            pages?: string[] | null;
+        };
+        /**
+         * DocumentFileReplace
+         * @description A file's new version, sent as `multipart/form-data`.
+         */
+        DocumentFileReplace: {
+            /**
+             * File
+             * Format: binary
+             * @description The new file, under the same rules as an upload. Its name becomes the document's `title` once it is ready.
+             */
+            file: Blob;
+        };
         /** @description The error itself. Branch on `code`; `message` is for people. */
         ErrorDetail: {
             /** @enum {string} */
             type: "authentication_error" | "permission_error" | "invalid_request" | "conflict" | "rate_limit_error" | "api_error";
-            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
+            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `document_not_ready`, `unsupported_file_type`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
             code: string;
             message: string;
             request_id: string;
@@ -3910,7 +4417,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example assistant-settings-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -4215,7 +4722,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example onboarding-done
                  */
                 "Idempotency-Key"?: string;
@@ -4648,7 +5155,7 @@ export interface operations {
     getCallStats: {
         parameters: {
             query?: {
-                /** @description Length of the period, in days, ending now. Default 30. Cannot be combined with `from` / `to`. */
+                /** @description Length of the period, in days, ending now. Default 30. It starts at the same local time, in the account's `timezone`, `days` days earlier: across a daylight-saving change, an hour more or less than `days` × 24 hours. Cannot be combined with `from` / `to`. */
                 days?: number | null;
                 /** @description First day of the period, `YYYY-MM-DD`, local to the account's `timezone`. Sent with `to`, instead of `days`. */
                 from?: string | null;
@@ -5096,8 +5603,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/pdf": string;
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/pdf": Blob;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": Blob;
                 };
             };
             /** @description A parameter is invalid (`invalid_parameter`), or the range holds more than 5000 calls (`export_too_large`): narrow the dates. */
@@ -5284,8 +5791,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/pdf": string;
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/pdf": Blob;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": Blob;
                 };
             };
             /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
@@ -5848,7 +6355,7 @@ export interface operations {
     getRefusedCallSummary: {
         parameters: {
             query?: {
-                /** @description Length of the period, in days, ending now. Default 30. Cannot be combined with `from` / `to`. */
+                /** @description Length of the period, in days, ending now. Default 30. It starts at the same local time, in the account's `timezone`, `days` days earlier: across a daylight-saving change, an hour more or less than `days` × 24 hours. Cannot be combined with `from` / `to`. */
                 days?: number | null;
                 /** @description First day of the period, `YYYY-MM-DD`, local to the account's `timezone`. Sent with `to`, instead of `days`. */
                 from?: string | null;
@@ -6506,7 +7013,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example call-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -6716,7 +7223,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example call-archive-1
                  */
                 "Idempotency-Key"?: string;
@@ -7179,7 +7686,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example calls-read-2026-10-08
                  */
                 "Idempotency-Key"?: string;
@@ -7618,7 +8125,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example booking-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -8073,7 +8580,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example cancel-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -8283,7 +8790,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example reschedule-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -8714,7 +9221,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example contact-crm-42
                  */
                 "Idempotency-Key"?: string;
@@ -9128,7 +9635,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example contact-delete-crm-42
                  */
                 "Idempotency-Key"?: string;
@@ -9561,7 +10068,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example service-create-colour
                  */
                 "Idempotency-Key": string;
@@ -10014,7 +10521,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example service-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -10224,7 +10731,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example service-price-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -10697,7 +11204,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example resource-create-basins
                  */
                 "Idempotency-Key": string;
@@ -11157,7 +11664,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example resource-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -11367,7 +11874,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example capacity-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -12017,7 +12524,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example unresolved-resolve-1
                  */
                 "Idempotency-Key"?: string;
@@ -12252,7 +12759,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example teach-bridal-sundays
                  */
                 "Idempotency-Key": string;
@@ -12495,6 +13002,2053 @@ export interface operations {
             };
         };
     };
+    listDocuments: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of documents to return. */
+                limit?: number;
+                /** @description Opaque cursor from a previous response's `next_cursor`. Omit for the first page. */
+                cursor?: string | null;
+                /** @description Only `text` notes, uploaded `file`s or imported `website`s. */
+                source?: ("text" | "file" | "website") | null;
+                /** @description Only documents switched on (`true`) or off (`false`). */
+                enabled?: boolean | null;
+                /** @description Only the locations' FAQ notes (`true`), or every other document (`false`). */
+                faq?: boolean | null;
+                /** @description Only the copies sharing this `copy_group_id`. */
+                copy_group_id?: string | null;
+                /** @description Only the records of this location, an id from `GET /v1/locations` (inactive ones included). Omit for every location: each record carries its `location_id`. */
+                location_id?: string | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "title": "Is there parking?",
+                     *           "source": "text",
+                     *           "mime_type": "text/markdown",
+                     *           "size_bytes": 59,
+                     *           "chunk_count": 1,
+                     *           "status": "ready",
+                     *           "status_error": null,
+                     *           "enabled": true,
+                     *           "faq": false,
+                     *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *           "created_at": "2026-10-28T09:12:40Z",
+                     *           "updated_at": "2026-10-28T09:12:40Z"
+                     *         }
+                     *       ],
+                     *       "next_cursor": null,
+                     *       "has_more": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentList"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `location_id` names no location of the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such location.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    createDocument: {
+        parameters: {
+            query?: {
+                /** @description The location the document is for, an id from `GET /v1/locations` (inactive ones included). Omit it for the main location. */
+                location_id?: string | null;
+            };
+            header: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @example faq-parking
+                 */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "title": "Is there parking?",
+                 *       "body": "Yes: free parking behind the salon, entrance from Via Roma."
+                 *     }
+                 */
+                "application/json": components["schemas"]["DocumentCreate"] | components["schemas"]["DocumentSiteCreate"];
+                "multipart/form-data": components["schemas"]["DocumentUpload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *       "title": "Is there parking?",
+                     *       "source": "text",
+                     *       "mime_type": "text/markdown",
+                     *       "size_bytes": 59,
+                     *       "chunk_count": 0,
+                     *       "status": "processing",
+                     *       "status_error": null,
+                     *       "enabled": true,
+                     *       "faq": false,
+                     *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *       "created_at": "2026-10-28T09:12:40Z",
+                     *       "updated_at": "2026-10-28T09:12:40Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Document"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `location_id`, or a location in `location_ids`, names no location of the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such location.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The website is already imported at one of the locations (`conflict`): import it again with `PUT`. Or the idempotency key was reused for a different request. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "conflict",
+                     *         "message": "This site is already imported at that location, as document 5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36: import it again with `PUT /v1/documents/{document_id}`.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The file is over the plan's upload size, a note is over 100 KB, or the account's knowledge storage is full for its plan (`payload_too_large`). */
+            413: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "payload_too_large",
+                     *         "message": "The account's knowledge storage is full for its plan.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The file is not a PDF, DOCX, XLSX, TXT or CSV file, its content does not match its type, or the body is neither `application/json` nor `multipart/form-data` (`unsupported_file_type`). */
+            415: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_file_type",
+                     *         "message": "The file must be a PDF, DOCX, XLSX, TXT or CSV file (.pdf, .docx, .xlsx, .txt, .csv).",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getDocument: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *       "title": "Is there parking?",
+                     *       "source": "text",
+                     *       "mime_type": "text/markdown",
+                     *       "size_bytes": 59,
+                     *       "chunk_count": 1,
+                     *       "status": "ready",
+                     *       "status_error": null,
+                     *       "enabled": true,
+                     *       "faq": false,
+                     *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *       "created_at": "2026-10-28T09:12:40Z",
+                     *       "updated_at": "2026-10-28T09:12:40Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Document"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such document.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    replaceDocument: {
+        parameters: {
+            query?: {
+                /** @description `copies` applies the change to every copy of the document at other locations too. Omit it to change only this document. */
+                also?: "copies" | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @example faq-parking-v2
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "body": "Yes: free parking behind the salon, entrance from Via Roma, 8:00 to 20:00."
+                 *     }
+                 */
+                "application/json": components["schemas"]["DocumentReplace"] | components["schemas"]["DocumentSiteReplace"];
+                "multipart/form-data": components["schemas"]["DocumentFileReplace"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *       "title": "Is there parking?",
+                     *       "source": "text",
+                     *       "mime_type": "text/markdown",
+                     *       "size_bytes": 59,
+                     *       "chunk_count": 1,
+                     *       "status": "processing",
+                     *       "status_error": null,
+                     *       "enabled": true,
+                     *       "faq": false,
+                     *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *       "created_at": "2026-10-28T09:12:40Z",
+                     *       "updated_at": "2026-10-29T15:03:11Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Document"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such document.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description A file's first upload is still `processing`, or its new version has been read and is about to replace the previous one; or a website is being imported (`document_not_ready`), for the document or, with `also=copies`, a copy: retry once it is `ready` or `failed`, and again shortly if a file is still refused, or without `also=copies` when a copy holds it up. Or an older document holds the same site at the website's location (`conflict`): import that one again, or delete one of the two. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "document_not_ready",
+                     *         "message": "The last file sent to this document is not in place yet. Retry shortly.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The file is over the plan's upload size, a note is over 100 KB, or the account's knowledge storage is full for its plan (`payload_too_large`). */
+            413: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "payload_too_large",
+                     *         "message": "The account's knowledge storage is full for its plan.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The file is not a PDF, DOCX, XLSX, TXT or CSV file, its content does not match its type, or the body is neither `application/json` nor `multipart/form-data` (`unsupported_file_type`). */
+            415: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_file_type",
+                     *         "message": "The file must be a PDF, DOCX, XLSX, TXT or CSV file (.pdf, .docx, .xlsx, .txt, .csv).",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    deleteDocument: {
+        parameters: {
+            query?: {
+                /** @description `copies` applies the change to every copy of the document at other locations too. Omit it to change only this document. */
+                also?: "copies" | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @example faq-parking-delete
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such document.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "request_conflict",
+                     *         "message": "Another request changed this document's copies at the same time; retry.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    updateDocument: {
+        parameters: {
+            query?: {
+                /** @description `copies` applies the change to every copy of the document at other locations too. Omit it to change only this document. */
+                also?: "copies" | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @example faq-parking-off
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "enabled": false
+                 *     }
+                 */
+                "application/json": components["schemas"]["DocumentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *       "title": "Is there parking?",
+                     *       "source": "text",
+                     *       "mime_type": "text/markdown",
+                     *       "size_bytes": 59,
+                     *       "chunk_count": 1,
+                     *       "status": "ready",
+                     *       "status_error": null,
+                     *       "enabled": false,
+                     *       "faq": false,
+                     *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *       "created_at": "2026-10-28T09:12:40Z",
+                     *       "updated_at": "2026-10-28T09:12:40Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Document"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such document.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description A file's new title was sent while it is `processing`, or with `also=copies` while a copy's file is (`document_not_ready`): retry once it is `ready` or `failed`, or rename without `also=copies`. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "document_not_ready",
+                     *         "message": "The file of this document is still being processed. Rename it once its `status` is no longer `processing`.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getDocumentText: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "document_id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *       "text": "Yes: free parking behind the salon, entrance from Via Roma."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentText"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such document.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The text of a file or a website cannot be read right now (`api_error`). Retry later. */
+            503: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "api_error",
+                     *         "message": "The knowledge index is temporarily unavailable. Retry later.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    listDocumentPages: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentPageList"];
+                };
+            };
+            /** @description The document is not a website, the only kind with pages (`invalid_parameter`); or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "This document is a text note: only a website has pages.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such document.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getDocumentFile: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The file, with its own `Content-Type` (PDF, DOCX, XLSX, plain text or CSV) and its name in `Content-Disposition`. */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": Blob;
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document with this ID exists in the authenticated account, or it has no file to return: `file_available` is false (`resource_not_found`). */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "This document has no file to return: it is a note or a website, or its file is not kept, or not yet (`file_available` is false).",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The file cannot be read right now (`api_error`). Retry later. */
+            503: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "api_error",
+                     *         "message": "The file cannot be read right now. Retry later.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     listVoices: {
         parameters: {
             query?: never;
@@ -12724,7 +15278,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "audio/wav": string;
+                    "audio/wav": Blob;
                 };
             };
             /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
@@ -13115,7 +15669,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example hours-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -13635,7 +16189,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example closure-2026-12-24
                  */
                 "Idempotency-Key": string;
@@ -13871,7 +16425,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example closure-delete-2026-12-24
                  */
                 "Idempotency-Key"?: string;
@@ -14081,7 +16635,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example closure-reason-2026-12-24
                  */
                 "Idempotency-Key"?: string;
@@ -14513,7 +17067,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example forwarding-check-1
                  */
                 "Idempotency-Key"?: string;
@@ -15349,7 +17903,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example restore-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -15762,7 +18316,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example tag-create-suppliers
                  */
                 "Idempotency-Key": string;
@@ -15970,7 +18524,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example tag-delete-suppliers
                  */
                 "Idempotency-Key"?: string;
@@ -16180,7 +18734,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example tag-rename-suppliers
                  */
                 "Idempotency-Key"?: string;
@@ -16412,7 +18966,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example tag-contact-42
                  */
                 "Idempotency-Key"?: string;
@@ -16636,7 +19190,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example untag-contact-42
                  */
                 "Idempotency-Key"?: string;
@@ -17035,7 +19589,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example pending-approve-1
                  */
                 "Idempotency-Key"?: string;
@@ -17270,7 +19824,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example pending-discard-1
                  */
                 "Idempotency-Key"?: string;
@@ -17690,7 +20244,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example block-spam-1
                  */
                 "Idempotency-Key": string;
@@ -18149,7 +20703,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example rule-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -18359,7 +20913,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example rule-move-1
                  */
                 "Idempotency-Key"?: string;
@@ -18584,6 +21138,460 @@ export interface operations {
             };
         };
     };
+    discoverDocumentPages: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @example discover-bellini
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "url": "https://salonebellini.it"
+                 *     }
+                 */
+                "application/json": components["schemas"]["DocumentDiscover"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentDiscovery"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The write conflicts with current state or a previous idempotency key use. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "idempotency_key_reuse",
+                     *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The site could not be read (`api_error`). Check the address, or retry later. */
+            502: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "api_error",
+                     *         "message": "The site could not be read. Check the address, or retry later.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    deleteDocumentPage: {
+        parameters: {
+            query?: {
+                /** @description `copies` applies the change to every copy of the document at other locations too. Omit it to change only this document. */
+                also?: "copies" | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @example site-drop-careers
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                document_id: string;
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The document is not a website, the only kind with pages (`invalid_parameter`), or a parameter is invalid; or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "This document is a text note: only a website has pages.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No document or page with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such document or page.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The site is being imported at the document or, with `also=copies`, at a copy (`document_not_ready`): retry once it is `ready` or `failed`, or without `also=copies` when a copy holds it up. Or dropping the page would leave no text to search while other pages are still listed as read (`conflict`): import the site again with the `pages` to keep, or delete the document; a retry meets the same answer. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "document_not_ready",
+                     *         "message": "The site is still being imported. Retry once the document's `status` is no longer `processing`.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The site's text cannot be read right now to drop the page (`api_error`). Retry later. */
+            503: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "api_error",
+                     *         "message": "The knowledge index is temporarily unavailable. Retry later.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     listSandboxScenarios: {
         parameters: {
             query?: never;
@@ -18773,7 +21781,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example sandbox-call-1
                  */
                 "Idempotency-Key"?: string;
@@ -18993,7 +22001,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag or a caller rule, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
                  * @example sandbox-reset-1
                  */
                 "Idempotency-Key"?: string;

@@ -44,11 +44,12 @@ for await (const call of talki.calls.list({ limit: 100 })) {
   `talki.calls.getTranscript`.
 - A method resolves to the operation's value, or `undefined` for
   `204 No Content`, and rejects for an error (below). A file (a PDF or
-  spreadsheet export, a voice sample) is a `Blob`.
+  spreadsheet export, a voice sample, a document's original) is a `Blob`; see
+  [Files](#files).
 - Path parameters are positional. Everything else goes in one object: the
   query parameters under the API's own names (`location_id`, `created_after`),
-  `body`, and the options `idempotencyKey`, `ifMatch`, `talkiVersion` and
-  `signal`.
+  `body` (or `form`, for an upload), and the options `idempotencyKey`,
+  `ifMatch`, `talkiVersion` and `signal`.
 - `body` is a plain object with the API's keys, typed from the spec, so the
   compiler catches a wrong key or value. Dates and datetimes are ISO strings;
   a `Date` in a body is sent as its ISO string too. The API checks the body,
@@ -89,6 +90,99 @@ await talki.withOptions({ timeout: 5000, maxRetries: 0 }).calls.get(callId);
 
 Pass `signal` to any method to abort it, its retries and the waits between
 them: `talki.calls.get(callId, { signal: AbortSignal.timeout(10_000) })`.
+
+## Files
+
+### Upload
+
+An operation that takes a file, such as `talki.documents.create` and
+`talki.documents.replace`, takes `form` instead of `body`: it is sent as
+`multipart/form-data`, a file as a part of its own and an array as one field
+per item. Pass one or the other, never both.
+
+The file is a `File`, whose name the API reads: an upload's becomes the
+document's title, and its extension tells the file's type when none is given.
+`toFile(source, name)` makes one from a `Buffer` or other bytes, text, a
+`Blob`, a web `ReadableStream` or a Node stream. A `File` you already have (a
+browser's `<input type="file">`, `Bun.file()`) is sent as it is. A `Blob`
+without a name is refused before sending.
+
+```ts
+import { readFile } from "node:fs/promises";
+import { toFile } from "@hubtec/talki";
+
+const document = await talki.documents.create({
+  form: { file: await toFile(await readFile("price-list.pdf"), "price-list.pdf", { type: "application/pdf" }) },
+});
+
+// Node 20 or later, without reading the file into memory first:
+// await toFile(await fs.openAsBlob("price-list.pdf"), "price-list.pdf")
+```
+
+It uses the global `File` and `FormData` only, so it runs on Node 20 or later,
+Bun, Deno and edge runtimes. `fetch` writes the `Content-Type` with its
+boundary; a retry sends the same form again, with the same `Idempotency-Key`.
+
+### Download
+
+A file the API returns resolves to a `Blob` of its `Content-Type`. When the
+answer names the file in `Content-Disposition`, as a document's original does,
+it is a `File` (a `Blob` with `name`) of that name, less any directory:
+
+```ts
+import { writeFile } from "node:fs/promises";
+
+const file = await talki.documents.getFile(documentId);
+const name = file instanceof File ? file.name : "download";
+await writeFile(`./downloads/${name}`, new Uint8Array(await file.arrayBuffer()));
+```
+
+The name comes from whoever uploaded the file: check it before using it in a
+path. A download is read whole into memory, as every answer is.
+
+## Knowledge base
+
+`talki.documents` reads the documents the assistant answers from under
+`knowledge:read`, and writes them under `knowledge:write`, an opt-in scope that
+does not include reading. See the
+[knowledge base guide](https://developers.talki.it/guides/knowledge-base/) for
+the rules.
+
+```ts
+// A text note, a file, a website.
+const note = await talki.documents.create({ body: { title: "Parking", body: "Free parking behind the salon." } });
+const file = await talki.documents.create({ form: { file: await toFile(bytes, "menu.pdf") }, location_id: locationId });
+const found = await talki.documents.discoverPages({ body: { url: "https://salone-esempio.it" } });
+const site = await talki.documents.create({
+  body: { source: "website", url: found.url, pages: found.pages.slice(0, found.max_pages ?? 10) },
+});
+
+// Written documents are `processing` until indexed: follow `document.updated`
+// events, or read the document again.
+const current = await talki.documents.get(note.id); // current.status: "processing" | "ready" | "failed"
+
+// Replace, rename or switch off; `also: "copies"` reaches the copies at other locations.
+await talki.documents.replace(note.id, { body: { body: "Free parking behind the salon, 8:00 to 20:00." } });
+await talki.documents.replace(file.id, { form: { file: await toFile(newBytes, "menu.pdf") } });
+await talki.documents.update(note.id, { body: { enabled: false }, also: "copies" });
+
+const { text } = await talki.documents.getText(note.id);
+for await (const document of talki.documents.list({ source: "file" })) {
+  // newest first
+}
+await talki.documents.delete(site.id);
+```
+
+- A write is answered `202` with the document `processing`; the assistant uses
+  it once it is `ready`. Each change of `status` sends a `document.updated`
+  event, and `document.created` and `document.deleted` report the rest; see
+  [Webhooks](#webhooks).
+- `talki.documents.create` requires an `Idempotency-Key`. `Talki` adds one;
+  with `autoIdempotency: false`, pass your own.
+- A write body takes only the fields its kind does: an unknown field is
+  refused with `400 invalid_parameter`, and nothing changes.
+- `409 document_not_ready` (a `ConflictError`) refuses a change to a file or a
+  website still being read: retry once it is `ready` or `failed`.
 
 ## Errors
 
