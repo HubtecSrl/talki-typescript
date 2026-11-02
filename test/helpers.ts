@@ -7,6 +7,8 @@ export interface Seen {
   url: URL;
   headers: Headers;
   body: string;
+  /** The body, when it was a `multipart/form-data` form. */
+  form: FormData | null;
 }
 
 export type Answer = Response | Error | ((request: Seen, init: RequestInit) => Response | Promise<Response>);
@@ -27,6 +29,7 @@ export class Recorder {
       // A copy: the client may change its headers for the next attempt.
       headers: new Headers(init.headers),
       body: typeof init.body === "string" ? init.body : "",
+      form: init.body instanceof FormData ? init.body : null,
     };
     this.requests.push(seen);
     const answer = this.answers.length > 1 ? (this.answers.shift() as Answer) : (this.answers[0] as Answer);

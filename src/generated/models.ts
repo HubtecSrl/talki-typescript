@@ -225,6 +225,71 @@ export type ContactList = components["schemas"]["ContactList"];
  */
 export type ContactUpsert = components["schemas"]["ContactUpsert"];
 /**
+ * A document of the knowledge base the assistant answers callers from: a text note, an uploaded file
+ * or an imported website, at one location. Its copies at other locations are documents of their own,
+ * sharing `copy_group_id`. It is used once `status` is `ready`; a document whose content is replaced
+ * answers with its previous content until then.
+ */
+export type Document = components["schemas"]["Document"];
+/**
+ * A text note, sent as `application/json`. Its title and text are what the assistant reads.
+ */
+export type DocumentCreate = components["schemas"]["DocumentCreate"];
+/**
+ * A site to look for pages in before importing it.
+ */
+export type DocumentDiscover = components["schemas"]["DocumentDiscover"];
+/**
+ * The pages found on a site, to choose the `pages` of an import from, and how many one import may read
+ * on the account's plan.
+ */
+export type DocumentDiscovery = components["schemas"]["DocumentDiscovery"];
+/**
+ * A file's new version, sent as `multipart/form-data`.
+ */
+export type DocumentFileReplace = components["schemas"]["DocumentFileReplace"];
+/**
+ * A page of documents, newest first. Loop while `has_more` is true.
+ */
+export type DocumentList = components["schemas"]["DocumentList"];
+/**
+ * One page of an imported website, and whether it was read.
+ */
+export type DocumentPage = components["schemas"]["DocumentPage"];
+/**
+ * Every page of an imported website, in the order they were read. Never more than one page of results:
+ * `has_more` is always false.
+ */
+export type DocumentPageList = components["schemas"]["DocumentPageList"];
+/**
+ * A note's new text, sent as `application/json`.
+ */
+export type DocumentReplace = components["schemas"]["DocumentReplace"];
+/**
+ * A website to import, sent as `application/json` with `source: "website"`: the page at `url`, or the
+ * `pages` listed, up to the plan's page limit.
+ */
+export type DocumentSiteCreate = components["schemas"]["DocumentSiteCreate"];
+/**
+ * A website's new import, sent as `application/json`: the `pages` listed, or else the pages it holds.
+ */
+export type DocumentSiteReplace = components["schemas"]["DocumentSiteReplace"];
+/**
+ * The text the assistant reads from a document: a note's text as written, or what Talki read from a
+ * file or a website, as the assistant searches it. Consecutive passages may repeat a few words where
+ * they overlap.
+ */
+export type DocumentText = components["schemas"]["DocumentText"];
+/**
+ * A partial edit of a document: its title, or whether the assistant uses it.
+ */
+export type DocumentUpdate = components["schemas"]["DocumentUpdate"];
+/**
+ * A file, sent as `multipart/form-data`: PDF, DOCX, XLSX, TXT or CSV, at most 10 MB or the plan's
+ * lower limit.
+ */
+export type DocumentUpload = components["schemas"]["DocumentUpload"];
+/**
  * The error itself. Branch on `code`; `message` is for people.
  */
 export type ErrorDetail = components["schemas"]["ErrorDetail"];

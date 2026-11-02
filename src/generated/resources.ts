@@ -13,6 +13,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "optional",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -22,6 +23,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -31,6 +33,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -40,6 +43,7 @@ export const OPERATIONS = {
     query: ["status", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -49,6 +53,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -58,6 +63,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [201],
     binary: false,
   },
@@ -67,6 +73,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200, 201],
     binary: false,
   },
@@ -76,7 +83,18 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [201],
+    binary: false,
+  },
+  createDocument: {
+    method: "POST",
+    path: "/v1/documents",
+    query: ["location_id"],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: true,
+    success: [202],
     binary: false,
   },
   createResource: {
@@ -85,6 +103,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [201],
     binary: false,
   },
@@ -94,6 +113,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [201],
     binary: false,
   },
@@ -103,6 +123,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [201],
     binary: false,
   },
@@ -112,6 +133,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [201],
     binary: false,
   },
@@ -121,6 +143,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -130,6 +153,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -139,6 +163,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -148,6 +173,27 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
+    success: [204],
+    binary: false,
+  },
+  deleteDocument: {
+    method: "DELETE",
+    path: "/v1/documents/{document_id}",
+    query: ["also"],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: null,
+    form: false,
+    success: [204],
+    binary: false,
+  },
+  deleteDocumentPage: {
+    method: "DELETE",
+    path: "/v1/documents/{document_id}/pages/{page_id}",
+    query: ["also"],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -157,6 +203,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -166,6 +213,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -175,6 +223,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
     binary: false,
   },
@@ -184,7 +233,18 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [204],
+    binary: false,
+  },
+  discoverDocumentPages: {
+    method: "POST",
+    path: "/v1/documents/discover",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: false,
+    success: [200],
     binary: false,
   },
   exportCall: {
@@ -193,6 +253,7 @@ export const OPERATIONS = {
     query: ["format"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: true,
   },
@@ -202,6 +263,7 @@ export const OPERATIONS = {
     query: ["from", "to", "format", "status", "q", "outcome", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: true,
   },
@@ -211,6 +273,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -220,6 +283,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -229,6 +293,7 @@ export const OPERATIONS = {
     query: ["service_id", "from", "to", "quantity", "stay_length"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -238,6 +303,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -247,6 +313,7 @@ export const OPERATIONS = {
     query: ["days", "from", "to", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -256,6 +323,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -265,6 +333,37 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  getDocument: {
+    method: "GET",
+    path: "/v1/documents/{document_id}",
+    query: [],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  getDocumentFile: {
+    method: "GET",
+    path: "/v1/documents/{document_id}/file",
+    query: [],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: true,
+  },
+  getDocumentText: {
+    method: "GET",
+    path: "/v1/documents/{document_id}/text",
+    query: [],
+    headers: {},
+    body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -274,6 +373,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -283,6 +383,7 @@ export const OPERATIONS = {
     query: ["days", "from", "to", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -292,6 +393,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -301,6 +403,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -310,6 +413,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -319,6 +423,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -328,6 +433,7 @@ export const OPERATIONS = {
     query: ["from", "to"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -337,6 +443,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: true,
   },
@@ -346,6 +453,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -355,6 +463,7 @@ export const OPERATIONS = {
     query: ["limit", "cursor", "status", "starts_after", "starts_before", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -364,6 +473,7 @@ export const OPERATIONS = {
     query: ["limit", "cursor", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -373,6 +483,7 @@ export const OPERATIONS = {
     query: ["kind", "limit", "cursor", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -382,6 +493,7 @@ export const OPERATIONS = {
     query: ["limit", "cursor", "sync", "created_after", "created_before", "status", "phone", "contact_id", "q", "outcome", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -391,6 +503,7 @@ export const OPERATIONS = {
     query: ["from", "to", "kind", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -400,6 +513,27 @@ export const OPERATIONS = {
     query: ["limit", "cursor"],
     headers: {},
     body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  listDocumentPages: {
+    method: "GET",
+    path: "/v1/documents/{document_id}/pages",
+    query: [],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  listDocuments: {
+    method: "GET",
+    path: "/v1/documents",
+    query: ["limit", "cursor", "source", "enabled", "faq", "copy_group_id", "location_id"],
+    headers: {},
+    body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -409,6 +543,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -418,6 +553,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -427,6 +563,7 @@ export const OPERATIONS = {
     query: ["limit", "cursor", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -436,6 +573,7 @@ export const OPERATIONS = {
     query: ["limit", "cursor", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -445,6 +583,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -454,6 +593,7 @@ export const OPERATIONS = {
     query: ["limit", "cursor", "is_active", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -463,6 +603,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -472,6 +613,7 @@ export const OPERATIONS = {
     query: ["limit", "cursor", "status", "location_id"],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -481,6 +623,7 @@ export const OPERATIONS = {
     query: [],
     headers: {},
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -490,7 +633,18 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [200],
+    binary: false,
+  },
+  replaceDocument: {
+    method: "PUT",
+    path: "/v1/documents/{document_id}",
+    query: ["also"],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: true,
+    success: [202],
     binary: false,
   },
   replaceWorkingHours: {
@@ -499,6 +653,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key", ifMatch: "If-Match" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -508,6 +663,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -517,6 +673,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -526,6 +683,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -535,6 +693,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -544,6 +703,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -553,6 +713,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [202],
     binary: false,
   },
@@ -562,6 +723,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
     success: [200],
     binary: false,
   },
@@ -571,6 +733,7 @@ export const OPERATIONS = {
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key", ifMatch: "If-Match" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -580,6 +743,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -589,6 +753,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -598,6 +763,17 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  updateDocument: {
+    method: "PATCH",
+    path: "/v1/documents/{document_id}",
+    query: ["also"],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -607,6 +783,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -616,6 +793,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -625,6 +803,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -634,6 +813,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -643,6 +823,7 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
+    form: false,
     success: [200],
     binary: false,
   },
@@ -3930,6 +4111,580 @@ export class UnresolvedRequestsResource {
 }
 
 /**
+ * Options for `createDocument`.
+ */
+export type CreateDocumentParams = RequestOptions & NonNullable<operations["createDocument"]["parameters"]["query"]> & (
+  | {
+      /**
+       * The request body, as the API reference describes it.
+       *
+       * Sent as JSON. Or pass `form`.
+       */
+      body: NonNullable<operations["createDocument"]["requestBody"]>["content"]["application/json"];
+      form?: undefined;
+    }
+  | {
+      /**
+       * The request body as `multipart/form-data`, instead of `body`: a file as a `File`, or
+       * `toFile(data, name)`, whose name the API reads; an array as one field per item.
+       */
+      form: NonNullable<operations["createDocument"]["requestBody"]>["content"]["multipart/form-data"];
+      body?: undefined;
+    }
+) & {
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   *
+   * Required by this operation: without one, the API refuses the request.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `createDocument` returns.
+ */
+export type CreateDocumentResponse = operations["createDocument"]["responses"][202]["content"]["application/json"];
+
+/**
+ * Options for `deleteDocument`.
+ */
+export type DeleteDocumentParams = RequestOptions & NonNullable<operations["deleteDocument"]["parameters"]["query"]> & {
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `deleteDocument` returns.
+ */
+export type DeleteDocumentResponse = undefined;
+
+/**
+ * Options for `deleteDocumentPage`.
+ */
+export type DeleteDocumentPageParams = RequestOptions & NonNullable<operations["deleteDocumentPage"]["parameters"]["query"]> & {
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `deleteDocumentPage` returns.
+ */
+export type DeleteDocumentPageResponse = undefined;
+
+/**
+ * Options for `discoverDocumentPages`.
+ */
+export type DiscoverDocumentPagesParams = RequestOptions & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["discoverDocumentPages"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `discoverDocumentPages` returns.
+ */
+export type DiscoverDocumentPagesResponse = operations["discoverDocumentPages"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `getDocument`.
+ */
+export type GetDocumentParams = RequestOptions;
+
+/**
+ * What `getDocument` returns.
+ */
+export type GetDocumentResponse = operations["getDocument"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `getDocumentFile`.
+ */
+export type GetDocumentFileParams = RequestOptions;
+
+/**
+ * What `getDocumentFile` returns.
+ */
+export type GetDocumentFileResponse = Blob;
+
+/**
+ * Options for `getDocumentText`.
+ */
+export type GetDocumentTextParams = RequestOptions;
+
+/**
+ * What `getDocumentText` returns.
+ */
+export type GetDocumentTextResponse = operations["getDocumentText"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `listDocuments`.
+ */
+export type ListDocumentsParams = RequestOptions & NonNullable<operations["listDocuments"]["parameters"]["query"]>;
+
+/**
+ * What `listDocuments` returns.
+ */
+export type ListDocumentsResponse = operations["listDocuments"]["responses"][200]["content"]["application/json"];
+
+/**
+ * A row of `listDocuments`.
+ */
+export type ListDocumentsRow = operations["listDocuments"]["responses"][200]["content"]["application/json"]["data"][number];
+
+/**
+ * Options for `listDocumentPages`.
+ */
+export type ListDocumentPagesParams = RequestOptions;
+
+/**
+ * What `listDocumentPages` returns.
+ */
+export type ListDocumentPagesResponse = operations["listDocumentPages"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `replaceDocument`.
+ */
+export type ReplaceDocumentParams = RequestOptions & NonNullable<operations["replaceDocument"]["parameters"]["query"]> & (
+  | {
+      /**
+       * The request body, as the API reference describes it.
+       *
+       * Sent as JSON. Or pass `form`.
+       */
+      body: NonNullable<operations["replaceDocument"]["requestBody"]>["content"]["application/json"];
+      form?: undefined;
+    }
+  | {
+      /**
+       * The request body as `multipart/form-data`, instead of `body`: a file as a `File`, or
+       * `toFile(data, name)`, whose name the API reads; an array as one field per item.
+       */
+      form: NonNullable<operations["replaceDocument"]["requestBody"]>["content"]["multipart/form-data"];
+      body?: undefined;
+    }
+) & {
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `replaceDocument` returns.
+ */
+export type ReplaceDocumentResponse = operations["replaceDocument"]["responses"][202]["content"]["application/json"];
+
+/**
+ * Options for `updateDocument`.
+ */
+export type UpdateDocumentParams = RequestOptions & NonNullable<operations["updateDocument"]["parameters"]["query"]> & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["updateDocument"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `updateDocument` returns.
+ */
+export type UpdateDocumentResponse = operations["updateDocument"]["responses"][200]["content"]["application/json"];
+
+/**
+ * `talki.documents.withRawResponse`: the methods of `talki.documents`, each returning the whole
+ * answer, a `RawResponse` whose `data` is what the method returns. An error throws as it does there.
+ */
+export class DocumentsResourceWithRawResponse {
+  readonly #requester: Requester;
+
+  constructor(requester: Requester) {
+    this.#requester = requester;
+  }
+
+  /**
+   * Create a document
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `CreateDocumentParams`.
+   * @see POST /v1/documents
+   */
+  create(params: CreateDocumentParams): Promise<RawResponse<CreateDocumentResponse>> {
+    return this.#requester.request<CreateDocumentResponse>(OPERATIONS.createDocument, [], params);
+  }
+
+  /**
+   * Delete a document
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `DeleteDocumentParams`.
+   * @see DELETE /v1/documents/{document_id}
+   */
+  delete(documentId: string, params: DeleteDocumentParams = {}): Promise<RawResponse<DeleteDocumentResponse>> {
+    return this.#requester.request<DeleteDocumentResponse>(OPERATIONS.deleteDocument, [documentId], params);
+  }
+
+  /**
+   * Delete a website's page
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param pageId - page_id
+   * @param params - the query, body and options; see `DeleteDocumentPageParams`.
+   * @see DELETE /v1/documents/{document_id}/pages/{page_id}
+   */
+  deletePage(documentId: string, pageId: string, params: DeleteDocumentPageParams = {}): Promise<RawResponse<DeleteDocumentPageResponse>> {
+    return this.#requester.request<DeleteDocumentPageResponse>(OPERATIONS.deleteDocumentPage, [documentId, pageId], params);
+  }
+
+  /**
+   * Discover a site's pages
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `DiscoverDocumentPagesParams`.
+   * @see POST /v1/documents/discover
+   */
+  discoverPages(params: DiscoverDocumentPagesParams): Promise<RawResponse<DiscoverDocumentPagesResponse>> {
+    return this.#requester.request<DiscoverDocumentPagesResponse>(OPERATIONS.discoverDocumentPages, [], params);
+  }
+
+  /**
+   * Retrieve a document
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `GetDocumentParams`.
+   * @see GET /v1/documents/{document_id}
+   */
+  get(documentId: string, params: GetDocumentParams = {}): Promise<RawResponse<GetDocumentResponse>> {
+    return this.#requester.request<GetDocumentResponse>(OPERATIONS.getDocument, [documentId], params);
+  }
+
+  /**
+   * Download a document's file
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `GetDocumentFileParams`.
+   * @see GET /v1/documents/{document_id}/file
+   */
+  getFile(documentId: string, params: GetDocumentFileParams = {}): Promise<RawResponse<GetDocumentFileResponse>> {
+    return this.#requester.request<GetDocumentFileResponse>(OPERATIONS.getDocumentFile, [documentId], params);
+  }
+
+  /**
+   * Retrieve a document's text
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `GetDocumentTextParams`.
+   * @see GET /v1/documents/{document_id}/text
+   */
+  getText(documentId: string, params: GetDocumentTextParams = {}): Promise<RawResponse<GetDocumentTextResponse>> {
+    return this.#requester.request<GetDocumentTextResponse>(OPERATIONS.getDocumentText, [documentId], params);
+  }
+
+  /**
+   * List documents
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `ListDocumentsParams`.
+   * @see GET /v1/documents
+   */
+  list(params: ListDocumentsParams = {}): Promise<RawResponse<Page<ListDocumentsRow>>> {
+    return this.#requester.requestPage<ListDocumentsRow>(OPERATIONS.listDocuments, [], params);
+  }
+
+  /**
+   * List a website's pages
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `ListDocumentPagesParams`.
+   * @see GET /v1/documents/{document_id}/pages
+   */
+  listPages(documentId: string, params: ListDocumentPagesParams = {}): Promise<RawResponse<ListDocumentPagesResponse>> {
+    return this.#requester.request<ListDocumentPagesResponse>(OPERATIONS.listDocumentPages, [documentId], params);
+  }
+
+  /**
+   * Replace a document
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `ReplaceDocumentParams`.
+   * @see PUT /v1/documents/{document_id}
+   */
+  replace(documentId: string, params: ReplaceDocumentParams): Promise<RawResponse<ReplaceDocumentResponse>> {
+    return this.#requester.request<ReplaceDocumentResponse>(OPERATIONS.replaceDocument, [documentId], params);
+  }
+
+  /**
+   * Update a document
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `UpdateDocumentParams`.
+   * @see PATCH /v1/documents/{document_id}
+   */
+  update(documentId: string, params: UpdateDocumentParams): Promise<RawResponse<UpdateDocumentResponse>> {
+    return this.#requester.request<UpdateDocumentResponse>(OPERATIONS.updateDocument, [documentId], params);
+  }
+}
+
+/**
+ * `talki.documents`: Read and write the knowledge base the assistant answers callers from: text notes,
+ * uploaded files and imported websites, their indexing status, and whether the assistant uses each
+ * one.
+ *
+ * Each method sends one operation and returns its value, or throws the `ApiError` subclass for its
+ * error.
+ */
+export class DocumentsResource {
+  /** The same methods, each returning the whole answer: its status and headers with the value. */
+  readonly withRawResponse: DocumentsResourceWithRawResponse;
+
+  constructor(requester: Requester) {
+    this.withRawResponse = new DocumentsResourceWithRawResponse(requester);
+  }
+
+  /**
+   * Create a document
+   *
+   * Add a text note (`application/json`: `title`, `body`), import a website (`application/json`:
+   * `source: "website"`, `url`, optionally `pages`) or upload a file (`multipart/form-data`: `file`)
+   * to the knowledge base of the location `location_id` names, the main location's when omitted. A
+   * site already imported at one of the locations is refused (`conflict`): import it again with `PUT`.
+   * `location_ids` makes a copy at each of those locations too, sharing `copy_group_id`. Answers `202`
+   * with the document, `processing`: the assistant uses it once `document.updated` reports it `ready`,
+   * or `failed` with `status_error`. The plan's limits apply as in Talki: file size
+   * (`payload_too_large`), file type (`unsupported_file_type`), pages per site (`invalid_parameter`)
+   * and the account's knowledge storage (`payload_too_large`, or a site `failed` with `status_error`).
+   * A JSON field the note or the website does not take is refused (`invalid_parameter`). Requires
+   * `Idempotency-Key`. Requires `knowledge:write`. Limited to 120 requests per minute per account (API
+   * key) or per installation (OAuth), and to 60 document writes per minute, shared by creating,
+   * replacing and updating documents and discovering a site's pages.
+   *
+   * @param params - the query, body and options; see `CreateDocumentParams`.
+   * @see POST /v1/documents
+   */
+  async create(params: CreateDocumentParams): Promise<CreateDocumentResponse> {
+    return (await this.withRawResponse.create(params)).data;
+  }
+
+  /**
+   * Delete a document
+   *
+   * Delete a document for good; the assistant stops using it at once. A location's FAQ note can be
+   * deleted too: the next answer taught there starts a new one. With `also=copies`, its copies at
+   * other locations go too; without it they stay. Sends `document.deleted`. Requires
+   * `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation
+   * (OAuth).
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `DeleteDocumentParams`.
+   * @see DELETE /v1/documents/{document_id}
+   */
+  async delete(documentId: string, params: DeleteDocumentParams = {}): Promise<DeleteDocumentResponse> {
+    return (await this.withRawResponse.delete(documentId, params)).data;
+  }
+
+  /**
+   * Delete a website's page
+   *
+   * Drop one page of an imported website and what it said; the assistant stops using it once the
+   * document is `ready` again. Dropping its last page that was read deletes the document
+   * (`document.deleted`). With `also=copies`, its copies at other locations get the result too. Only a
+   * website has pages; any other document is refused (`invalid_parameter`). Refused while the site is
+   * being imported (`document_not_ready`), and (`conflict`) when dropping it would leave no text to
+   * search while other pages are still listed as read: import the site again with the `pages` to keep,
+   * or delete the document. Requires `knowledge:write`. Limited to 120 requests per minute per account
+   * (API key) or per installation (OAuth).
+   *
+   * @param documentId - document_id
+   * @param pageId - page_id
+   * @param params - the query, body and options; see `DeleteDocumentPageParams`.
+   * @see DELETE /v1/documents/{document_id}/pages/{page_id}
+   */
+  async deletePage(documentId: string, pageId: string, params: DeleteDocumentPageParams = {}): Promise<DeleteDocumentPageResponse> {
+    return (await this.withRawResponse.deletePage(documentId, pageId, params)).data;
+  }
+
+  /**
+   * Discover a site's pages
+   *
+   * Look for the pages of the site at `url`, from its sitemap or its links, to choose the `pages` of
+   * an import. Imports nothing. `max_pages` is how many one import may read on the account's plan. An
+   * address that is not public http or https, or any field besides `url`, is refused
+   * (`invalid_parameter`). Requires `knowledge:write`. Limited to 120 requests per minute per account
+   * (API key) or per installation (OAuth), and to 60 document writes per minute, shared by creating,
+   * replacing and updating documents and discovering a site's pages.
+   *
+   * @param params - the query, body and options; see `DiscoverDocumentPagesParams`.
+   * @see POST /v1/documents/discover
+   */
+  async discoverPages(params: DiscoverDocumentPagesParams): Promise<DiscoverDocumentPagesResponse> {
+    return (await this.withRawResponse.discoverPages(params)).data;
+  }
+
+  /**
+   * Retrieve a document
+   *
+   * Return one document of the account, with its indexing `status`. Requires `knowledge:read`. Limited
+   * to 600 requests per minute per account (API key) or per installation (OAuth).
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `GetDocumentParams`.
+   * @see GET /v1/documents/{document_id}
+   */
+  async get(documentId: string, params: GetDocumentParams = {}): Promise<GetDocumentResponse> {
+    return (await this.withRawResponse.get(documentId, params)).data;
+  }
+
+  /**
+   * Download a document's file
+   *
+   * Return the uploaded file as it was received, with its type and name, when the document's
+   * `file_available` is true: shortly after the file is first `ready`, later for a copy at another
+   * location. A note, a website, a file whose first upload is not `ready` yet or `failed`, and a file
+   * Talki did not keep have none (`resource_not_found`). A file being replaced returns its previous
+   * version until the new one has been read, then its new version shortly after it is `ready`.
+   * Requires `knowledge:read`. Limited to 600 requests per minute per account (API key) or per
+   * installation (OAuth).
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `GetDocumentFileParams`.
+   * @see GET /v1/documents/{document_id}/file
+   */
+  async getFile(documentId: string, params: GetDocumentFileParams = {}): Promise<GetDocumentFileResponse> {
+    return (await this.withRawResponse.getFile(documentId, params)).data;
+  }
+
+  /**
+   * Retrieve a document's text
+   *
+   * Return a note's text as last written, even while it is `processing`, or the text Talki read from a
+   * file or a website, as the assistant searches it: empty until the file or website is first `ready`.
+   * The uploaded file itself is `GET /v1/documents/{document_id}/file`. Requires `knowledge:read`.
+   * Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `GetDocumentTextParams`.
+   * @see GET /v1/documents/{document_id}/text
+   */
+  async getText(documentId: string, params: GetDocumentTextParams = {}): Promise<GetDocumentTextResponse> {
+    return (await this.withRawResponse.getText(documentId, params)).data;
+  }
+
+  /**
+   * List documents
+   *
+   * Return the knowledge-base documents of every location, or of one, newest first, whatever their
+   * `status`: an upload is listed from the moment it is received. `document.*` events report every
+   * change, `status` included. Requires `knowledge:read`. Limited to 600 requests per minute per
+   * account (API key) or per installation (OAuth).
+   *
+   * @param params - the query, body and options; see `ListDocumentsParams`.
+   * @see GET /v1/documents
+   */
+  list(params: ListDocumentsParams = {}): PagePromise<ListDocumentsRow> {
+    return new PagePromise(async () => (await this.withRawResponse.list(params)).data);
+  }
+
+  /**
+   * List a website's pages
+   *
+   * Return every page of an imported website as its last import read them, with whether each was read
+   * (`status`). Only a website has pages; any other document is refused (`invalid_parameter`).
+   * Requires `knowledge:read`. Limited to 600 requests per minute per account (API key) or per
+   * installation (OAuth).
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `ListDocumentPagesParams`.
+   * @see GET /v1/documents/{document_id}/pages
+   */
+  async listPages(documentId: string, params: ListDocumentPagesParams = {}): Promise<ListDocumentPagesResponse> {
+    return (await this.withRawResponse.listPages(documentId, params)).data;
+  }
+
+  /**
+   * Replace a document
+   *
+   * Replace a note's text (`application/json`: `body`, optionally `title`) or a file
+   * (`multipart/form-data`: `file`), keeping the document's id. It turns `processing` and keeps
+   * answering with its previous content until the new one is `ready`; a new file's name and size are
+   * the document's from then. A website is imported again (`application/json`: `pages`, or omit it to
+   * read again the pages it holds). A note can be replaced at any time, and a file again while its new
+   * version is still being read: the newer one takes its place. Refused (`document_not_ready`) for a
+   * file whose first upload is still `processing` or whose new version has been read and is about to
+   * replace the previous one, and for a website being imported; and (`conflict`) for a website whose
+   * location holds an older document of the same site. With `also=copies`, its copies at other
+   * locations get the same content, and the `document_not_ready` refusals apply to each copy. The JSON
+   * body is read as the document's kind: a field that kind does not take, such as `source`, or a
+   * note's `body` sent to a website, is refused (`invalid_parameter`) and nothing changes. Requires
+   * `knowledge:write`. Limited to 120 requests per minute per account (API key) or per installation
+   * (OAuth), and to 60 document writes per minute, shared by creating, replacing and updating
+   * documents and discovering a site's pages.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `ReplaceDocumentParams`.
+   * @see PUT /v1/documents/{document_id}
+   */
+  async replace(documentId: string, params: ReplaceDocumentParams): Promise<ReplaceDocumentResponse> {
+    return (await this.withRawResponse.replace(documentId, params)).data;
+  }
+
+  /**
+   * Update a document
+   *
+   * Rename a document, or switch it off (`enabled: false`) so the assistant stops using it while it is
+   * kept, and on again. A note's new title is indexed again, as its text is. A file's title cannot
+   * change while it is `processing` (`document_not_ready`). A website's title is its address and
+   * cannot change. With `also=copies`, its copies at other locations change too, and a rename is
+   * refused the same way (`document_not_ready`) while a copy's file is `processing`. Any other field
+   * is refused (`invalid_parameter`). A request that changes nothing sends no `document.updated`.
+   * Requires `knowledge:write`. Limited to 120 requests per minute per account (API key) or per
+   * installation (OAuth), and to 60 document writes per minute, shared by creating, replacing and
+   * updating documents and discovering a site's pages.
+   *
+   * @param documentId - document_id
+   * @param params - the query, body and options; see `UpdateDocumentParams`.
+   * @see PATCH /v1/documents/{document_id}
+   */
+  async update(documentId: string, params: UpdateDocumentParams): Promise<UpdateDocumentResponse> {
+    return (await this.withRawResponse.update(documentId, params)).data;
+  }
+}
+
+/**
  * Options for `getAvailability`.
  */
 export type GetAvailabilityParams = RequestOptions & NonNullable<operations["getAvailability"]["parameters"]["query"]>;
@@ -4162,6 +4917,7 @@ export class Resources {
   #services: ServicesResource | undefined;
   #resources: ResourcesResource | undefined;
   #unresolvedRequests: UnresolvedRequestsResource | undefined;
+  #documents: DocumentsResource | undefined;
   #availability: AvailabilityResource | undefined;
   #sandbox: SandboxResource | undefined;
 
@@ -4297,6 +5053,15 @@ export class Resources {
   }
 
   /**
+   * Read and write the knowledge base the assistant answers callers from: text notes, uploaded files
+   * and imported websites, their indexing status, and whether the assistant uses each one.
+   */
+  get documents(): DocumentsResource {
+    this.#documents ??= new DocumentsResource(this.#requester);
+    return this.#documents;
+  }
+
+  /**
    * Find bookable windows before creating an appointment.
    */
   get availability(): AvailabilityResource {
@@ -4331,6 +5096,7 @@ export const SURFACE = {
   services: ["create", "delete", "get", "list", "update"],
   resources: ["create", "delete", "get", "list", "update"],
   unresolvedRequests: ["get", "list", "teach", "update"],
+  documents: ["create", "delete", "deletePage", "discoverPages", "get", "getFile", "getText", "list", "listPages", "replace", "update"],
   availability: ["get"],
   sandbox: ["createCall", "listScenarios", "reset"],
 } as const;

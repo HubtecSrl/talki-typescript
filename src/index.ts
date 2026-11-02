@@ -21,6 +21,7 @@ export {
   ServerError,
   TalkiError,
 } from "./errors.js";
+export { type FileSource, type ToFileOptions, toFile } from "./files.js";
 export { API_VERSION } from "./generated/api-version.js";
 export type * from "./generated/models.js";
 export * from "./generated/resources.js";

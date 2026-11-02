@@ -66,12 +66,12 @@ export function newIdempotencyKey(): string {
 
 export type Fetch = (input: string, init: RequestInit) => Promise<Response>;
 
-/** A request as the transport sends it: the body is text, so it can be sent again. */
+/** A request as the transport sends it: the body is text or a form, so it can be sent again. */
 export interface OutgoingRequest {
   method: string;
   url: string;
   headers: Headers;
-  body?: string;
+  body?: string | FormData;
   /** Milliseconds each attempt may take, answer body included. */
   timeout: number;
   signal?: AbortSignal | undefined;

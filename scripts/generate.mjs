@@ -9,7 +9,8 @@
  *   package.json). A string whose values are listed in `x-extensible-enum`,
  *   or an enum whose description says new values may be added, becomes a
  *   union of those values and `(string & {})`, so an editor suggests them and
- *   a new one still type-checks.
+ *   a new one still type-checks. A `format: binary` string is a `Blob`: what
+ *   a method returns for a file, and takes in a `multipart/form-data` form.
  * - `models.ts`: one alias per schema (`Call`, `AppointmentCreate`, …).
  * - `resources.ts`: one class per tag (`talki.calls`, …) with one method per
  *   operation, its `withRawResponse` twin, and the `Resources` base `Talki`
@@ -20,6 +21,10 @@
  * `calls` is `list`, `getCallTranscript` is `getTranscript`), unless the noun
  * is the first word, the verb (`tagContact` in `tags`). Operations of one tag
  * that would share a name both keep their own (`exportCall`, `exportCalls`).
+ *
+ * A request body is JSON, sent as `body`. One that may also be sent as
+ * `multipart/form-data` (a file upload) takes `form` instead of `body`, typed
+ * from its multipart schema.
  */
 
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
@@ -63,12 +68,16 @@ const RESERVED = new Set([
   "Pkce",
   "Resources",
   "WebhookEvent",
+  "FileSource",
+  "ToFileOptions",
 ]);
 // The options a method takes besides the query: none may be a query parameter's name.
-const OPTION_NAMES = new Set(["body", "signal", "talkiVersion", "idempotencyKey", "ifMatch"]);
+const OPTION_NAMES = new Set(["body", "form", "signal", "talkiVersion", "idempotencyKey", "ifMatch"]);
 const HEADER_OPTIONS = { "Idempotency-Key": "idempotencyKey", "If-Match": "ifMatch" };
 const METHODS = ["get", "post", "put", "patch", "delete"];
 const EXTENSIBLE = /\bnew \w+ may be added\b/i;
+const JSON_TYPE = "application/json";
+const FORM_TYPE = "multipart/form-data";
 
 function fail(message) {
   console.error(`generate: ${message}`);
@@ -156,6 +165,9 @@ async function schemaTypes(spec) {
     // A field with a default may be left out of a request.
     defaultNonNullable: false,
     transform(schema) {
+      if (schema.type === "string" && schema.format === "binary") {
+        return ts.factory.createTypeReferenceNode("Blob");
+      }
       if (Array.isArray(schema["x-extensible-enum"])) {
         return openUnion(schema["x-extensible-enum"], nullable(schema));
       }
@@ -222,7 +234,10 @@ function describeOperation(spec, { path, method, operation, parameters }) {
   if (parameters.some((each) => each.in === "cookie")) fail(`${id}: cookie parameters are not supported`);
 
   const requestBody = operation.requestBody ? resolve(spec, operation.requestBody) : null;
-  if (requestBody && !requestBody.content?.["application/json"]) fail(`${id}: only JSON bodies are supported`);
+  const bodyTypes = Object.keys(requestBody?.content ?? {});
+  if (requestBody && !bodyTypes.includes(JSON_TYPE)) fail(`${id}: a body that cannot be JSON is not supported`);
+  const other = bodyTypes.find((type) => type !== JSON_TYPE && type !== FORM_TYPE);
+  if (other) fail(`${id}: ${other} bodies are not supported`);
 
   const success = [];
   const responseTypes = [];
@@ -266,6 +281,7 @@ function describeOperation(spec, { path, method, operation, parameters }) {
     query,
     headers,
     body: requestBody ? (requestBody.required ? "required" : "optional") : null,
+    form: bodyTypes.includes(FORM_TYPE),
     bodyDescription: requestBody?.description ?? "",
     success: success.sort((a, b) => a - b),
     binary,
@@ -278,13 +294,27 @@ function paramsType(op, typeName) {
   const parts = ["RequestOptions"];
   if (op.query.length) parts.push(`NonNullable<operations["${op.id}"]["parameters"]["query"]>`);
   const extras = [];
-  if (op.body) {
-    const type = `NonNullable<operations["${op.id}"]["requestBody"]>["content"]["application/json"]`;
-    extras.push(
-      `${comment([op.bodyDescription || "The request body, as the API reference describes it."], "  ")}  body${
-        op.body === "required" ? "" : "?"
-      }: ${op.body === "required" ? type : `${type} | undefined`};`,
+  const content = (type) => `NonNullable<operations["${op.id}"]["requestBody"]>["content"]["${type}"]`;
+  const field = (name, type, text, indent) =>
+    `${comment(text, indent)}${indent}${name}${op.body === "required" ? "" : "?"}: ${
+      op.body === "required" ? type : `${type} | undefined`
+    };`;
+  const bodyText = op.bodyDescription || "The request body, as the API reference describes it.";
+  if (op.body && op.form) {
+    // One or the other: the JSON body, or the multipart form.
+    const json = field("body", content(JSON_TYPE), [bodyText, "", "Sent as JSON. Or pass `form`."], "      ");
+    const form = field(
+      "form",
+      content(FORM_TYPE),
+      [
+        "The request body as `multipart/form-data`, instead of `body`: a file as a `File`, or",
+        "`toFile(data, name)`, whose name the API reads; an array as one field per item.",
+      ],
+      "      ",
     );
+    parts.push(`(\n  | {\n${json}\n      form?: undefined;\n    }\n  | {\n${form}\n      body?: undefined;\n    }\n)`);
+  } else if (op.body) {
+    extras.push(field("body", content(JSON_TYPE), [bodyText], "  "));
   }
   for (const [option, parameter] of Object.entries(op.headers)) {
     const text =
@@ -351,6 +381,7 @@ function resources(spec, operations) {
       `    query: [${op.query.map((each) => JSON.stringify(each.name)).join(", ")}],`,
       `    headers: {${headers ? ` ${headers} ` : ""}},`,
       `    body: ${op.body ? JSON.stringify(op.body) : "null"},`,
+      `    form: ${op.form},`,
       `    success: [${op.success.join(", ")}],`,
       `    binary: ${op.binary},`,
       "  },",

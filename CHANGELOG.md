@@ -5,6 +5,25 @@ version each release targets by default is `API_VERSION`.
 
 ## Unreleased
 
+## 0.2.0-beta.1
+
+Still API version `2026-10-01`; the additions below are additive.
+
+- `talki.documents`: the knowledge base the assistant answers from. List,
+  read (`get`, `getText`, `getFile` for the original, `listPages` for a
+  website), write text notes, files and websites (`create`, `replace`,
+  `update`, `delete`, `deletePage`), and `discoverPages` to find a website's
+  pages before adding it. Reading needs `knowledge:read`; writing needs
+  `knowledge:write`, an opt-in scope.
+- File uploads: an operation that takes a file accepts `form` instead of
+  `body`, sent as `multipart/form-data`. `toFile(source, name)` makes the
+  `File` from bytes, text, a `Blob` or a stream.
+- A download that names its file in `Content-Disposition` resolves to a
+  `File` of that name (less any directory) instead of a plain `Blob`.
+- `Account` and `AccountUpdate`: `call_auto_archive_days`.
+- `ErrorDetail.code` lists two new codes, `document_not_ready` and
+  `unsupported_file_type`.
+
 ## 0.1.0-beta.2
 
 No changes to the package. The first release published from CI by npm trusted

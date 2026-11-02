@@ -5,6 +5,7 @@
  */
 
 import { ApiError, errorFrom, REQUEST_ID_HEADER } from "./errors.js";
+import { filenameOf, formDataOf } from "./files.js";
 import type { TokenRefresh, TokenSet } from "./oauth.js";
 import { type ListBody, Page } from "./pagination.js";
 import type { Answer, OutgoingRequest, Transport } from "./transport.js";
@@ -29,6 +30,8 @@ export interface Operation {
   /** Header parameters: the option's name, then the header's. */
   readonly headers: Readonly<Record<string, string>>;
   readonly body: "required" | "optional" | null;
+  /** Whether the body may also be sent as `multipart/form-data`, passed as `form`. */
+  readonly form: boolean;
   /** The success statuses the operation declares. */
   readonly success: readonly number[];
   /** Whether a success is a file (a PDF, a spreadsheet, audio) rather than JSON. */
@@ -118,12 +121,19 @@ export class Core implements Requester {
       const value = params[option];
       if (typeof value === "string") headers.set(header, value);
     }
-    let body: string | undefined;
-    if (operation.body !== null && params.body !== undefined) {
+    let body: string | FormData | undefined;
+    const form = operation.form ? params.form : undefined;
+    if (form !== undefined && params.body !== undefined) {
+      throw new TypeError(`${operation.method} ${operation.path} takes a body or a form, not both.`);
+    }
+    if (form !== undefined) {
+      // No Content-Type: fetch writes it, with the form's boundary.
+      body = formDataOf(form as object);
+    } else if (operation.body !== null && params.body !== undefined) {
       headers.set("Content-Type", "application/json");
       body = JSON.stringify(params.body);
     } else if (operation.body === "required") {
-      throw new TypeError(`${operation.method} ${operation.path} needs a body.`);
+      throw new TypeError(`${operation.method} ${operation.path} needs a body${operation.form ? " or a form" : ""}.`);
     }
     const signal = params.signal instanceof AbortSignal ? params.signal : undefined;
     return {
@@ -182,6 +192,11 @@ function read<T>(operation: Operation, answer: Answer): T {
   if (status === 204 || body.length === 0) return undefined as T;
   if (operation.binary) {
     const type = headers.get("content-type") ?? "application/octet-stream";
+    const name = filenameOf(headers.get("content-disposition"));
+    // A `File` is a `Blob` with the name the answer gives it.
+    if (name !== null && typeof File === "function") {
+      return new File([body as Uint8Array<ArrayBuffer>], name, { type }) as T;
+    }
     return new Blob([body as Uint8Array<ArrayBuffer>], { type }) as T;
   }
   try {
