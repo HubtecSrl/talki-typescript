@@ -3676,6 +3676,7 @@ export interface webhooks {
                      *         "object": {
                      *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *           "kind": "blocked",
                      *           "label": "Telemarketing",
                      *           "created_at": "2026-10-02T09:10:00Z",
@@ -3807,6 +3808,7 @@ export interface webhooks {
                      *         "object": {
                      *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *           "kind": "blocked",
                      *           "label": "Telemarketing",
                      *           "created_at": "2026-10-02T09:10:00Z",
@@ -3938,6 +3940,7 @@ export interface webhooks {
                      *         "object": {
                      *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *           "kind": "blocked",
                      *           "label": "Telemarketing",
                      *           "created_at": "2026-10-02T09:10:00Z",
@@ -4077,6 +4080,7 @@ export interface webhooks {
                      *           "instructions": null,
                      *           "voice": "Sulafat",
                      *           "answers_as": "business",
+                     *           "call_auto_archive_days": null,
                      *           "greeting": null,
                      *           "call_opening": null,
                      *           "multilingual_enabled": true,
@@ -5359,6 +5363,7 @@ export interface webhooks {
                      *           "instructions": null,
                      *           "voice": "Sulafat",
                      *           "answers_as": "business",
+                     *           "call_auto_archive_days": null,
                      *           "greeting": null,
                      *           "call_opening": null,
                      *           "multilingual_enabled": true,
@@ -6569,6 +6574,7 @@ export interface webhooks {
                      *           "status_error": null,
                      *           "enabled": true,
                      *           "faq": false,
+                     *           "file_available": false,
                      *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *           "created_at": "2026-10-28T09:12:40Z",
                      *           "updated_at": "2026-10-28T09:12:40Z"
@@ -6708,6 +6714,7 @@ export interface webhooks {
                      *           "status_error": null,
                      *           "enabled": true,
                      *           "faq": false,
+                     *           "file_available": false,
                      *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *           "created_at": "2026-10-28T09:12:40Z",
                      *           "updated_at": "2026-10-28T09:12:40Z"
@@ -6847,6 +6854,7 @@ export interface webhooks {
                      *           "status_error": null,
                      *           "enabled": true,
                      *           "faq": false,
+                     *           "file_available": false,
                      *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *           "created_at": "2026-10-28T09:12:40Z",
                      *           "updated_at": "2026-10-28T09:12:40Z"
@@ -9185,7 +9193,7 @@ export interface components {
             data: components["schemas"]["Call"][];
             /**
              * Next Cursor
-             * @description Opaque position after this page. In the default newest-first list this is a page pointer and is null on the last page. With `sync=true` it is your position in the change feed and is present on every page that returned data, including the last one — store it and pass it back as `cursor` to receive only what has been recorded since. Null when the page was empty. Do not parse it, and do not use a cursor from one mode in the other.
+             * @description Opaque position after this page. In the default newest-first list this is a page pointer and is null on the last page. With `sync=true` it is your position in the change feed and is present on every page that returned data, including the last one — store it and pass it back as `cursor` to receive only what has been recorded since. An empty page answers null, so keep the cursor you hold; only a cursor issued up to 2026-11-04 gets its replacement there. Do not parse it, and do not use a cursor from one mode in the other.
              */
             next_cursor: string | null;
             /**
@@ -11496,6 +11504,7 @@ export interface operations {
                      *       "instructions": null,
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
+                     *       "call_auto_archive_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -11757,6 +11766,7 @@ export interface operations {
                      *       "instructions": "Always use the formal register. Never quote prices for colour treatments.",
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
+                     *       "call_auto_archive_days": null,
                      *       "greeting": "Come posso aiutarla?",
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -12040,6 +12050,7 @@ export interface operations {
                      *       "instructions": null,
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
+                     *       "call_auto_archive_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -16368,7 +16379,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContactList"];
                 };
             };
-            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            /** @description `phone` is not a phone number, or another parameter is invalid (`invalid_parameter`). Or the `cursor` is not one this mode issued: altered, from another feed, or from the other mode, since a search answers with a list cursor and the feed with a change-feed cursor (`invalid_cursor`). `Talki-Version` may also name an unsupported version (`unsupported_version`). */
             400: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -16381,7 +16392,7 @@ export interface operations {
                      *       "error": {
                      *         "type": "invalid_request",
                      *         "code": "invalid_parameter",
-                     *         "message": "One or more request values are invalid.",
+                     *         "message": "`phone` must be a phone number, E.164 or national.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -20344,6 +20355,7 @@ export interface operations {
                      *           "status_error": null,
                      *           "enabled": true,
                      *           "faq": false,
+                     *           "file_available": false,
                      *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *           "created_at": "2026-10-28T09:12:40Z",
                      *           "updated_at": "2026-10-28T09:12:40Z"
@@ -20569,6 +20581,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": true,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-28T09:12:40Z"
@@ -20834,6 +20847,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": true,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-28T09:12:40Z"
@@ -21056,6 +21070,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": true,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-29T15:03:11Z"
@@ -21553,6 +21568,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": false,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-28T09:12:40Z"
@@ -27355,6 +27371,7 @@ export interface operations {
                      *         {
                      *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *           "kind": "blocked",
                      *           "label": "Telemarketing",
                      *           "created_at": "2026-10-02T09:10:00Z",
@@ -27572,6 +27589,7 @@ export interface operations {
                      * @example {
                      *       "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *       "phone_number": "+393401234567",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *       "kind": "blocked",
                      *       "label": "Telemarketing",
                      *       "created_at": "2026-10-02T09:10:00Z",
@@ -27597,6 +27615,7 @@ export interface operations {
                      * @example {
                      *       "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *       "phone_number": "+393401234567",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *       "kind": "blocked",
                      *       "label": "Telemarketing",
                      *       "created_at": "2026-10-02T09:10:00Z",
@@ -27818,6 +27837,7 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "id": "f1a8d3c6-4e27-4b90-8c5d-2e7b9a0f6d13",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *           "phone_number": "+393401234567",
                      *           "label": "Telemarketing",
                      *           "attempted_at": "2026-10-05T11:47:03Z"
@@ -28242,6 +28262,7 @@ export interface operations {
                      * @example {
                      *       "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *       "phone_number": "+393401234567",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *       "kind": "vip",
                      *       "label": "Supplier",
                      *       "created_at": "2026-10-02T09:10:00Z",
@@ -28448,7 +28469,7 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "url": "https://salonebellini.it"
+                 *       "url": "https://www.example.com"
                  *     }
                  */
                 "application/json": components["schemas"]["DocumentDiscover"];

@@ -77,9 +77,7 @@ What changes for your code:
 - A change-feed cursor now names its feed, and one from another feed is refused
   with `400 invalid_cursor`. A cursor stored earlier names none: any feed takes
   it until 2027-02-01, after which it is refused and the walk has to start again.
-  The next page with rows replaces it, but an empty page returns no cursor, so a
-  feed that stays quiet keeps the old one: before that date, start again any walk
-  whose stored cursor has not changed since this release.
+  The first page read with it returns a new one to store, an empty page included.
 - Sandbox scenarios list `call.ringing` in their `events` and send it, so a test
   asserting the exact list needs updating, and other events can come too, such as
   `pending_contact.created`. `talki.sandbox.createCall()` returns `caller_phone`
