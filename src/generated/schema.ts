@@ -354,7 +354,7 @@ export interface paths {
         };
         /**
          * List contact changes
-         * @description Walk the curated-contact change feed in commit order. Requires `contacts:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         * @description Walk the curated-contact change feed in commit order. With `phone` or `tag_id`, find contacts instead: newest first, not resumable as a sync. Requires `contacts:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
          */
         get: operations["listContacts"];
         /**
@@ -1184,7 +1184,7 @@ export interface paths {
         put?: never;
         /**
          * Reset the sandbox
-         * @description Delete this sandbox's history and rebuild it from a fixed seed. Credentials, installations and services survive. Requires a developer sandbox; answers 404 on a real account. Limited to 6 requests per minute per account (API key) or per installation (OAuth).
+         * @description Delete this sandbox's history and rebuild it from a fixed seed. API keys, installations, services and locations survive. Webhook endpoints do not: the account's endpoints and their deliveries are deleted and replaced by the seed's one paused endpoint, and the account events still queued for an app are dropped. Register your endpoints again after a reset. Requires a developer sandbox; answers 404 on a real account. Limited to 6 requests per minute per account (API key) or per installation (OAuth).
          */
         post: operations["resetSandbox"];
         delete?: never;
@@ -1194,12 +1194,7290 @@ export interface paths {
         trace?: never;
     };
 }
-export type webhooks = Record<string, never>;
+export interface webhooks {
+    "call.ringing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * call.ringing
+         * @description An inbound call reached the assistant, which is about to pick up. Not every ring is followed by a Call: a caller who hangs up before the pickup, or a call nobody says anything on, leaves none. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `calls:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "call.ringing",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "call_id": "b7a41f0e-3c52-4d18-9e6a-2f8c1d7e5a34",
+                     *         "location_id": "2c9e7b1a-6d40-4f35-8a12-9b3e5c7d1f60",
+                     *         "caller": {
+                     *           "contact_id": "8e1d3f5a-2b64-4c97-a0d8-6f4b2e9c7a15",
+                     *           "phone_number": "+393331112233",
+                     *           "display_name": "Mario Rossi",
+                     *           "vip": true
+                     *         },
+                     *         "started_at": "2026-09-22T15:02:11.482913Z"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "call.ringing";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Call Id
+                             * @description The id the Call will have once it ends, which ties this event to the `call.ended` that follows. `GET /v1/calls/{id}` answers 404 until then.
+                             */
+                            call_id: string;
+                            /**
+                             * Location Id
+                             * @description The location whose Talki number the caller dialled (`GET /v1/locations`).
+                             */
+                            location_id: string;
+                            /**
+                             * CallRingingCaller
+                             * @description Who is calling, as far as Talki may say.
+                             */
+                            caller: {
+                                /**
+                                 * Contact Id
+                                 * @description Talki contact this number resolves to, or null if the account has no contact for it. Stable per (account, number).
+                                 */
+                                contact_id: string | null;
+                                /**
+                                 * Phone Number
+                                 * @description Caller's number in E.164. Null when the CallerID was withheld.
+                                 */
+                                phone_number: string | null;
+                                /**
+                                 * Display Name
+                                 * @description Contact name, only when the account owner entered it by hand or imported it from their own address book. Null otherwise.
+                                 */
+                                display_name: string | null;
+                                /**
+                                 * Vip
+                                 * @description Whether the number is on the VIP list of the call's location (`/v1/caller_rules`). Never true without a number.
+                                 */
+                                vip: boolean;
+                            };
+                            /**
+                             * Started At
+                             * Format: date-time
+                             * @description When the call arrived, RFC 3339 UTC. The Call's `started_at` is the same.
+                             */
+                            started_at: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "call.ended": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * call.ended
+         * @description A call ends and its summary is ready. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `calls:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "call.ended",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "caller": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "phone_number": "+393331234567",
+                     *             "display_name": "Giulia Bianchi"
+                     *           },
+                     *           "started_at": "2026-09-15T09:14:31Z",
+                     *           "answered_at": "2026-09-15T09:14:34Z",
+                     *           "ended_at": "2026-09-15T09:18:02Z",
+                     *           "duration_seconds": 208,
+                     *           "summary": "Giulia booked a haircut for the morning of 8 October.",
+                     *           "appointment_ids": [
+                     *             "a3fe45ee-572f-4677-b1dd-f36c21bb47de"
+                     *           ],
+                     *           "outcome": "booked",
+                     *           "transfers": [],
+                     *           "appointment_changes": [],
+                     *           "unresolved_request_ids": [],
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "read_at": "2026-09-15T10:02:11Z",
+                     *           "archived_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "call.ended";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Call object, as the REST API returns it. */
+                            object: components["schemas"]["Call"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "call.transferred": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * call.transferred
+         * @description The assistant transferred a call to a person. Sent when the call ends, once per transfer. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `calls:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "call.transferred",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "caller": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "phone_number": "+393331234567",
+                     *             "display_name": "Giulia Bianchi"
+                     *           },
+                     *           "started_at": "2026-09-15T09:14:31Z",
+                     *           "answered_at": "2026-09-15T09:14:34Z",
+                     *           "ended_at": "2026-09-15T09:18:02Z",
+                     *           "duration_seconds": 208,
+                     *           "summary": "Giulia booked a haircut for the morning of 8 October.",
+                     *           "appointment_ids": [
+                     *             "a3fe45ee-572f-4677-b1dd-f36c21bb47de"
+                     *           ],
+                     *           "outcome": "transferred",
+                     *           "transfers": [
+                     *             {
+                     *               "target_label": "Reception",
+                     *               "at": "2026-09-22T15:03:30.512417Z"
+                     *             }
+                     *           ],
+                     *           "appointment_changes": [],
+                     *           "unresolved_request_ids": [],
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "read_at": "2026-09-15T10:02:11Z",
+                     *           "archived_at": null
+                     *         },
+                     *         "target_label": "Reception",
+                     *         "transferred_at": "2026-09-22T15:03:30.512417Z"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "call.transferred";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Call object, as the REST API returns it. */
+                            object: components["schemas"]["Call"];
+                            /**
+                             * Target Label
+                             * @description The destination the assistant transferred to, by the name the owner gave it in Talki (e.g. `Reception`). Never the number behind it. Compare it case-insensitively.
+                             */
+                            target_label: string;
+                            /**
+                             * Transferred At
+                             * @description When the call was handed over, RFC 3339 UTC.
+                             */
+                            transferred_at: string | null;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "call.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * call.updated
+         * @description A call is marked read or unread, archived or returned to the inbox, by hand or by the owner's auto-archive window. One event per call. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `calls:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "call.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "caller": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "phone_number": "+393331234567",
+                     *             "display_name": "Giulia Bianchi"
+                     *           },
+                     *           "started_at": "2026-09-15T09:14:31Z",
+                     *           "answered_at": "2026-09-15T09:14:34Z",
+                     *           "ended_at": "2026-09-15T09:18:02Z",
+                     *           "duration_seconds": 208,
+                     *           "summary": "Giulia booked a haircut for the morning of 8 October.",
+                     *           "appointment_ids": [
+                     *             "a3fe45ee-572f-4677-b1dd-f36c21bb47de"
+                     *           ],
+                     *           "outcome": "booked",
+                     *           "transfers": [],
+                     *           "appointment_changes": [],
+                     *           "unresolved_request_ids": [],
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "read_at": "2026-09-15T10:02:11Z",
+                     *           "archived_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "call.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Call object, as the REST API returns it. */
+                            object: components["schemas"]["Call"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "call.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * call.deleted
+         * @description A call is deleted, in the Talki app or through the API. `data.object` is the call as it was; the call leaves the call log and the change feed. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `calls:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "call.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "caller": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "phone_number": "+393331234567",
+                     *             "display_name": "Giulia Bianchi"
+                     *           },
+                     *           "started_at": "2026-09-15T09:14:31Z",
+                     *           "answered_at": "2026-09-15T09:14:34Z",
+                     *           "ended_at": "2026-09-15T09:18:02Z",
+                     *           "duration_seconds": 208,
+                     *           "summary": "Giulia booked a haircut for the morning of 8 October.",
+                     *           "appointment_ids": [
+                     *             "a3fe45ee-572f-4677-b1dd-f36c21bb47de"
+                     *           ],
+                     *           "outcome": "booked",
+                     *           "transfers": [],
+                     *           "appointment_changes": [],
+                     *           "unresolved_request_ids": [],
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "read_at": "2026-09-15T10:02:11Z",
+                     *           "archived_at": null
+                     *         },
+                     *         "deleted": {
+                     *           "unresolved_request_ids": [
+                     *             "6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13"
+                     *           ],
+                     *           "pending_contact_ids": []
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "call.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Call object, as the REST API returns it. */
+                            object: components["schemas"]["Call"];
+                            /**
+                             * CallDeletedRelated
+                             * @description What was deleted with the call.
+                             */
+                            deleted: {
+                                /**
+                                 * Unresolved Request Ids
+                                 * @description The unresolved requests deleted with the call. They send no event of their own: delete them from your copy.
+                                 */
+                                unresolved_request_ids: string[];
+                                /**
+                                 * Pending Contact Ids
+                                 * @description The pending contacts deleted with the call. Each also sends `pending_contact.deleted` with `outcome` `discarded`.
+                                 */
+                                pending_contact_ids: string[];
+                            };
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "appointment.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * appointment.created
+         * @description A new Talki appointment is committed. A booking made on a call arrives while the call is running, with `call_id` null. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `appointments:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "appointment.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "a3fe45ee-572f-4677-b1dd-f36c21bb47de",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "status": "active",
+                     *           "client": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "name": "Giulia",
+                     *             "surname": "Bianchi",
+                     *             "phone_number": "+393331234567"
+                     *           },
+                     *           "service": {
+                     *             "id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *             "name": "Haircut"
+                     *           },
+                     *           "start_at": "2026-10-08T09:00:00Z",
+                     *           "end_at": "2026-10-08T09:30:00Z",
+                     *           "quantity": 1,
+                     *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "notes": "First visit",
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "updated_at": "2026-09-15T09:18:03Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "appointment.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Appointment object, as the REST API returns it. */
+                            object: components["schemas"]["Appointment"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "appointment.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * appointment.updated
+         * @description An appointment is edited, moved or restored; also, with `call_id` null, for each appointment booked by a call that is deleted. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `appointments:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "appointment.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "a3fe45ee-572f-4677-b1dd-f36c21bb47de",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "status": "active",
+                     *           "client": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "name": "Giulia",
+                     *             "surname": "Bianchi",
+                     *             "phone_number": "+393331234567"
+                     *           },
+                     *           "service": {
+                     *             "id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *             "name": "Haircut"
+                     *           },
+                     *           "start_at": "2026-10-08T09:00:00Z",
+                     *           "end_at": "2026-10-08T09:30:00Z",
+                     *           "quantity": 1,
+                     *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "notes": "First visit",
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "updated_at": "2026-09-15T09:18:03Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "appointment.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Appointment object, as the REST API returns it. */
+                            object: components["schemas"]["Appointment"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "appointment.cancelled": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * appointment.cancelled
+         * @description An appointment is cancelled. `data.object.status` is `cancelled`. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `appointments:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "appointment.cancelled",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "a3fe45ee-572f-4677-b1dd-f36c21bb47de",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "status": "cancelled",
+                     *           "client": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "name": "Giulia",
+                     *             "surname": "Bianchi",
+                     *             "phone_number": "+393331234567"
+                     *           },
+                     *           "service": {
+                     *             "id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *             "name": "Haircut"
+                     *           },
+                     *           "start_at": "2026-10-08T09:00:00Z",
+                     *           "end_at": "2026-10-08T09:30:00Z",
+                     *           "quantity": 1,
+                     *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "notes": "First visit",
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "updated_at": "2026-09-15T09:18:03Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "appointment.cancelled";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Appointment object, as the REST API returns it. */
+                            object: components["schemas"]["Appointment"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "contact.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * contact.created
+         * @description A curated contact is added. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "contact.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *           "phone_number": "+393331234567",
+                     *           "first_name": "Giulia",
+                     *           "last_name": "Bianchi",
+                     *           "display_name": "Giulia Bianchi",
+                     *           "notes": "Prefers morning appointments",
+                     *           "last_call_at": "2026-09-15T09:14:31Z",
+                     *           "call_count": 3,
+                     *           "created_at": "2026-08-20T12:00:00Z",
+                     *           "updated_at": "2026-09-15T09:18:03Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "contact.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Contact object, as the REST API returns it. */
+                            object: components["schemas"]["Contact"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "contact.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * contact.updated
+         * @description A curated contact changes. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "contact.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *           "phone_number": "+393331234567",
+                     *           "first_name": "Giulia",
+                     *           "last_name": "Bianchi",
+                     *           "display_name": "Giulia Bianchi",
+                     *           "notes": "Prefers morning appointments",
+                     *           "last_call_at": "2026-09-15T09:14:31Z",
+                     *           "call_count": 3,
+                     *           "created_at": "2026-08-20T12:00:00Z",
+                     *           "updated_at": "2026-09-15T09:18:03Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "contact.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Contact object, as the REST API returns it. */
+                            object: components["schemas"]["Contact"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "contact.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * contact.deleted
+         * @description A curated contact is deleted, by a person, an app, or the data retention after twelve months without a call. `data.object` is the contact as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "contact.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *           "phone_number": "+393331234567",
+                     *           "first_name": "Giulia",
+                     *           "last_name": "Bianchi",
+                     *           "display_name": "Giulia Bianchi",
+                     *           "notes": "Prefers morning appointments",
+                     *           "last_call_at": "2026-09-15T09:14:31Z",
+                     *           "call_count": 3,
+                     *           "created_at": "2026-08-20T12:00:00Z",
+                     *           "updated_at": "2026-09-15T09:18:03Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "contact.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Contact object, as the REST API returns it. */
+                            object: components["schemas"]["Contact"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "pending_contact.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * pending_contact.created
+         * @description The assistant hears a new caller's name, waiting for the owner. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "pending_contact.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68",
+                     *           "phone_number": "+393334445555",
+                     *           "first_name": "Giulia",
+                     *           "last_name": null,
+                     *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "created_at": "2026-10-06T15:02:44Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "pending_contact.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The PendingContact object, as the REST API returns it. */
+                            object: components["schemas"]["PendingContact"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "pending_contact.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * pending_contact.updated
+         * @description A later call refreshes a pending contact. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "pending_contact.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68",
+                     *           "phone_number": "+393334445555",
+                     *           "first_name": "Giulia",
+                     *           "last_name": null,
+                     *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "created_at": "2026-10-06T15:02:44Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "pending_contact.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The PendingContact object, as the REST API returns it. */
+                            object: components["schemas"]["PendingContact"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "pending_contact.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * pending_contact.deleted
+         * @description A pending contact is approved or discarded. `data.object` is the pending contact as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "pending_contact.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68",
+                     *           "phone_number": "+393334445555",
+                     *           "first_name": "Giulia",
+                     *           "last_name": null,
+                     *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "created_at": "2026-10-06T15:02:44Z"
+                     *         },
+                     *         "outcome": "approved"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "pending_contact.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The PendingContact object, as the REST API returns it. */
+                            object: components["schemas"]["PendingContact"];
+                            /**
+                             * Outcome
+                             * @description `approved`: it became a contact, which sends its own `contact.*` event. `discarded`: the owner or an app discarded it, the data retention removed it, or the call that proposed it was deleted.
+                             * @enum {string}
+                             */
+                            outcome: "approved" | "discarded";
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "tag.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * tag.created
+         * @description A tag is created. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "tag.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014",
+                     *           "name": "Suppliers",
+                     *           "color": "#e0867a",
+                     *           "contact_ids": [
+                     *             "8fbb25f2-4f3b-4496-8aea-f0fc66de512d"
+                     *           ],
+                     *           "created_at": "2026-10-01T08:00:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "tag.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Tag object, as the REST API returns it. */
+                            object: components["schemas"]["Tag"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "tag.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * tag.updated
+         * @description A tag is renamed, put on or taken off a contact, or a contact carrying it is deleted. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "tag.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014",
+                     *           "name": "Suppliers",
+                     *           "color": "#e0867a",
+                     *           "contact_ids": [
+                     *             "8fbb25f2-4f3b-4496-8aea-f0fc66de512d"
+                     *           ],
+                     *           "created_at": "2026-10-01T08:00:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "tag.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Tag object, as the REST API returns it. */
+                            object: components["schemas"]["Tag"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "tag.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * tag.deleted
+         * @description A tag is deleted. `data.object` is the tag as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "tag.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014",
+                     *           "name": "Suppliers",
+                     *           "color": "#e0867a",
+                     *           "contact_ids": [
+                     *             "8fbb25f2-4f3b-4496-8aea-f0fc66de512d"
+                     *           ],
+                     *           "created_at": "2026-10-01T08:00:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "tag.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Tag object, as the REST API returns it. */
+                            object: components["schemas"]["Tag"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "caller_rule.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * caller_rule.created
+         * @description A VIP or blocked number is added. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "caller_rule.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
+                     *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "kind": "blocked",
+                     *           "label": "Telemarketing",
+                     *           "created_at": "2026-10-02T09:10:00Z",
+                     *           "updated_at": "2026-10-02T09:10:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "caller_rule.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The CallerRule object, as the REST API returns it. */
+                            object: components["schemas"]["CallerRule"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "caller_rule.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * caller_rule.updated
+         * @description A VIP or blocked number is changed, or moved between the two lists. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "caller_rule.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
+                     *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "kind": "blocked",
+                     *           "label": "Telemarketing",
+                     *           "created_at": "2026-10-02T09:10:00Z",
+                     *           "updated_at": "2026-10-02T09:10:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "caller_rule.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The CallerRule object, as the REST API returns it. */
+                            object: components["schemas"]["CallerRule"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "caller_rule.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * caller_rule.deleted
+         * @description A VIP or blocked number is removed. `data.object` is the rule as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `contacts:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "caller_rule.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
+                     *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "kind": "blocked",
+                     *           "label": "Telemarketing",
+                     *           "created_at": "2026-10-02T09:10:00Z",
+                     *           "updated_at": "2026-10-02T09:10:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "caller_rule.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The CallerRule object, as the REST API returns it. */
+                            object: components["schemas"]["CallerRule"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "account.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * account.updated
+         * @description A writable field of the account, `onboarding_completed` or `phone_number` changes at the main location, or `call_auto_archive_days` changes. `data.object` is the account at the main location. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "account.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "business_name": "Studio Bellini",
+                     *           "timezone": "Europe/Rome",
+                     *           "livemode": true,
+                     *           "test": false,
+                     *           "business_information": "Free parking in the courtyard behind the salon. We do not sell gift cards.",
+                     *           "instructions": null,
+                     *           "voice": "Sulafat",
+                     *           "answers_as": "business",
+                     *           "call_auto_archive_days": null,
+                     *           "greeting": null,
+                     *           "call_opening": null,
+                     *           "multilingual_enabled": true,
+                     *           "languages": {
+                     *             "primary": "it",
+                     *             "supported": [
+                     *               "it",
+                     *               "en",
+                     *               "fr",
+                     *               "de",
+                     *               "es"
+                     *             ]
+                     *           },
+                     *           "service_area": "Bergamo e provincia",
+                     *           "transfer_numbers": [],
+                     *           "bookings_enabled": true,
+                     *           "unresolved_requests_enabled": true,
+                     *           "remember_callers": true,
+                     *           "store_transcripts": true,
+                     *           "notify_on_every_call": true,
+                     *           "notify_on_incoming_call": false,
+                     *           "phone_number": "+390350000001",
+                     *           "forwarding_number": "+393331112222",
+                     *           "line": {
+                     *             "phone_number": "+390350000001",
+                     *             "forwarding_number": "+393331112222",
+                     *             "status": "verified",
+                     *             "verified_at": "2026-10-07T09:30:12Z"
+                     *           },
+                     *           "multi_sede": true,
+                     *           "onboarding_completed": true
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "account.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Account object, as the REST API returns it. */
+                            object: components["schemas"]["Account"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "working_hours.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * working_hours.updated
+         * @description The main location's weekly opening hours change. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "working_hours.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "slots": [
+                     *             {
+                     *               "days": [
+                     *                 2,
+                     *                 3,
+                     *                 4,
+                     *                 5
+                     *               ],
+                     *               "start": "09:00",
+                     *               "end": "13:00"
+                     *             },
+                     *             {
+                     *               "days": [
+                     *                 2,
+                     *                 3,
+                     *                 4,
+                     *                 5
+                     *               ],
+                     *               "start": "14:30",
+                     *               "end": "19:00"
+                     *             },
+                     *             {
+                     *               "days": [
+                     *                 6
+                     *               ],
+                     *               "start": "09:00",
+                     *               "end": "17:00"
+                     *             }
+                     *           ]
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "working_hours.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The WorkingHours object, as the REST API returns it. */
+                            object: components["schemas"]["WorkingHours"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "closure.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * closure.created
+         * @description A closure or special opening is added. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "closure.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35",
+                     *           "location_id": null,
+                     *           "kind": "closed",
+                     *           "all_day": true,
+                     *           "start_date": "2026-12-24",
+                     *           "end_date": "2026-12-26",
+                     *           "start_at": "2026-12-23T23:00:00Z",
+                     *           "end_at": "2026-12-26T23:00:00Z",
+                     *           "reason": "Christmas holidays",
+                     *           "created_at": "2026-09-30T08:12:44Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "closure.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Closure object, as the REST API returns it. */
+                            object: components["schemas"]["Closure"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "closure.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * closure.updated
+         * @description A closure or special opening is changed. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "closure.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35",
+                     *           "location_id": null,
+                     *           "kind": "closed",
+                     *           "all_day": true,
+                     *           "start_date": "2026-12-24",
+                     *           "end_date": "2026-12-26",
+                     *           "start_at": "2026-12-23T23:00:00Z",
+                     *           "end_at": "2026-12-26T23:00:00Z",
+                     *           "reason": "Christmas holidays",
+                     *           "created_at": "2026-09-30T08:12:44Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "closure.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Closure object, as the REST API returns it. */
+                            object: components["schemas"]["Closure"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "closure.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * closure.deleted
+         * @description A closure or special opening is removed. `data.object` is the closure as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "closure.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35",
+                     *           "location_id": null,
+                     *           "kind": "closed",
+                     *           "all_day": true,
+                     *           "start_date": "2026-12-24",
+                     *           "end_date": "2026-12-26",
+                     *           "start_at": "2026-12-23T23:00:00Z",
+                     *           "end_at": "2026-12-26T23:00:00Z",
+                     *           "reason": "Christmas holidays",
+                     *           "created_at": "2026-09-30T08:12:44Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "closure.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Closure object, as the REST API returns it. */
+                            object: components["schemas"]["Closure"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "location.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * location.created
+         * @description A location is added. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "location.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Studio Bellini",
+                     *           "is_default": true,
+                     *           "status": "active",
+                     *           "phone_number": "+390350000001",
+                     *           "line": {
+                     *             "phone_number": "+390350000001",
+                     *             "forwarding_number": "+393331112222",
+                     *             "status": "verified",
+                     *             "verified_at": "2026-10-07T09:30:12Z"
+                     *           },
+                     *           "position": 0,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "deactivated_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "location.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Location object, as the REST API returns it. */
+                            object: components["schemas"]["Location"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "location.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * location.updated
+         * @description A location's name, order, Talki number or line changes. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "location.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Studio Bellini",
+                     *           "is_default": true,
+                     *           "status": "active",
+                     *           "phone_number": "+390350000001",
+                     *           "line": {
+                     *             "phone_number": "+390350000001",
+                     *             "forwarding_number": "+393331112222",
+                     *             "status": "verified",
+                     *             "verified_at": "2026-10-07T09:30:12Z"
+                     *           },
+                     *           "position": 0,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "deactivated_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "location.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Location object, as the REST API returns it. */
+                            object: components["schemas"]["Location"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "location.deactivated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * location.deactivated
+         * @description A location is switched off, by the owner or by the plan. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "location.deactivated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Studio Bellini",
+                     *           "is_default": true,
+                     *           "status": "active",
+                     *           "phone_number": "+390350000001",
+                     *           "line": {
+                     *             "phone_number": "+390350000001",
+                     *             "forwarding_number": "+393331112222",
+                     *             "status": "verified",
+                     *             "verified_at": "2026-10-07T09:30:12Z"
+                     *           },
+                     *           "position": 0,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "deactivated_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "location.deactivated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Location object, as the REST API returns it. */
+                            object: components["schemas"]["Location"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "location.reactivated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * location.reactivated
+         * @description A location is switched back on, by the owner or by the plan. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "location.reactivated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Studio Bellini",
+                     *           "is_default": true,
+                     *           "status": "active",
+                     *           "phone_number": "+390350000001",
+                     *           "line": {
+                     *             "phone_number": "+390350000001",
+                     *             "forwarding_number": "+393331112222",
+                     *             "status": "verified",
+                     *             "verified_at": "2026-10-07T09:30:12Z"
+                     *           },
+                     *           "position": 0,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "deactivated_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "location.reactivated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Location object, as the REST API returns it. */
+                            object: components["schemas"]["Location"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "location.settings_updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * location.settings_updated
+         * @description A location other than the main one changes the assistant settings it keeps for itself. `data.object` is the account at that location. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "location.settings_updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "business_name": "Studio Bellini",
+                     *           "timezone": "Europe/Rome",
+                     *           "livemode": true,
+                     *           "test": false,
+                     *           "business_information": "Free parking in the courtyard behind the salon. We do not sell gift cards.",
+                     *           "instructions": null,
+                     *           "voice": "Sulafat",
+                     *           "answers_as": "business",
+                     *           "call_auto_archive_days": null,
+                     *           "greeting": null,
+                     *           "call_opening": null,
+                     *           "multilingual_enabled": true,
+                     *           "languages": {
+                     *             "primary": "it",
+                     *             "supported": [
+                     *               "it",
+                     *               "en",
+                     *               "fr",
+                     *               "de",
+                     *               "es"
+                     *             ]
+                     *           },
+                     *           "service_area": "Bergamo e provincia",
+                     *           "transfer_numbers": [],
+                     *           "bookings_enabled": true,
+                     *           "unresolved_requests_enabled": true,
+                     *           "remember_callers": true,
+                     *           "store_transcripts": true,
+                     *           "notify_on_every_call": true,
+                     *           "notify_on_incoming_call": false,
+                     *           "phone_number": "+390350000001",
+                     *           "forwarding_number": "+393331112222",
+                     *           "line": {
+                     *             "phone_number": "+390350000001",
+                     *             "forwarding_number": "+393331112222",
+                     *             "status": "verified",
+                     *             "verified_at": "2026-10-07T09:30:12Z"
+                     *           },
+                     *           "multi_sede": true,
+                     *           "onboarding_completed": true
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "location.settings_updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Account object, as the REST API returns it. */
+                            object: components["schemas"]["Account"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "location.working_hours_updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * location.working_hours_updated
+         * @description The weekly hours of a location other than the main one change. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "location.working_hours_updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "slots": [
+                     *             {
+                     *               "days": [
+                     *                 2,
+                     *                 3,
+                     *                 4,
+                     *                 5
+                     *               ],
+                     *               "start": "09:00",
+                     *               "end": "13:00"
+                     *             },
+                     *             {
+                     *               "days": [
+                     *                 2,
+                     *                 3,
+                     *                 4,
+                     *                 5
+                     *               ],
+                     *               "start": "14:30",
+                     *               "end": "19:00"
+                     *             },
+                     *             {
+                     *               "days": [
+                     *                 6
+                     *               ],
+                     *               "start": "09:00",
+                     *               "end": "17:00"
+                     *             }
+                     *           ]
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "location.working_hours_updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The WorkingHours object, as the REST API returns it. */
+                            object: components["schemas"]["WorkingHours"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "service.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * service.created
+         * @description A service is added. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `services:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "service.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Haircut",
+                     *           "description": "Wash and cut",
+                     *           "price": "30€",
+                     *           "duration_minutes": 30,
+                     *           "booking_mode": "duration",
+                     *           "range_unit": null,
+                     *           "min_stay": null,
+                     *           "max_stay": null,
+                     *           "checkin_time": null,
+                     *           "checkout_time": null,
+                     *           "asks_quantity": false,
+                     *           "quantity_label": null,
+                     *           "min_quantity": 1,
+                     *           "max_quantity": null,
+                     *           "is_active": true,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "updated_at": "2026-09-10T10:30:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "service.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Service object, as the REST API returns it. */
+                            object: components["schemas"]["Service"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "service.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * service.updated
+         * @description A service is changed, switched off or on. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `services:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "service.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Haircut",
+                     *           "description": "Wash and cut",
+                     *           "price": "30€",
+                     *           "duration_minutes": 30,
+                     *           "booking_mode": "duration",
+                     *           "range_unit": null,
+                     *           "min_stay": null,
+                     *           "max_stay": null,
+                     *           "checkin_time": null,
+                     *           "checkout_time": null,
+                     *           "asks_quantity": false,
+                     *           "quantity_label": null,
+                     *           "min_quantity": 1,
+                     *           "max_quantity": null,
+                     *           "is_active": true,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "updated_at": "2026-09-10T10:30:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "service.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Service object, as the REST API returns it. */
+                            object: components["schemas"]["Service"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "service.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * service.deleted
+         * @description A service is deleted. `data.object` is the service as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `services:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "service.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Haircut",
+                     *           "description": "Wash and cut",
+                     *           "price": "30€",
+                     *           "duration_minutes": 30,
+                     *           "booking_mode": "duration",
+                     *           "range_unit": null,
+                     *           "min_stay": null,
+                     *           "max_stay": null,
+                     *           "checkin_time": null,
+                     *           "checkout_time": null,
+                     *           "asks_quantity": false,
+                     *           "quantity_label": null,
+                     *           "min_quantity": 1,
+                     *           "max_quantity": null,
+                     *           "is_active": true,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "updated_at": "2026-09-10T10:30:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "service.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Service object, as the REST API returns it. */
+                            object: components["schemas"]["Service"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "resource.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * resource.created
+         * @description A resource is added. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `resources:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "resource.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Dining room",
+                     *           "mode": "units",
+                     *           "capacity": 4,
+                     *           "max_party_size": 8,
+                     *           "combine_across_classes": false,
+                     *           "unit_classes": [
+                     *             {
+                     *               "id": "1f2b9c07-3d64-4a1e-8f95-2b7c6d0e4a31",
+                     *               "name": "Four-tops",
+                     *               "size": 4,
+                     *               "count": 6,
+                     *               "combinable": true,
+                     *               "combine_max": 2
+                     *             }
+                     *           ],
+                     *           "services": [
+                     *             {
+                     *               "service_id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *               "rate": 1
+                     *             }
+                     *           ],
+                     *           "owner_service_id": null,
+                     *           "is_default": false,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "updated_at": "2026-09-10T10:30:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "resource.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Resource object, as the REST API returns it. */
+                            object: components["schemas"]["Resource"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "resource.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * resource.updated
+         * @description A resource is changed, or gains or loses a service. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `resources:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "resource.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Dining room",
+                     *           "mode": "units",
+                     *           "capacity": 4,
+                     *           "max_party_size": 8,
+                     *           "combine_across_classes": false,
+                     *           "unit_classes": [
+                     *             {
+                     *               "id": "1f2b9c07-3d64-4a1e-8f95-2b7c6d0e4a31",
+                     *               "name": "Four-tops",
+                     *               "size": 4,
+                     *               "count": 6,
+                     *               "combinable": true,
+                     *               "combine_max": 2
+                     *             }
+                     *           ],
+                     *           "services": [
+                     *             {
+                     *               "service_id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *               "rate": 1
+                     *             }
+                     *           ],
+                     *           "owner_service_id": null,
+                     *           "is_default": false,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "updated_at": "2026-09-10T10:30:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "resource.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Resource object, as the REST API returns it. */
+                            object: components["schemas"]["Resource"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "resource.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * resource.deleted
+         * @description A resource is deleted. `data.object` is the resource as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `resources:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "resource.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "name": "Dining room",
+                     *           "mode": "units",
+                     *           "capacity": 4,
+                     *           "max_party_size": 8,
+                     *           "combine_across_classes": false,
+                     *           "unit_classes": [
+                     *             {
+                     *               "id": "1f2b9c07-3d64-4a1e-8f95-2b7c6d0e4a31",
+                     *               "name": "Four-tops",
+                     *               "size": 4,
+                     *               "count": 6,
+                     *               "combinable": true,
+                     *               "combine_max": 2
+                     *             }
+                     *           ],
+                     *           "services": [
+                     *             {
+                     *               "service_id": "45c470b7-592a-42cd-8ce8-5d7a0a497d26",
+                     *               "rate": 1
+                     *             }
+                     *           ],
+                     *           "owner_service_id": null,
+                     *           "is_default": false,
+                     *           "created_at": "2026-08-01T08:00:00Z",
+                     *           "updated_at": "2026-09-10T10:30:00Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "resource.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Resource object, as the REST API returns it. */
+                            object: components["schemas"]["Resource"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "document.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * document.created
+         * @description A document is added to the knowledge base, with `status` `processing`. One event per document, each copy at another location included. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `knowledge:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "document.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "title": "Is there parking?",
+                     *           "source": "text",
+                     *           "mime_type": "text/markdown",
+                     *           "size_bytes": 59,
+                     *           "chunk_count": 1,
+                     *           "status": "ready",
+                     *           "status_error": null,
+                     *           "enabled": true,
+                     *           "faq": false,
+                     *           "file_available": false,
+                     *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *           "created_at": "2026-10-28T09:12:40Z",
+                     *           "updated_at": "2026-10-28T09:12:40Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "document.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Document object, as the REST API returns it. */
+                            object: components["schemas"]["Document"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "document.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * document.updated
+         * @description A document's title, content or `enabled` changes, it turns `processing` again, or its indexing ends `ready` or `failed`. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `knowledge:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "document.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "title": "Is there parking?",
+                     *           "source": "text",
+                     *           "mime_type": "text/markdown",
+                     *           "size_bytes": 59,
+                     *           "chunk_count": 1,
+                     *           "status": "ready",
+                     *           "status_error": null,
+                     *           "enabled": true,
+                     *           "faq": false,
+                     *           "file_available": false,
+                     *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *           "created_at": "2026-10-28T09:12:40Z",
+                     *           "updated_at": "2026-10-28T09:12:40Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "document.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Document object, as the REST API returns it. */
+                            object: components["schemas"]["Document"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "document.deleted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * document.deleted
+         * @description A document is deleted. `data.object` is the document as it was. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `knowledge:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "document.deleted",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "title": "Is there parking?",
+                     *           "source": "text",
+                     *           "mime_type": "text/markdown",
+                     *           "size_bytes": 59,
+                     *           "chunk_count": 1,
+                     *           "status": "ready",
+                     *           "status_error": null,
+                     *           "enabled": true,
+                     *           "faq": false,
+                     *           "file_available": false,
+                     *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
+                     *           "created_at": "2026-10-28T09:12:40Z",
+                     *           "updated_at": "2026-10-28T09:12:40Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "document.deleted";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Document object, as the REST API returns it. */
+                            object: components["schemas"]["Document"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "unresolved_request.updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * unresolved_request.updated
+         * @description An unresolved request is resolved, dismissed or reopened, or its `answer` changes. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `unresolved:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "unresolved_request.updated",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "caller_phone": "+393331234567",
+                     *           "question": "Whether the salon does bridal hair on Sundays.",
+                     *           "status": "open",
+                     *           "answer": null,
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "resolved_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "unresolved_request.updated";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The UnresolvedRequest object, as the REST API returns it. */
+                            object: components["schemas"]["UnresolvedRequest"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "usage.threshold_reached": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * usage.threshold_reached
+         * @description A call ends leaving 25% or less of the period's allowance: the plan's included minutes plus any extra minutes. Sent once per crossing, and not on a plan with no minute cap. When the same call also sends `usage.extra_credits_low`, this event is not sent for that crossing. Sent to the account's webhooks and to the app of the partner that pays for the account; no other app receives it.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "usage.threshold_reached",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "minutes_used": 271,
+                     *         "minutes_included": 300,
+                     *         "minutes_remaining": 89,
+                     *         "seconds_used": 16245,
+                     *         "seconds_included": 18000,
+                     *         "seconds_remaining": 5355,
+                     *         "extra_seconds_balance": 3600,
+                     *         "seconds_allowance": 21600,
+                     *         "percent_used": 75.2,
+                     *         "used_seconds": 16245,
+                     *         "included_seconds": 18000,
+                     *         "allowance_seconds": 21600,
+                     *         "remaining_seconds": 5355,
+                     *         "extra_seconds": 3600
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "usage.threshold_reached";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Used Seconds
+                             * @description Seconds used in the current billing period, this call included: plan and extra minutes together.
+                             */
+                            used_seconds: number;
+                            /**
+                             * Included Seconds
+                             * @description Seconds the plan includes in the period, without extra minutes.
+                             */
+                            included_seconds: number;
+                            /**
+                             * Allowance Seconds
+                             * @description Everything the account may spend in the period: `included_seconds` plus the extra seconds it held when the period began and any added since. Equal to `included_seconds` when it has none.
+                             */
+                            allowance_seconds: number;
+                            /**
+                             * Remaining Seconds
+                             * @description `allowance_seconds` minus `used_seconds`, never below 0.
+                             */
+                            remaining_seconds: number;
+                            /**
+                             * Percent Used
+                             * @description `used_seconds` as a percentage of `allowance_seconds`, to one decimal place. Above 100 when a call ran past the allowance.
+                             */
+                            percent_used: number;
+                            /**
+                             * Extra Seconds
+                             * @description Extra seconds still unspent after this call; 0 when the account has none.
+                             */
+                            extra_seconds: number;
+                            /**
+                             * Minutes Used
+                             * @description `used_seconds` rounded to the nearest whole minute. For display.
+                             */
+                            minutes_used: number;
+                            /**
+                             * Minutes Included
+                             * @description Minutes the plan includes in the period, without extra minutes.
+                             */
+                            minutes_included: number;
+                            /**
+                             * Minutes Remaining
+                             * @description `remaining_seconds` in whole minutes, rounded down. For display.
+                             */
+                            minutes_remaining: number;
+                            /**
+                             * Seconds Used
+                             * @deprecated
+                             * @description The same value as `used_seconds`.
+                             */
+                            seconds_used: number;
+                            /**
+                             * Seconds Included
+                             * @deprecated
+                             * @description The same value as `included_seconds`.
+                             */
+                            seconds_included: number;
+                            /**
+                             * Seconds Allowance
+                             * @deprecated
+                             * @description The same value as `allowance_seconds`.
+                             */
+                            seconds_allowance: number;
+                            /**
+                             * Seconds Remaining
+                             * @deprecated
+                             * @description The same value as `remaining_seconds`.
+                             */
+                            seconds_remaining: number;
+                            /**
+                             * Extra Seconds Balance
+                             * @deprecated
+                             * @description The same value as `extra_seconds`.
+                             */
+                            extra_seconds_balance: number;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "usage.extra_credits_low": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * usage.extra_credits_low
+         * @description A call ends with the extra-minutes balance below the floor the account owner set (10 minutes unless changed). Not sent again until the balance is back over the floor or the owner changes the floor; never sent with a floor of 0, with no extra minutes, or on a plan with no minute cap. Sent to the account's webhooks and to the app of the partner that pays for the account; no other app receives it.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "usage.extra_credits_low",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "extra_seconds_balance": 505,
+                     *         "extra_minutes_balance": 8,
+                     *         "threshold_minutes": 10,
+                     *         "seconds_used": 21095,
+                     *         "minutes_included": 300,
+                     *         "used_seconds": 21095,
+                     *         "extra_seconds": 505
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "usage.extra_credits_low";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Extra Seconds
+                             * @description Extra seconds still unspent after this call. Can be 0.
+                             */
+                            extra_seconds: number;
+                            /**
+                             * Extra Minutes Balance
+                             * @description `extra_seconds` in whole minutes, rounded down. Can be 0.
+                             */
+                            extra_minutes_balance: number;
+                            /**
+                             * Threshold Minutes
+                             * @description The account owner's floor, in minutes, that the balance is now below.
+                             */
+                            threshold_minutes: number;
+                            /**
+                             * Used Seconds
+                             * @description Seconds used in the current billing period, this call included: plan and extra minutes together.
+                             */
+                            used_seconds: number;
+                            /**
+                             * Minutes Included
+                             * @description Minutes the plan includes in the period, without extra minutes.
+                             */
+                            minutes_included: number;
+                            /**
+                             * Extra Seconds Balance
+                             * @deprecated
+                             * @description The same value as `extra_seconds`.
+                             */
+                            extra_seconds_balance: number;
+                            /**
+                             * Seconds Used
+                             * @deprecated
+                             * @description The same value as `used_seconds`.
+                             */
+                            seconds_used: number;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    ping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * ping
+         * @description The account owner chooses **Invia test** on a webhook endpoint. Sent only to that endpoint, whatever it subscribes to; never to an app.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "ping",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "dashboard",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "message": "Test event from Talki"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "ping";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Message
+                             * @description Always `Test event from Talki`.
+                             */
+                            message: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "installation.created": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * installation.created
+         * @description An account installs your app, or reinstalls it after a disconnect. Sent to your app's events URL, with no subscription. Sent to your OAuth app's events URL only.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "installation.created",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": null,
+                     *       "installation_id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *       "data": {
+                     *         "installation": {
+                     *           "object": "installation",
+                     *           "id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *           "client_id": "talki_cid_4Hq2mZ8rVt1LxN3pYw7KcA",
+                     *           "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *           "scopes": [
+                     *             "appointments:read",
+                     *             "calls:read"
+                     *           ],
+                     *           "status": "active",
+                     *           "access": "active",
+                     *           "livemode": true,
+                     *           "created_at": "2026-09-15T09:14:31.204518+00:00",
+                     *           "revoked_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "installation.created";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description Always null on installation events. */
+                        origin: null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Installation
+                             * @description The installation, as it is after the change.
+                             */
+                            installation: {
+                                /**
+                                 * Object
+                                 * @description Always `installation`.
+                                 */
+                                object: string;
+                                /**
+                                 * Id
+                                 * @description The installation's ID: one account's connection to your app. The same value as `installation_id` on the envelope.
+                                 */
+                                id: string;
+                                /**
+                                 * Client Id
+                                 * @description Your app's client ID.
+                                 */
+                                client_id: string;
+                                /**
+                                 * Account Id
+                                 * @description The Talki account that installed the app.
+                                 */
+                                account_id: string;
+                                /**
+                                 * Scopes
+                                 * @description The scopes the account granted, sorted.
+                                 */
+                                scopes: string[];
+                                /**
+                                 * Status
+                                 * @description `active`, or `revoked` once the installation is disconnected.
+                                 * @enum {string}
+                                 */
+                                status: "active" | "revoked";
+                                /**
+                                 * Access
+                                 * @description `suspended` while the account cannot use the API, otherwise `active`. The grant and its tokens survive a suspension.
+                                 * @enum {string}
+                                 */
+                                access: "active" | "suspended";
+                                /**
+                                 * Livemode
+                                 * @description `false` for a sandbox account's installation.
+                                 */
+                                livemode: boolean;
+                                /**
+                                 * Created At
+                                 * @description When the account first installed the app, ISO 8601 with a `+00:00` offset, possibly with microseconds.
+                                 */
+                                created_at: string | null;
+                                /**
+                                 * Revoked At
+                                 * @description When the installation was disconnected, in the same format; null while it is active.
+                                 */
+                                revoked_at: string | null;
+                            };
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "installation.scopes_changed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * installation.scopes_changed
+         * @description An account reconnects your app with a different set of scopes. A reconnect with the same scopes sends nothing. Sent to your OAuth app's events URL only.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "installation.scopes_changed",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": null,
+                     *       "installation_id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *       "data": {
+                     *         "installation": {
+                     *           "object": "installation",
+                     *           "id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *           "client_id": "talki_cid_4Hq2mZ8rVt1LxN3pYw7KcA",
+                     *           "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *           "scopes": [
+                     *             "appointments:read",
+                     *             "calls:read"
+                     *           ],
+                     *           "status": "active",
+                     *           "access": "active",
+                     *           "livemode": true,
+                     *           "created_at": "2026-09-15T09:14:31.204518+00:00",
+                     *           "revoked_at": null
+                     *         },
+                     *         "previous_scopes": [
+                     *           "calls:read"
+                     *         ]
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "installation.scopes_changed";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description Always null on installation events. */
+                        origin: null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Installation
+                             * @description The installation, as it is after the change.
+                             */
+                            installation: {
+                                /**
+                                 * Object
+                                 * @description Always `installation`.
+                                 */
+                                object: string;
+                                /**
+                                 * Id
+                                 * @description The installation's ID: one account's connection to your app. The same value as `installation_id` on the envelope.
+                                 */
+                                id: string;
+                                /**
+                                 * Client Id
+                                 * @description Your app's client ID.
+                                 */
+                                client_id: string;
+                                /**
+                                 * Account Id
+                                 * @description The Talki account that installed the app.
+                                 */
+                                account_id: string;
+                                /**
+                                 * Scopes
+                                 * @description The scopes the account granted, sorted.
+                                 */
+                                scopes: string[];
+                                /**
+                                 * Status
+                                 * @description `active`, or `revoked` once the installation is disconnected.
+                                 * @enum {string}
+                                 */
+                                status: "active" | "revoked";
+                                /**
+                                 * Access
+                                 * @description `suspended` while the account cannot use the API, otherwise `active`. The grant and its tokens survive a suspension.
+                                 * @enum {string}
+                                 */
+                                access: "active" | "suspended";
+                                /**
+                                 * Livemode
+                                 * @description `false` for a sandbox account's installation.
+                                 */
+                                livemode: boolean;
+                                /**
+                                 * Created At
+                                 * @description When the account first installed the app, ISO 8601 with a `+00:00` offset, possibly with microseconds.
+                                 */
+                                created_at: string | null;
+                                /**
+                                 * Revoked At
+                                 * @description When the installation was disconnected, in the same format; null while it is active.
+                                 */
+                                revoked_at: string | null;
+                            };
+                            /**
+                             * Previous Scopes
+                             * @description The scopes granted before the reconnect, sorted. The new ones are in `installation.scopes`.
+                             */
+                            previous_scopes: string[];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "installation.revoked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * installation.revoked
+         * @description The installation is disconnected. Sent to your OAuth app's events URL only.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "installation.revoked",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": null,
+                     *       "installation_id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *       "data": {
+                     *         "installation": {
+                     *           "object": "installation",
+                     *           "id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *           "client_id": "talki_cid_4Hq2mZ8rVt1LxN3pYw7KcA",
+                     *           "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *           "scopes": [
+                     *             "appointments:read",
+                     *             "calls:read"
+                     *           ],
+                     *           "status": "revoked",
+                     *           "access": "active",
+                     *           "livemode": true,
+                     *           "created_at": "2026-09-15T09:14:31.204518+00:00",
+                     *           "revoked_at": "2026-09-20T16:02:11.482913+00:00"
+                     *         },
+                     *         "reason": "customer"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "installation.revoked";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description Always null on installation events. */
+                        origin: null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Installation
+                             * @description The installation, as it is after the change.
+                             */
+                            installation: {
+                                /**
+                                 * Object
+                                 * @description Always `installation`.
+                                 */
+                                object: string;
+                                /**
+                                 * Id
+                                 * @description The installation's ID: one account's connection to your app. The same value as `installation_id` on the envelope.
+                                 */
+                                id: string;
+                                /**
+                                 * Client Id
+                                 * @description Your app's client ID.
+                                 */
+                                client_id: string;
+                                /**
+                                 * Account Id
+                                 * @description The Talki account that installed the app.
+                                 */
+                                account_id: string;
+                                /**
+                                 * Scopes
+                                 * @description The scopes the account granted, sorted.
+                                 */
+                                scopes: string[];
+                                /**
+                                 * Status
+                                 * @description `active`, or `revoked` once the installation is disconnected.
+                                 * @enum {string}
+                                 */
+                                status: "active" | "revoked";
+                                /**
+                                 * Access
+                                 * @description `suspended` while the account cannot use the API, otherwise `active`. The grant and its tokens survive a suspension.
+                                 * @enum {string}
+                                 */
+                                access: "active" | "suspended";
+                                /**
+                                 * Livemode
+                                 * @description `false` for a sandbox account's installation.
+                                 */
+                                livemode: boolean;
+                                /**
+                                 * Created At
+                                 * @description When the account first installed the app, ISO 8601 with a `+00:00` offset, possibly with microseconds.
+                                 */
+                                created_at: string | null;
+                                /**
+                                 * Revoked At
+                                 * @description When the installation was disconnected, in the same format; null while it is active.
+                                 */
+                                revoked_at: string | null;
+                            };
+                            /**
+                             * Reason
+                             * @description Who disconnected: `customer` (the account owner, in the Talki app), `partner` (your app, through `/oauth/revoke`) or `account_deleted` (the account was closed).
+                             * @enum {string}
+                             */
+                            reason: "customer" | "partner" | "account_deleted";
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "installation.access_suspended": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * installation.access_suspended
+         * @description The account can no longer use the API. Can arrive up to 15 minutes after the change. Sent to your OAuth app's events URL only.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "installation.access_suspended",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": null,
+                     *       "installation_id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *       "data": {
+                     *         "installation": {
+                     *           "object": "installation",
+                     *           "id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *           "client_id": "talki_cid_4Hq2mZ8rVt1LxN3pYw7KcA",
+                     *           "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *           "scopes": [
+                     *             "appointments:read",
+                     *             "calls:read"
+                     *           ],
+                     *           "status": "active",
+                     *           "access": "suspended",
+                     *           "livemode": true,
+                     *           "created_at": "2026-09-15T09:14:31.204518+00:00",
+                     *           "revoked_at": null
+                     *         },
+                     *         "reason": "subscription_inactive"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "installation.access_suspended";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description Always null on installation events. */
+                        origin: null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Installation
+                             * @description The installation, as it is after the change.
+                             */
+                            installation: {
+                                /**
+                                 * Object
+                                 * @description Always `installation`.
+                                 */
+                                object: string;
+                                /**
+                                 * Id
+                                 * @description The installation's ID: one account's connection to your app. The same value as `installation_id` on the envelope.
+                                 */
+                                id: string;
+                                /**
+                                 * Client Id
+                                 * @description Your app's client ID.
+                                 */
+                                client_id: string;
+                                /**
+                                 * Account Id
+                                 * @description The Talki account that installed the app.
+                                 */
+                                account_id: string;
+                                /**
+                                 * Scopes
+                                 * @description The scopes the account granted, sorted.
+                                 */
+                                scopes: string[];
+                                /**
+                                 * Status
+                                 * @description `active`, or `revoked` once the installation is disconnected.
+                                 * @enum {string}
+                                 */
+                                status: "active" | "revoked";
+                                /**
+                                 * Access
+                                 * @description `suspended` while the account cannot use the API, otherwise `active`. The grant and its tokens survive a suspension.
+                                 * @enum {string}
+                                 */
+                                access: "active" | "suspended";
+                                /**
+                                 * Livemode
+                                 * @description `false` for a sandbox account's installation.
+                                 */
+                                livemode: boolean;
+                                /**
+                                 * Created At
+                                 * @description When the account first installed the app, ISO 8601 with a `+00:00` offset, possibly with microseconds.
+                                 */
+                                created_at: string | null;
+                                /**
+                                 * Revoked At
+                                 * @description When the installation was disconnected, in the same format; null while it is active.
+                                 */
+                                revoked_at: string | null;
+                            };
+                            /**
+                             * Reason
+                             * @description The error code the account's API calls now receive. Stop syncing until `installation.access_restored`.
+                             * @enum {string}
+                             */
+                            reason: "subscription_inactive" | "plan_upgrade_required" | "account_closed";
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "installation.access_restored": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * installation.access_restored
+         * @description The account can use the API again. Can arrive up to 15 minutes after the change. Sent to your OAuth app's events URL only.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "installation.access_restored",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": null,
+                     *       "installation_id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *       "data": {
+                     *         "installation": {
+                     *           "object": "installation",
+                     *           "id": "5d0e8a2c-7b41-4f7e-9c3a-1e2f4b6d8a90",
+                     *           "client_id": "talki_cid_4Hq2mZ8rVt1LxN3pYw7KcA",
+                     *           "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *           "scopes": [
+                     *             "appointments:read",
+                     *             "calls:read"
+                     *           ],
+                     *           "status": "active",
+                     *           "access": "active",
+                     *           "livemode": true,
+                     *           "created_at": "2026-09-15T09:14:31.204518+00:00",
+                     *           "revoked_at": null
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "installation.access_restored";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description Always null on installation events. */
+                        origin: null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /**
+                             * Installation
+                             * @description The installation, as it is after the change.
+                             */
+                            installation: {
+                                /**
+                                 * Object
+                                 * @description Always `installation`.
+                                 */
+                                object: string;
+                                /**
+                                 * Id
+                                 * @description The installation's ID: one account's connection to your app. The same value as `installation_id` on the envelope.
+                                 */
+                                id: string;
+                                /**
+                                 * Client Id
+                                 * @description Your app's client ID.
+                                 */
+                                client_id: string;
+                                /**
+                                 * Account Id
+                                 * @description The Talki account that installed the app.
+                                 */
+                                account_id: string;
+                                /**
+                                 * Scopes
+                                 * @description The scopes the account granted, sorted.
+                                 */
+                                scopes: string[];
+                                /**
+                                 * Status
+                                 * @description `active`, or `revoked` once the installation is disconnected.
+                                 * @enum {string}
+                                 */
+                                status: "active" | "revoked";
+                                /**
+                                 * Access
+                                 * @description `suspended` while the account cannot use the API, otherwise `active`. The grant and its tokens survive a suspension.
+                                 * @enum {string}
+                                 */
+                                access: "active" | "suspended";
+                                /**
+                                 * Livemode
+                                 * @description `false` for a sandbox account's installation.
+                                 */
+                                livemode: boolean;
+                                /**
+                                 * Created At
+                                 * @description When the account first installed the app, ISO 8601 with a `+00:00` offset, possibly with microseconds.
+                                 */
+                                created_at: string | null;
+                                /**
+                                 * Revoked At
+                                 * @description When the installation was disconnected, in the same format; null while it is active.
+                                 */
+                                revoked_at: string | null;
+                            };
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+}
 export interface components {
     schemas: {
         /**
          * Account
-         * @description The account a credential belongs to, and everything its owner sets up for the assistant: the business name and texts, the voice, the opening and greeting, the switches, the transfer numbers, and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the call to validate a new credential. The settings are those of one location: the main one, or the one `?location_id=` names; the account's own switches read the same at every location. The response's `ETag` covers every writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change to the main location's settings or to the account's switches, `location.settings_updated` one to another location's.
+         * @description The account a credential belongs to, and everything its owner sets up for the assistant: the business name and texts, the voice, the opening and greeting, the switches, the transfer numbers, and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the call to validate a new credential. The settings are those of one location: the main one, or the one `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`, `livemode`, `test`, `multi_sede`, `onboarding_completed` and `call_auto_archive_days`) read the same at every location. The response's `ETag` covers every writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change to the main location's settings or to `call_auto_archive_days`, `location.settings_updated` one to another location's settings, its switches included.
          */
         Account: {
             /**
@@ -1375,7 +8653,7 @@ export interface components {
         };
         /**
          * AccountUpdate
-         * @description The settings you can change. Every field is optional and an omitted one is left unchanged, but send at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be null. With `?location_id=`, a location's own settings change at that location only, and the account's switches at every location.
+         * @description The settings you can change. Every field is optional and an omitted one is left unchanged, but send at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` is the account's: it is refused with a `location_id` other than the main location's.
          */
         AccountUpdate: {
             /**
@@ -1397,12 +8675,12 @@ export interface components {
              * Voice
              * @description A voice id from `GET /v1/voices`. Cannot be null.
              */
-            voice?: string | null;
+            voice?: string;
             /**
              * Answers As
              * @description `business` or `owner`. Cannot be null.
              */
-            answers_as?: components["schemas"]["AnswersAs"] | null;
+            answers_as?: components["schemas"]["AnswersAs"];
             /**
              * Greeting
              * @description Replaces the greeting. May contain `{company_name}` and `{owner_name}`. Leading and trailing whitespace is removed. Send `null` or an empty string to clear it.
@@ -1417,7 +8695,7 @@ export interface components {
              * Multilingual Enabled
              * @description Cannot be null.
              */
-            multilingual_enabled?: boolean | null;
+            multilingual_enabled?: boolean;
             /**
              * Service Area
              * @description Replaces the service area. Send `null` or an empty string to clear it.
@@ -1427,37 +8705,37 @@ export interface components {
              * Transfer Numbers
              * @description The whole list, replacing every existing entry. Send an empty list to remove them all; `null` is refused. A non-empty list needs the main location's `forwarding_number`, already stored or sent in the same request, and may not contain it, nor the location's own `forwarding_number`: a call transferred there would come straight back to the assistant.
              */
-            transfer_numbers?: components["schemas"]["TransferNumberInput"][] | null;
+            transfer_numbers?: components["schemas"]["TransferNumberInput"][];
             /**
              * Bookings Enabled
              * @description Cannot be null.
              */
-            bookings_enabled?: boolean | null;
+            bookings_enabled?: boolean;
             /**
              * Unresolved Requests Enabled
              * @description Cannot be null.
              */
-            unresolved_requests_enabled?: boolean | null;
+            unresolved_requests_enabled?: boolean;
             /**
              * Remember Callers
              * @description Cannot be null.
              */
-            remember_callers?: boolean | null;
+            remember_callers?: boolean;
             /**
              * Notify On Every Call
              * @description Cannot be null.
              */
-            notify_on_every_call?: boolean | null;
+            notify_on_every_call?: boolean;
             /**
              * Notify On Incoming Call
              * @description Cannot be null.
              */
-            notify_on_incoming_call?: boolean | null;
+            notify_on_incoming_call?: boolean;
             /**
              * Store Transcripts
              * @description Cannot be null. `false` deletes the stored transcripts of this location's calls in the same request, and they cannot be recovered, so a test-mode credential sending it is refused with `livemode_required`.
              */
-            store_transcripts?: boolean | null;
+            store_transcripts?: boolean;
             /**
              * Call Auto Archive Days
              * @description `7`, `30` or `90`, or `null` to stop archiving calls on their own. The account's own setting: refused with `location_id` naming a location other than the main one.
@@ -1512,6 +8790,11 @@ export interface components {
              */
             call_id: string | null;
             /**
+             * Notes
+             * @description The note on the booking, as the business sees it beside it: what `POST /v1/appointments` sent as `notes`, or what the assistant wrote on a booking taken on a call. Null when there is none.
+             */
+            notes: string | null;
+            /**
              * Created At
              * Format: date-time
              * @description When the booking was written, RFC 3339 UTC.
@@ -1526,7 +8809,7 @@ export interface components {
         };
         /**
          * AppointmentClient
-         * @description Who the booking is for. Always present; `contact_id` and `phone_number` are null for a booking entered by hand. The name is the one the booking was taken under, exactly as the owner sees it, and may come from what the assistant heard on the call.
+         * @description Who the booking is for. Always present; `contact_id` and `phone_number` are null when Talki has no number for the client. The name is the one the booking was taken under, exactly as the owner sees it, and may come from what the assistant heard on the call.
          */
         AppointmentClient: {
             /**
@@ -1546,7 +8829,7 @@ export interface components {
             surname: string;
             /**
              * Phone Number
-             * @description Client's number in E.164. Null when Talki has no number for the client, e.g. a caller who withheld theirs.
+             * @description Client's number in E.164. Null when Talki has no number for the client, as on a booking taken on a call from a caller who withheld their number.
              */
             phone_number: string | null;
         };
@@ -1644,7 +8927,7 @@ export interface components {
             start_at?: string | null;
             /**
              * End At
-             * @description New end, RFC 3339 with an offset. Null leaves it unchanged — moving only `start_at` does NOT shift the end to preserve the duration, it moves one edge. Send both to move a booking.
+             * @description New end, RFC 3339 with an offset. Null leaves it unchanged — moving only `start_at` does NOT shift the end to preserve the duration, it moves one edge. Send both to move a booking. A booking of one service with a `duration_minutes` keeps that length, or the length it has now: a move that changes it is refused with 400 `invalid_parameter`.
              */
             end_at?: string | null;
         };
@@ -1776,7 +9059,7 @@ export interface components {
         Call: {
             /**
              * Id
-             * @description Opaque Talki call identifier.
+             * @description Opaque Talki call identifier. Decided when the call arrives: the `call.ringing` event sent while it rang carries the same id as `data.call_id`.
              */
             id: string;
             /**
@@ -1881,7 +9164,7 @@ export interface components {
             contact_id: string | null;
             /**
              * Phone Number
-             * @description Caller's number in E.164, or null when the CallerID was withheld.
+             * @description Caller's number in E.164. Null when the CallerID was withheld.
              */
             phone_number: string | null;
             /**
@@ -1910,7 +9193,7 @@ export interface components {
             data: components["schemas"]["Call"][];
             /**
              * Next Cursor
-             * @description Opaque position after this page. In the default newest-first list this is a page pointer and is null on the last page. With `sync=true` it is your position in the change feed and is present on every page that returned data, including the last one — store it and pass it back as `cursor` to receive only what has been recorded since. Null when the page was empty. Do not parse it, and do not use a cursor from one mode in the other.
+             * @description Opaque position after this page. In the default newest-first list this is a page pointer and is null on the last page. With `sync=true` it is your position in the change feed and is present on every page that returned data, including the last one — store it and pass it back as `cursor` to receive only what has been recorded since. An empty page answers null, so keep the cursor you hold; only a cursor issued up to 2026-11-04 gets its replacement there. Do not parse it, and do not use a cursor from one mode in the other.
              */
             next_cursor: string | null;
             /**
@@ -1932,11 +9215,13 @@ export interface components {
             period_days: number;
             /**
              * Period Start
+             * Format: date-time
              * @description Start of the period, RFC 3339 UTC, included.
              */
             period_start: string;
             /**
              * Period End
+             * Format: date-time
              * @description End of the period, RFC 3339 UTC, excluded: now, or local midnight after `to`.
              */
             period_end: string;
@@ -2003,9 +9288,9 @@ export interface components {
         CallStatsCaller: {
             /**
              * Phone Number
-             * @description The caller's number, E.164. A bare `+` stands for every caller who withheld their number.
+             * @description The caller's number, E.164. Null stands for every caller who withheld their number, counted as one.
              */
-            phone_number: string;
+            phone_number: string | null;
             /**
              * Calls
              * @description Calls from this number in the period.
@@ -2088,12 +9373,12 @@ export interface components {
         CallTransfer: {
             /**
              * Target Label
-             * @description The destination as the owner named it in Talki (e.g. `Reception`). Never the number behind it.
+             * @description The destination as the owner named it in Talki (e.g. `Reception`). Never the number behind it. Compare it case-insensitively.
              */
             target_label: string;
             /**
              * At
-             * @description When the call was handed over, RFC 3339.
+             * @description When the call was handed over, RFC 3339 UTC.
              */
             at: string | null;
         };
@@ -2106,16 +9391,16 @@ export interface components {
              * Read
              * @description `true` marks the call read, keeping the first `read_at`. `false` marks it unread, archived or not. Cannot be null.
              */
-            read?: boolean | null;
+            read?: boolean;
             /**
              * Archived
              * @description `true` archives the call and marks it read, whatever `read` says. `false` returns it to the inbox. Cannot be null.
              */
-            archived?: boolean | null;
+            archived?: boolean;
         };
         /**
          * CallerRule
-         * @description A VIP or blocked number of one location. A number is on one list at most at a location, so adding it to the other list moves it.
+         * @description A VIP or blocked number of one location. A number is on one list at most at a location, so adding it to the other list moves it. A call from a VIP number to its location rings with `caller.vip` true on `call.ringing`.
          */
         CallerRule: {
             /**
@@ -2202,7 +9487,7 @@ export interface components {
              * Kind
              * @description Move it to the other list. Cannot be null.
              */
-            kind?: components["schemas"]["CallerRuleKind"] | null;
+            kind?: components["schemas"]["CallerRuleKind"];
             /**
              * Label
              * @description Replaces the label. `null` or empty removes it.
@@ -2340,12 +9625,12 @@ export interface components {
              * Kind
              * @description `closed` or `open`. Cannot be null. Turning a closure into a special opening needs a window that starts and ends on one day.
              */
-            kind?: components["schemas"]["ClosureKind"] | null;
+            kind?: components["schemas"]["ClosureKind"];
             /**
              * All Day
              * @description Whole days or an exact range. Cannot be null.
              */
-            all_day?: boolean | null;
+            all_day?: boolean;
             /**
              * Start Date
              * @description First day, `YYYY-MM-DD`.
@@ -2437,14 +9722,14 @@ export interface components {
         };
         /**
          * ContactList
-         * @description A page of the contact change feed. `next_cursor` is your position, returned on the last page too; resume an incremental sync from it.
+         * @description A page of the contact change feed. `next_cursor` is your position, returned on the last page too; resume an incremental sync from it. With `phone` or `tag_id`, a page of a search instead, newest contact first, whose `next_cursor` is null on the last page.
          */
         ContactList: {
             /** Data */
             data: components["schemas"]["Contact"][];
             /**
              * Next Cursor
-             * @description Your position in the change feed after this page. Present on every page that returned data, including the last one. Store it and pass it back as `cursor` to receive only what has changed since. Null only when the page was empty. Opaque: do not parse it, and do not use it on another endpoint.
+             * @description Your position in the change feed after this page. Present on every page that returned data, including the last one. Store it and pass it back as `cursor` to receive only what has changed since. Null only when the page was empty. Opaque: do not parse it, and do not use it on another endpoint. On a search (`phone` or `tag_id`), the cursor of the next page instead, null on the last one.
              */
             next_cursor: string | null;
             /**
@@ -2707,12 +9992,12 @@ export interface components {
              * Title
              * @description Its new title. Not for a website, whose title is its address. A note's new title is indexed again, as a change of its text is.
              */
-            title?: string | null;
+            title?: string;
             /**
              * Enabled
              * @description Switch it off (`false`) or on again (`true`). Cannot be null.
              */
-            enabled?: boolean | null;
+            enabled?: boolean;
         };
         /**
          * FakeCallRequest
@@ -2738,7 +10023,7 @@ export interface components {
         FakeCallResponse: {
             /**
              * Call Id
-             * @description The Call this fake call produced — fetchable at `GET /v1/calls/{id}`, and the same id the `call.ended` delivery carries in `data.object.id`.
+             * @description The Call this fake call produced — fetchable at `GET /v1/calls/{id}`, and the same id the `call.ended` delivery carries in `data.object.id` and the `call.ringing` delivery before it in `data.call_id`.
              */
             call_id: string;
             /** Scenario */
@@ -2764,7 +10049,7 @@ export interface components {
             appointment_id: string | null;
             /**
              * Events
-             * @description The event types this call emitted. Every delivery carries `livemode: false`.
+             * @description The scenario's event types, each sent by this call. A pending contact it proposed sends its own event too, not listed here. Every delivery carries `livemode: false`.
              */
             events: string[];
         };
@@ -2915,9 +10200,9 @@ export interface components {
             id: string;
             /**
              * Phone Number
-             * @description The caller's number, E.164. A bare `+` stands for every caller who withheld their number.
+             * @description The caller's number, E.164. Null when the caller withheld it: such a candidate cannot be approved, only discarded.
              */
-            phone_number: string;
+            phone_number: string | null;
             /**
              * First Name
              * @description The given name heard, or null.
@@ -3049,11 +10334,13 @@ export interface components {
             period_days: number;
             /**
              * Period Start
+             * Format: date-time
              * @description Start of the period, RFC 3339 UTC, included.
              */
             period_start: string;
             /**
              * Period End
+             * Format: date-time
              * @description End of the period, RFC 3339 UTC, excluded: now, or local midnight after `to`.
              */
             period_end: string;
@@ -3303,7 +10590,7 @@ export interface components {
             description: string;
             /**
              * Events
-             * @description The webhook event types this scenario emits, exactly. An integration test can assert on them.
+             * @description The webhook event types this scenario is about: each is sent, so an integration test can assert that they arrive. Other events can come too: a caller who gives a name is proposed as a contact, as on a real call, which sends `pending_contact.created` when the number has no contact or pending contact yet.
              */
             events: string[];
             /** Duration Seconds */
@@ -3493,7 +10780,7 @@ export interface components {
              * Name
              * @description What the business calls this service.
              */
-            name?: string | null;
+            name?: string;
             /**
              * Description
              * @description Longer customer-facing description.
@@ -3508,12 +10795,12 @@ export interface components {
              * Duration Minutes
              * @description Length of one booking, in minutes. Rejected for a `day_range` service, whose length is measured in nights or days. Cannot be null: a service with no length is not bookable, and switching one off is `is_active: false`.
              */
-            duration_minutes?: number | null;
+            duration_minutes?: number;
             /**
              * Is Active
              * @description Switch the service off or on. An inactive service cannot be booked, by you or by the assistant, but still appears in `GET /v1/services` with `is_active: false`.
              */
-            is_active?: boolean | null;
+            is_active?: boolean;
         };
         /**
          * Tag
@@ -3792,7 +11079,7 @@ export interface components {
              * Status
              * @description `resolved` — dealt with. `dismissed` — closed without action, which clears `answer`. `open` — reopened, which clears `resolved_at` and keeps `answer`. Sending the status it already has changes nothing.
              */
-            status?: components["schemas"]["UnresolvedRequestStatus"] | null;
+            status?: components["schemas"]["UnresolvedRequestStatus"];
             /**
              * Answer
              * @description What the business told the caller, up to 2000 characters, trimmed. Only a request that is `resolved`, or that this same request resolves, takes one. `null` or a blank text clears it.
@@ -3857,6 +11144,7 @@ export interface components {
             months: components["schemas"]["UsageMonth"][];
             /**
              * Retained Since
+             * Format: date-time
              * @description Calls older than this, RFC 3339 UTC, have been deleted by Talki's retention, so a month before it reads less than was billed.
              */
             retained_since: string;
@@ -3873,11 +11161,13 @@ export interface components {
             month: string;
             /**
              * Start
+             * Format: date-time
              * @description Local midnight on its 1st, RFC 3339 UTC.
              */
             start: string;
             /**
              * End
+             * Format: date-time
              * @description Local midnight on the next month's 1st, RFC 3339 UTC, excluded.
              */
             end: string;
@@ -4214,6 +11504,7 @@ export interface operations {
                      *       "instructions": null,
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
+                     *       "call_auto_archive_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -4417,7 +11708,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example assistant-settings-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -4475,6 +11766,7 @@ export interface operations {
                      *       "instructions": "Always use the formal register. Never quote prices for colour treatments.",
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
+                     *       "call_auto_archive_days": null,
                      *       "greeting": "Come posso aiutarla?",
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -4621,7 +11913,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description `store_transcripts: false` was sent with a test-mode credential (`livemode_required`), or the idempotency key was reused for a different request. */
+            /** @description `store_transcripts: false` was sent with a test-mode credential (`livemode_required`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -4722,7 +12014,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example onboarding-done
                  */
                 "Idempotency-Key"?: string;
@@ -4758,6 +12050,7 @@ export interface operations {
                      *       "instructions": null,
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
+                     *       "call_auto_archive_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -7013,7 +14306,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example call-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -7143,7 +14436,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description A test-mode credential was used (`livemode_required`), or the idempotency key was reused for a different request. */
+            /** @description A test-mode credential was used (`livemode_required`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -7223,7 +14516,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example call-archive-1
                  */
                 "Idempotency-Key"?: string;
@@ -7686,7 +14979,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example calls-read-2026-10-08
                  */
                 "Idempotency-Key"?: string;
@@ -7950,6 +15243,7 @@ export interface operations {
                      *           "end_at": "2026-10-08T09:30:00Z",
                      *           "quantity": 1,
                      *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "notes": "First visit",
                      *           "created_at": "2026-09-15T09:18:03Z",
                      *           "updated_at": "2026-09-15T09:18:03Z"
                      *         }
@@ -8125,7 +15419,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example booking-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -8181,6 +15475,7 @@ export interface operations {
                      *       "end_at": "2026-10-08T09:30:00Z",
                      *       "quantity": 1,
                      *       "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *       "notes": "First visit",
                      *       "created_at": "2026-09-15T09:18:03Z",
                      *       "updated_at": "2026-09-15T09:18:03Z"
                      *     }
@@ -8188,7 +15483,7 @@ export interface operations {
                     "application/json": components["schemas"]["Appointment"];
                 };
             };
-            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            /** @description A parameter or body field is invalid (`invalid_parameter`), a quantity outside the service's range included; the booking cannot be made at any time (`service_inactive`, `location_inactive`, `party_too_large`, or another `400` booking code); `Idempotency-Key` is missing (`idempotency_key_required`); or `Talki-Version` names an unsupported version (`unsupported_version`). */
             400: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -8200,8 +15495,8 @@ export interface operations {
                      * @example {
                      *       "error": {
                      *         "type": "invalid_request",
-                     *         "code": "invalid_parameter",
-                     *         "message": "One or more request values are invalid.",
+                     *         "code": "service_inactive",
+                     *         "message": "That service does not exist or is not bookable.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -8293,7 +15588,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The write conflicts with current state or a previous idempotency key use. */
+            /** @description The booking was refused: the time cannot be booked (`slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`): check `GET /v1/availability` and try another time; `booking_refused` for a refusal with no code of its own. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -8305,8 +15600,8 @@ export interface operations {
                      * @example {
                      *       "error": {
                      *         "type": "conflict",
-                     *         "code": "idempotency_key_reuse",
-                     *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "code": "slot_unavailable",
+                     *         "message": "That time is no longer available.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -8409,6 +15704,7 @@ export interface operations {
                      *       "end_at": "2026-10-08T09:30:00Z",
                      *       "quantity": 1,
                      *       "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *       "notes": "First visit",
                      *       "created_at": "2026-09-15T09:18:03Z",
                      *       "updated_at": "2026-09-15T09:18:03Z"
                      *     }
@@ -8580,7 +15876,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example cancel-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -8710,7 +16006,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The write conflicts with current state or a previous idempotency key use. */
+            /** @description The appointment is already cancelled (`appointment_cancelled`). Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -8722,8 +16018,8 @@ export interface operations {
                      * @example {
                      *       "error": {
                      *         "type": "conflict",
-                     *         "code": "idempotency_key_reuse",
-                     *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "code": "appointment_cancelled",
+                     *         "message": "This appointment is already cancelled.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -8790,7 +16086,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example reschedule-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -8843,6 +16139,7 @@ export interface operations {
                      *       "end_at": "2026-10-08T09:30:00Z",
                      *       "quantity": 1,
                      *       "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *       "notes": "First visit",
                      *       "created_at": "2026-09-15T09:18:03Z",
                      *       "updated_at": "2026-09-15T09:18:03Z"
                      *     }
@@ -8955,7 +16252,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The write conflicts with current state or a previous idempotency key use. */
+            /** @description The appointment is cancelled (`appointment_cancelled`): restore it first. Or the time cannot be booked (`slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`): check `GET /v1/availability` and try another time; `booking_refused` for a refusal with no code of its own. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -8967,8 +16264,8 @@ export interface operations {
                      * @example {
                      *       "error": {
                      *         "type": "conflict",
-                     *         "code": "idempotency_key_reuse",
-                     *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "code": "slot_unavailable",
+                     *         "message": "That time is no longer available.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -9035,6 +16332,10 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque position in the change feed, from a previous response's `next_cursor`. Omit to start from the beginning. Store the last one you received: it is how you resume a sync without re-reading the whole address book. Not interchangeable with another endpoint's cursor. */
                 cursor?: string | null;
+                /** @description Only the contact with this number: E.164, or a national number read as Italian. Makes the list a search: see `tag_id`. */
+                phone?: string | null;
+                /** @description Only contacts with this tag (`Tag.id`). With it or `phone` the list is a search, not the change feed: newest contact first, `next_cursor` null on the last page, and a cursor works only in the mode that issued it. Resume a sync from the unfiltered feed. */
+                tag_id?: string | null;
             };
             header?: {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
@@ -9078,7 +16379,7 @@ export interface operations {
                     "application/json": components["schemas"]["ContactList"];
                 };
             };
-            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            /** @description `phone` is not a phone number, or another parameter is invalid (`invalid_parameter`). Or the `cursor` is not one this mode issued: altered, from another feed, or from the other mode, since a search answers with a list cursor and the feed with a change-feed cursor (`invalid_cursor`). `Talki-Version` may also name an unsupported version (`unsupported_version`). */
             400: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -9091,7 +16392,7 @@ export interface operations {
                      *       "error": {
                      *         "type": "invalid_request",
                      *         "code": "invalid_parameter",
-                     *         "message": "One or more request values are invalid.",
+                     *         "message": "`phone` must be a phone number, E.164 or national.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -9221,7 +16522,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example contact-crm-42
                  */
                 "Idempotency-Key"?: string;
@@ -9635,7 +16936,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example contact-delete-crm-42
                  */
                 "Idempotency-Key"?: string;
@@ -10068,7 +17369,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example service-create-colour
                  */
                 "Idempotency-Key": string;
@@ -10521,7 +17822,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example service-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -10651,7 +17952,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The service has bookings still to come or under way (`service_has_upcoming_bookings`): set `is_active: false` instead. Or the idempotency key was reused for a different request. */
+            /** @description The service has bookings still to come or under way (`service_has_upcoming_bookings`): set `is_active: false` instead. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -10731,7 +18032,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example service-price-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -11204,7 +18505,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example resource-create-basins
                  */
                 "Idempotency-Key": string;
@@ -11664,7 +18965,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example resource-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -11794,7 +19095,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The resource is the default one (`resource_is_default`), or a service draws on no other resource (`resource_required_by_service`): the message lists their IDs. Or the idempotency key was reused for a different request. */
+            /** @description The resource is the default one (`resource_is_default`), or a service draws on no other resource (`resource_required_by_service`): the message lists their IDs. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -11874,7 +19175,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example capacity-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -12524,7 +19825,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example unresolved-resolve-1
                  */
                 "Idempotency-Key"?: string;
@@ -12759,7 +20060,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example teach-bridal-sundays
                  */
                 "Idempotency-Key": string;
@@ -12908,7 +20209,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The request is not `resolved` (`unresolved_request_not_resolved`): resolve it first. Or the FAQ note has no room left (`faq_full`): the business tidies it in Talki before more answers are taught. Or the idempotency key was reused for a different request. */
+            /** @description The request is not `resolved` (`unresolved_request_not_resolved`): resolve it first. Or the FAQ note has no room left (`faq_full`): the business tidies it in Talki before more answers are taught. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -13054,6 +20355,7 @@ export interface operations {
                      *           "status_error": null,
                      *           "enabled": true,
                      *           "faq": false,
+                     *           "file_available": false,
                      *           "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *           "created_at": "2026-10-28T09:12:40Z",
                      *           "updated_at": "2026-10-28T09:12:40Z"
@@ -13233,7 +20535,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example faq-parking
                  */
                 "Idempotency-Key": string;
@@ -13279,6 +20581,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": true,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-28T09:12:40Z"
@@ -13392,7 +20695,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The website is already imported at one of the locations (`conflict`): import it again with `PUT`. Or the idempotency key was reused for a different request. */
+            /** @description The website is already imported at one of the locations (`conflict`): import it again with `PUT`. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -13544,6 +20847,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": true,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-28T09:12:40Z"
@@ -13719,7 +21023,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example faq-parking-v2
                  */
                 "Idempotency-Key"?: string;
@@ -13766,6 +21070,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": true,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-29T15:03:11Z"
@@ -13879,7 +21184,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description A file's first upload is still `processing`, or its new version has been read and is about to replace the previous one; or a website is being imported (`document_not_ready`), for the document or, with `also=copies`, a copy: retry once it is `ready` or `failed`, and again shortly if a file is still refused, or without `also=copies` when a copy holds it up. Or an older document holds the same site at the website's location (`conflict`): import that one again, or delete one of the two. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            /** @description A file's first upload is still `processing`, or its new version has been read and is about to replace the previous one; or a website is being imported (`document_not_ready`), for the document or, with `also=copies`, a copy: retry once it is `ready` or `failed`, and again shortly if a file is still refused, or without `also=copies` when a copy holds it up. Or an older document holds the same site at the website's location (`conflict`): import that one again, or delete one of the two. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. `request_conflict` and `document_not_ready` clear by themselves and are not kept: retry with the same key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -14004,7 +21309,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example faq-parking-delete
                  */
                 "Idempotency-Key"?: string;
@@ -14134,7 +21439,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description Another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            /** @description Another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. `request_conflict` clears by itself and is not kept: retry with the same key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -14217,7 +21522,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example faq-parking-off
                  */
                 "Idempotency-Key"?: string;
@@ -14263,6 +21568,7 @@ export interface operations {
                      *       "status_error": null,
                      *       "enabled": false,
                      *       "faq": false,
+                     *       "file_available": false,
                      *       "copy_group_id": "c41f7a29-6e3b-4d85-9f02-1b8e5c7a3d94",
                      *       "created_at": "2026-10-28T09:12:40Z",
                      *       "updated_at": "2026-10-28T09:12:40Z"
@@ -14376,7 +21682,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description A file's new title was sent while it is `processing`, or with `also=copies` while a copy's file is (`document_not_ready`): retry once it is `ready` or `failed`, or rename without `also=copies`. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            /** @description A file's new title was sent while it is `processing`, or with `also=copies` while a copy's file is (`document_not_ready`): retry once it is `ready` or `failed`, or rename without `also=copies`. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. `request_conflict` and `document_not_ready` clear by themselves and are not kept: retry with the same key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -15669,7 +22975,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example hours-2026-10
                  */
                 "Idempotency-Key"?: string;
@@ -16189,7 +23495,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example closure-2026-12-24
                  */
                 "Idempotency-Key": string;
@@ -16425,7 +23731,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example closure-delete-2026-12-24
                  */
                 "Idempotency-Key"?: string;
@@ -16635,7 +23941,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example closure-reason-2026-12-24
                  */
                 "Idempotency-Key"?: string;
@@ -17067,7 +24373,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example forwarding-check-1
                  */
                 "Idempotency-Key"?: string;
@@ -17206,7 +24512,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The check cannot start: the location has no Talki number, which an inactive one never has (`phone_number_missing`), no `forwarding_number` (`forwarding_number_missing`) or one that cannot be rung (`forwarding_number_invalid`), a check already running (`check_in_progress`), a test-mode credential (`livemode_required`), or the idempotency key was reused for a different request. */
+            /** @description The check cannot start: the location has no Talki number, which an inactive one never has (`phone_number_missing`), no `forwarding_number` (`forwarding_number_missing`) or one that cannot be rung (`forwarding_number_invalid`), a check already running (`check_in_progress`), a test-mode credential (`livemode_required`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. `check_in_progress` clears by itself and is not kept: retry with the same key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -17547,7 +24853,7 @@ export interface operations {
                     "application/json": components["schemas"]["UsageHistory"];
                 };
             };
-            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
             400: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -17559,8 +24865,8 @@ export interface operations {
                      * @example {
                      *       "error": {
                      *         "type": "invalid_request",
-                     *         "code": "unsupported_version",
-                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -17903,7 +25209,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example restore-crm-1042
                  */
                 "Idempotency-Key": string;
@@ -17946,6 +25252,7 @@ export interface operations {
                      *       "end_at": "2026-10-08T09:30:00Z",
                      *       "quantity": 1,
                      *       "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *       "notes": "First visit",
                      *       "created_at": "2026-09-15T09:18:03Z",
                      *       "updated_at": "2026-10-07T10:12:45Z"
                      *     }
@@ -18058,7 +25365,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The appointment is not cancelled (`appointment_not_cancelled`), or the time no longer fits (`slot_unavailable` and the other booking conflict codes), or the idempotency key was reused for a different request. */
+            /** @description The appointment is not cancelled (`appointment_not_cancelled`), or the time no longer fits (`slot_unavailable` and the other booking conflict codes), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -18316,7 +25623,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example tag-create-suppliers
                  */
                 "Idempotency-Key": string;
@@ -18444,7 +25751,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The account already holds 50 tags (`tag_limit_reached`), or the idempotency key was reused for a different request. */
+            /** @description The account already holds 50 tags (`tag_limit_reached`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -18524,7 +25831,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example tag-delete-suppliers
                  */
                 "Idempotency-Key"?: string;
@@ -18734,7 +26041,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example tag-rename-suppliers
                  */
                 "Idempotency-Key"?: string;
@@ -18966,7 +26273,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example tag-contact-42
                  */
                 "Idempotency-Key"?: string;
@@ -19190,7 +26497,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example untag-contact-42
                  */
                 "Idempotency-Key"?: string;
@@ -19589,7 +26896,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example pending-approve-1
                  */
                 "Idempotency-Key"?: string;
@@ -19824,7 +27131,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example pending-discard-1
                  */
                 "Idempotency-Key"?: string;
@@ -20064,6 +27371,7 @@ export interface operations {
                      *         {
                      *           "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *           "phone_number": "+393401234567",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *           "kind": "blocked",
                      *           "label": "Telemarketing",
                      *           "created_at": "2026-10-02T09:10:00Z",
@@ -20244,7 +27552,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example block-spam-1
                  */
                 "Idempotency-Key": string;
@@ -20281,6 +27589,7 @@ export interface operations {
                      * @example {
                      *       "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *       "phone_number": "+393401234567",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *       "kind": "blocked",
                      *       "label": "Telemarketing",
                      *       "created_at": "2026-10-02T09:10:00Z",
@@ -20306,6 +27615,7 @@ export interface operations {
                      * @example {
                      *       "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *       "phone_number": "+393401234567",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *       "kind": "blocked",
                      *       "label": "Telemarketing",
                      *       "created_at": "2026-10-02T09:10:00Z",
@@ -20420,7 +27730,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The list is full (`caller_rule_limit_reached`: 50 VIP, 200 blocked), another request added the same number at the same moment (`request_conflict`: retry, and the retry answers `200` with the rule), or the idempotency key was reused for a different request. */
+            /** @description The location's list is full (`caller_rule_limit_reached`: 50 VIP, 200 blocked), another request added the same number at the same moment (`request_conflict`: retry with the same idempotency key, and the retry answers `200` with the rule), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. `request_conflict` clears by itself and is not kept: retry with the same key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -20433,7 +27743,7 @@ export interface operations {
                      *       "error": {
                      *         "type": "conflict",
                      *         "code": "caller_rule_limit_reached",
-                     *         "message": "An account holds at most 200 blocked numbers. Remove one first.",
+                     *         "message": "A location holds at most 200 blocked numbers. Remove one first.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -20527,6 +27837,7 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "id": "f1a8d3c6-4e27-4b90-8c5d-2e7b9a0f6d13",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *           "phone_number": "+393401234567",
                      *           "label": "Telemarketing",
                      *           "attempted_at": "2026-10-05T11:47:03Z"
@@ -20703,7 +28014,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example rule-delete-1
                  */
                 "Idempotency-Key"?: string;
@@ -20913,7 +28224,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example rule-move-1
                  */
                 "Idempotency-Key"?: string;
@@ -20951,6 +28262,7 @@ export interface operations {
                      * @example {
                      *       "id": "93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30",
                      *       "phone_number": "+393401234567",
+                     *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
                      *       "kind": "vip",
                      *       "label": "Supplier",
                      *       "created_at": "2026-10-02T09:10:00Z",
@@ -21065,7 +28377,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The destination list is full (`caller_rule_limit_reached`), or the idempotency key was reused for a different request. */
+            /** @description The destination list is full (`caller_rule_limit_reached`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -21078,7 +28390,7 @@ export interface operations {
                      *       "error": {
                      *         "type": "conflict",
                      *         "code": "caller_rule_limit_reached",
-                     *         "message": "An account holds at most 50 vip numbers. Remove one first.",
+                     *         "message": "A location holds at most 50 vip numbers. Remove one first.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
@@ -21145,7 +28457,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example discover-bellini
                  */
                 "Idempotency-Key"?: string;
@@ -21157,7 +28469,7 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "url": "https://salonebellini.it"
+                 *       "url": "https://www.example.com"
                  *     }
                  */
                 "application/json": components["schemas"]["DocumentDiscover"];
@@ -21367,7 +28679,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example site-drop-careers
                  */
                 "Idempotency-Key"?: string;
@@ -21498,7 +28810,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The site is being imported at the document or, with `also=copies`, at a copy (`document_not_ready`): retry once it is `ready` or `failed`, or without `also=copies` when a copy holds it up. Or dropping the page would leave no text to search while other pages are still listed as read (`conflict`): import the site again with the `pages` to keep, or delete the document; a retry meets the same answer. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. */
+            /** @description The site is being imported at the document or, with `also=copies`, at a copy (`document_not_ready`): retry once it is `ready` or `failed`, or without `also=copies` when a copy holds it up. Or dropping the page would leave no text to search while other pages are still listed as read (`conflict`): import the site again with the `pages` to keep, or delete the document; a retry meets the same answer. Or another request changed the document's copies at the same time (`request_conflict`): retry. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. `request_conflict` and `document_not_ready` clear by themselves and are not kept: retry with the same key. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -21781,7 +29093,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example sandbox-call-1
                  */
                 "Idempotency-Key"?: string;
@@ -22001,7 +29313,7 @@ export interface operations {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
                 "Talki-Version"?: string;
                 /**
-                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours.
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
                  * @example sandbox-reset-1
                  */
                 "Idempotency-Key"?: string;
