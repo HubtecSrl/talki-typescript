@@ -33,7 +33,8 @@ const ref = refAt === -1 ? "origin/main" : args[refAt + 1];
 const source = args.find((arg, i) => !arg.startsWith("--") && i !== refAt + 1);
 
 function git(backend, ...rest) {
-  return execFileSync("git", ["-C", backend, ...rest], { encoding: "utf8" });
+  // The document has outgrown execFileSync's default 1 MiB of output.
+  return execFileSync("git", ["-C", backend, ...rest], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 }
 
 let text;
