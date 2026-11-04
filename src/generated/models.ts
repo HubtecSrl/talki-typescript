@@ -7,10 +7,12 @@ import type { components } from "./schema.js";
  * business name and texts, the voice, the opening and greeting, the switches, the transfer numbers,
  * and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the
  * call to validate a new credential. The settings are those of one location: the main one, or the one
- * `?location_id=` names; the account's own switches read the same at every location. The response's
- * `ETag` covers every writable field at that location; send it back as `If-Match` on `PATCH
- * /v1/account` with the same `location_id`. `account.updated` reports a change to the main location's
- * settings or to the account's switches, `location.settings_updated` one to another location's.
+ * `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`,
+ * `livemode`, `test`, `multi_sede`, `onboarding_completed` and `call_auto_archive_days`) read the same
+ * at every location. The response's `ETag` covers every writable field at that location; send it back
+ * as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change
+ * to the main location's settings or to `call_auto_archive_days`, `location.settings_updated` one to
+ * another location's settings, its switches included.
  */
 export type Account = components["schemas"]["Account"];
 /**
@@ -26,8 +28,8 @@ export type AccountLine = components["schemas"]["AccountLine"];
 /**
  * The settings you can change. Every field is optional and an omitted one is left unchanged, but send
  * at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be
- * null. With `?location_id=`, a location's own settings change at that location only, and the
- * account's switches at every location.
+ * null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` is
+ * the account's: it is refused with a `location_id` other than the main location's.
  */
 export type AccountUpdate = components["schemas"]["AccountUpdate"];
 /**
@@ -41,9 +43,9 @@ export type AnswersAs = components["schemas"]["AnswersAs"];
  */
 export type Appointment = components["schemas"]["Appointment"];
 /**
- * Who the booking is for. Always present; `contact_id` and `phone_number` are null for a booking
- * entered by hand. The name is the one the booking was taken under, exactly as the owner sees it, and
- * may come from what the assistant heard on the call.
+ * Who the booking is for. Always present; `contact_id` and `phone_number` are null when Talki has no
+ * number for the client. The name is the one the booking was taken under, exactly as the owner sees
+ * it, and may come from what the assistant heard on the call.
  */
 export type AppointmentClient = components["schemas"]["AppointmentClient"];
 /**
@@ -156,7 +158,8 @@ export type CallTransfer = components["schemas"]["CallTransfer"];
 export type CallUpdate = components["schemas"]["CallUpdate"];
 /**
  * A VIP or blocked number of one location. A number is on one list at most at a location, so adding it
- * to the other list moves it.
+ * to the other list moves it. A call from a VIP number to its location rings with `caller.vip` true on
+ * `call.ringing`.
  */
 export type CallerRule = components["schemas"]["CallerRule"];
 /**
@@ -214,7 +217,8 @@ export type ClosureUpdate = components["schemas"]["ClosureUpdate"];
 export type Contact = components["schemas"]["Contact"];
 /**
  * A page of the contact change feed. `next_cursor` is your position, returned on the last page too;
- * resume an incremental sync from it.
+ * resume an incremental sync from it. With `phone` or `tag_id`, a page of a search instead, newest
+ * contact first, whose `next_cursor` is null on the last page.
  */
 export type ContactList = components["schemas"]["ContactList"];
 /**

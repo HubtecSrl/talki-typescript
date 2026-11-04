@@ -510,7 +510,7 @@ export const OPERATIONS = {
   listContacts: {
     method: "GET",
     path: "/v1/contacts",
-    query: ["limit", "cursor"],
+    query: ["limit", "cursor", "phone", "tag_id"],
     headers: {},
     body: null,
     form: false,
@@ -2673,8 +2673,9 @@ export class ContactsResource {
   /**
    * List contact changes
    *
-   * Walk the curated-contact change feed in commit order. Requires `contacts:read`. Limited to 600
-   * requests per minute per account (API key) or per installation (OAuth).
+   * Walk the curated-contact change feed in commit order. With `phone` or `tag_id`, find contacts
+   * instead: newest first, not resumable as a sync. Requires `contacts:read`. Limited to 600 requests
+   * per minute per account (API key) or per installation (OAuth).
    *
    * @param params - the query, body and options; see `ListContactsParams`.
    * @see GET /v1/contacts
@@ -4887,9 +4888,12 @@ export class SandboxResource {
   /**
    * Reset the sandbox
    *
-   * Delete this sandbox's history and rebuild it from a fixed seed. Credentials, installations and
-   * services survive. Requires a developer sandbox; answers 404 on a real account. Limited to 6
-   * requests per minute per account (API key) or per installation (OAuth).
+   * Delete this sandbox's history and rebuild it from a fixed seed. API keys, installations, services
+   * and locations survive. Webhook endpoints do not: the account's endpoints and their deliveries are
+   * deleted and replaced by the seed's one paused endpoint, and the account events still queued for an
+   * app are dropped. Register your endpoints again after a reset. Requires a developer sandbox;
+   * answers 404 on a real account. Limited to 6 requests per minute per account (API key) or per
+   * installation (OAuth).
    *
    * @param params - the query, body and options; see `ResetSandboxParams`.
    * @see POST /v1/sandbox/reset

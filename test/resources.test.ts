@@ -332,6 +332,20 @@ describe("pages", () => {
     expect(stored).toBe("c3");
   });
 
+  it("a contact search sends its filters on every page", async () => {
+    const server = new Server({
+      "/v1/contacts": () => contacts([1, 2], true, "v1"),
+      "/v1/contacts v1": () => contacts([3], false, null),
+    });
+    const walked = await collect(server.client().contacts.list({ phone: "+393331234567", tag_id: "tag_1" }));
+    expect(walked.map(tail)).toEqual(["01", "02", "03"]);
+    expect(server.cursors).toEqual([null, "v1"]);
+    for (const request of server.requests) {
+      expect(request.url.searchParams.get("phone")).toBe("+393331234567");
+      expect(request.url.searchParams.get("tag_id")).toBe("tag_1");
+    }
+  });
+
   it("an empty page keeps the position it had", async () => {
     const server = new Server({ "/v1/contacts s1": () => contacts([], false, null) });
     const page = await server.client().contacts.list({ cursor: "s1" });

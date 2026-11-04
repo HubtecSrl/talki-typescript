@@ -338,9 +338,15 @@ has no cursor though it holds rows.
 The change feeds (appointments, contacts, services, resources, unresolved
 requests, and calls with `sync: true`) return `next_cursor` on every non-empty
 page, the last included: store every non-null one and resume from it. Keep the
-filters the same for a whole walk. A cursor used with another `location_id` is
-refused; any other changed filter is accepted and skips the rows the first
-walk filtered out.
+filters the same for a whole walk. A cursor used with another `location_id` or
+from another feed is refused; an older cursor, which names no feed, is accepted
+on any feed until 2027-02-01 and refused after that. Any other changed filter on
+a feed is accepted and skips the rows the first walk filtered out.
+
+`talki.contacts.list()` with `phone` or `tag_id` is a search, not the feed:
+newest contact first, no cursor on the last page, and a cursor works only in
+the mode that issued it. `for await` walks it like any list; resume a sync from
+the unfiltered feed.
 
 ## Webhooks
 

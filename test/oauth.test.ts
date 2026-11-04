@@ -434,6 +434,27 @@ describe("a pair that renews itself", () => {
     expect(waits).toHaveLength(1);
     expect(server.refreshes).toEqual(["talki_rt_1"]);
   });
+
+  it("names a refresh refused by the address limit, and the pair still renews", async () => {
+    let limited = true;
+    const server = new Server();
+    const recorder = new Recorder((seen, init) => {
+      if (seen.url.pathname === "/oauth/token" && limited) {
+        limited = false;
+        return json(429, { error: "ip_rate_limited", error_description: "Too many requests." });
+      }
+      return server.recorder.fetch(seen.url.toString(), init);
+    });
+    const talki = new Talki({
+      tokens: tokens(0),
+      oauthApp: new OAuthApp("talki_cid_x", "talki_cs_x"),
+      fetch: recorder.fetch,
+      maxRetries: 0,
+    });
+    await expect(talki.account.get()).rejects.toMatchObject({ error: "ip_rate_limited", status: 429 });
+    await talki.account.get();
+    expect(server.refreshes).toEqual(["talki_rt_1"]);
+  });
 });
 
 describe("the settings", () => {
