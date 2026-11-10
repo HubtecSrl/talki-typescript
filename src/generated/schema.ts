@@ -813,6 +813,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/agent_test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a test message
+         * @description Send one message to the account's assistant, as a caller would say it, and return its answer: what a call to the location would hear, from the same settings, documents, services, calendar and partner tools, written as text. Nothing is saved: a booking the assistant makes is not made, and no call, appointment or unresolved request is recorded. The first message starts a session; send its `session_id` with the next ones. Talki keeps the history for 30 minutes after the last turn, and a session holds at most 20 turns (then `agent_test_session_full`). A session belongs to the credential that started it. Your app's own partner tools run, sent with `test_drive: true`, writes included; no other app's do. The assistant here runs on a text model, not the one that answers calls, so a reply can be worded differently from what a caller would hear. Refused while the managing partner has suspended the account (`account_suspended`). An account may send 25 test messages a day, shared with the test in the Talki apps, and an OAuth app 300 a day across all the accounts it is installed on; past either, `429` `rate_limit_exceeded` with `Retry-After`. Requires `account:write` and `knowledge:read`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 15 test messages per minute.
+         */
+        post: operations["sendAgentTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent_test/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * End a test session
+         * @description Drop a test session and its history now, rather than 30 minutes after its last turn. Only the credential that started it can end it. Refused with `409` `request_conflict` while a message of the session is being answered. Requires `account:write` and `knowledge:read`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        delete: operations["endAgentTest"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/usage": {
         parameters: {
             query?: never;
@@ -822,7 +862,7 @@ export interface paths {
         };
         /**
          * Retrieve usage
-         * @description Return the talk time used in the current period, what is left, and when it resets. Requires `account:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         * @description Return the talk time used in the current period, what is left, and when it resets, for the whole account: the meter is one for every location. For one location's talk time, read the current month of `GET /v1/usage/history` with its `location_id`; that month can differ from this meter, as `UsageHistory` explains. Requires `account:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
          */
         get: operations["getUsage"];
         put?: never;
@@ -842,7 +882,7 @@ export interface paths {
         };
         /**
          * Retrieve usage history
-         * @description Return the talk time billed in each calendar month, up to 13 months, oldest first. A call counts, whole, in the month it was answered in. Requires `account:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         * @description Return the talk time billed in each calendar month, up to 13 months, oldest first. A call counts, whole, in the month it was answered in. With `location_id`, only the calls of that location count. Requires `account:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
          */
         get: operations["getUsageHistory"];
         put?: never;
@@ -7195,7 +7235,7 @@ export interface webhooks {
                             used_seconds: number;
                             /**
                              * Included Seconds
-                             * @description Seconds the plan includes in the period, without extra minutes.
+                             * @description Seconds included in the period, without extra minutes: the same figure as `Usage.included_seconds`.
                              */
                             included_seconds: number;
                             /**
@@ -7225,7 +7265,7 @@ export interface webhooks {
                             minutes_used: number;
                             /**
                              * Minutes Included
-                             * @description Minutes the plan includes in the period, without extra minutes.
+                             * @description Minutes included in the period, without extra minutes: `Usage.included_seconds` in minutes.
                              */
                             minutes_included: number;
                             /**
@@ -7413,7 +7453,7 @@ export interface webhooks {
                             used_seconds: number;
                             /**
                              * Minutes Included
-                             * @description Minutes the plan includes in the period, without extra minutes.
+                             * @description Minutes included in the period, without extra minutes: `Usage.included_seconds` in minutes.
                              */
                             minutes_included: number;
                             /**
@@ -8598,9 +8638,9 @@ export interface components {
             line: components["schemas"]["AccountLine"];
             /**
              * Call Auto Archive Days
-             * @description How many days after it started a call that has been read is archived on its own: `7`, `30` or `90`, as in the Talki apps. Null when calls are never archived on their own. An unread call is never archived this way. Archiving runs once a night, sends `call.updated` for each call, and can be undone like an archive by hand. The account's own setting: the same at every location.
+             * @description How many days after it started a call that has been read is archived on its own: `7`, `30`, `90` or `180`, as in the Talki apps. Null when calls are never archived on their own. An unread call is never archived this way. Archiving runs once a night, sends `call.updated` for each call, and can be undone like an archive by hand. The account's own setting: the same at every location.
              */
-            call_auto_archive_days: (7 | 30 | 90) | null;
+            call_auto_archive_days: (7 | 30 | 90 | 180) | null;
             /**
              * Multi Sede
              * @description True when the account works from several locations, or may add them: show locations (`GET /v1/locations`) to the owner only when true. False for an account that has only ever had its main location and cannot add another; it still has that one location, every record still carries its `location_id`, and nothing changes shape when this turns true. Read only.
@@ -8738,14 +8778,77 @@ export interface components {
             store_transcripts?: boolean;
             /**
              * Call Auto Archive Days
-             * @description `7`, `30` or `90`, or `null` to stop archiving calls on their own. The account's own setting: refused with `location_id` naming a location other than the main one.
+             * @description `7`, `30`, `90` or `180`, or `null` to stop archiving calls on their own. The account's own setting: refused with `location_id` naming a location other than the main one.
              */
-            call_auto_archive_days?: (7 | 30 | 90) | null;
+            call_auto_archive_days?: (7 | 30 | 90 | 180) | null;
             /**
              * Forwarding Number
              * @description Replaces the location's forwarding number: a mobile or landline that can be rung, E.164 or national (read as Italian). Send `null` or an empty string to clear it. Refused if it equals a transfer target of any location, or the line of another location, unless the same request replaces this location's `transfer_numbers`. The main location's cannot be cleared while any location has `transfer_numbers`. A change discards the result of the last forwarding check, and `last_verified_at` reads null until a check of the new number succeeds.
              */
             forwarding_number?: string | null;
+        };
+        /**
+         * AgentTestMessage
+         * @description One message to the assistant, as a caller would say it. Omit `session_id` to start a session, and send the one from the reply to continue it: Talki keeps the history, and there is no way to send one. A session stays at the location it started at.
+         */
+        AgentTestMessage: {
+            /**
+             * Message
+             * @description What the caller says, at most 1,000 characters.
+             */
+            message: string;
+            /**
+             * Session Id
+             * @description The session to continue, from an earlier reply. Omit it to start a new one.
+             */
+            session_id?: string | null;
+            /**
+             * Location Id
+             * @description The location whose assistant answers, an id from `GET /v1/locations`. Omit it for the main location. A session stays at the location it started at: with `session_id`, send the same one or none.
+             */
+            location_id?: string | null;
+        };
+        /**
+         * AgentTestReply
+         * @description The assistant's answer to one test message, and where the session stands. Send `session_id` with the next message before `expires_at`, at most `max_turns` turns in all.
+         */
+        AgentTestReply: {
+            /**
+             * Session Id
+             * @description The session this turn belongs to; send it with the next message.
+             */
+            session_id: string;
+            /**
+             * Reply
+             * @description What the assistant answered.
+             */
+            reply: string;
+            /**
+             * Turn
+             * @description This turn's number in the session, from 1.
+             */
+            turn: number;
+            /**
+             * Max Turns
+             * @description The most turns a session holds; start a new one after the last.
+             */
+            max_turns: number;
+            /**
+             * Expires At
+             * Format: date-time
+             * @description When the session is dropped if no message continues it, 30 minutes after this turn.
+             */
+            expires_at: string;
+            /**
+             * Daily Remaining
+             * @description Test messages the account may still send today, shared with the test in the Talki apps. Resets at midnight in the account's `timezone`. `null` when it could not be read.
+             */
+            daily_remaining: number | null;
+            /**
+             * Tools Called
+             * @description The tools the assistant used to answer, in order, by the names it sees: Talki's own (such as `check_availability`) and your app's, as `<prefix>__<name>`.
+             */
+            tools_called: string[];
         };
         /**
          * Appointment
@@ -10288,12 +10391,12 @@ export interface components {
             dialled_number: string | null;
             /**
              * Reason
-             * @description Why the call was refused: `user_concurrency` (the plan's simultaneous calls in use); `minutes` (talk time used up); `entitlement` (no active subscription); `trial_suspended` (the free trial was suspended); `deletion_pending` (the account is scheduled for deletion); `no_user` (the number no longer belongs to the account); `platform_concurrency` (Talki at capacity). New reasons may be added: show an unknown one as a generic refusal.
+             * @description Why the call was refused: `user_concurrency` (the plan's simultaneous calls in use); `minutes` (talk time used up); `entitlement` (no active subscription); `trial_suspended` (the free trial was suspended); `suspended` (the service was suspended by the partner that manages the account); `deletion_pending` (the account is scheduled for deletion); `no_user` (the number no longer belongs to the account); `platform_concurrency` (Talki at capacity). New reasons may be added: show an unknown one as a generic refusal.
              */
-            reason: "user_concurrency" | "minutes" | "entitlement" | "trial_suspended" | "deletion_pending" | "no_user" | "platform_concurrency" | (string & {});
+            reason: "user_concurrency" | "minutes" | "entitlement" | "trial_suspended" | "suspended" | "deletion_pending" | "no_user" | "platform_concurrency" | (string & {});
             /**
              * Action
-             * @description What the business can do about it: `cancel_deletion` (for `deletion_pending`); `check_forwarding` (for `no_user`); `reactivate_subscription` (for `entitlement`, `trial_suspended`); `upgrade_plan` (for `user_concurrency`, `minutes`). Null when there is nothing it can do. New actions may be added.
+             * @description What the business can do about it: `cancel_deletion` (for `deletion_pending`); `check_forwarding` (for `no_user`); `reactivate_subscription` (for `entitlement`, `trial_suspended`, `suspended`); `upgrade_plan` (for `user_concurrency`, `minutes`). Null when there is nothing it can do. New actions may be added.
              */
             action: "cancel_deletion" | "check_forwarding" | "reactivate_subscription" | "upgrade_plan" | (string & {}) | null;
             /**
@@ -10955,7 +11058,7 @@ export interface components {
             label: string;
             /**
              * Phone
-             * @description The number. E.164, or a national number, which is read in the country of the account's `phone_number`. Stored as E.164.
+             * @description The number. E.164, or a national number, which is read in the country of the account's `phone_number`. Stored as E.164. A premium-rate or shared-cost number is refused, unless the list being replaced already holds it.
              */
             phone: string;
         };
@@ -11088,12 +11191,12 @@ export interface components {
         };
         /**
          * Usage
-         * @description Talk time used in the current period and what is left, in seconds. To show minutes, round `remaining_seconds` down.
+         * @description Talk time used in the current period and what is left, in seconds, for the whole account. To show minutes, round `remaining_seconds` down. For one location's share, read the current month of `GET /v1/usage/history` with its `location_id`, which can differ from this meter.
          */
         Usage: {
             /**
              * Unlimited
-             * @description True when the plan sets no limit on talk time. The allowance fields are then null.
+             * @description True when nothing limits talk time: the plan sets no limit and the partner that manages the account has set no monthly minutes. The allowance fields are then null.
              */
             unlimited: boolean;
             /**
@@ -11103,7 +11206,7 @@ export interface components {
             used_seconds: number;
             /**
              * Included Seconds
-             * @description Talk time the plan includes per period. Null when `unlimited`.
+             * @description Talk time included per period: the plan's, or the monthly minutes the partner that manages the account set for it, when those are lower or the plan has no limit. Null when `unlimited`.
              */
             included_seconds: number | null;
             /**
@@ -11113,7 +11216,7 @@ export interface components {
             extra_seconds: number;
             /**
              * Allowance Seconds
-             * @description Everything the current period may spend: the time the plan includes plus every bought second not spent in an earlier period. Null when `unlimited`.
+             * @description Everything the current period may spend: `included_seconds` plus every bought second not spent in an earlier period. Null when `unlimited`.
              */
             allowance_seconds: number | null;
             /**
@@ -11128,13 +11231,13 @@ export interface components {
             period_start: string | null;
             /**
              * Resets At
-             * @description When `used_seconds` returns to 0 and the plan's time is available again, RFC 3339 UTC. Null when nothing will renew it, such as a subscription that has ended.
+             * @description When `used_seconds` returns to 0 and the included time is available again, RFC 3339 UTC. Null when nothing will renew it, such as a subscription that has ended.
              */
             resets_at: string | null;
         };
         /**
          * UsageHistory
-         * @description Talk time per calendar month, oldest first, from the call log. A call counts in the month it was answered in. A month is not a billing period, and the meter of `GET /v1/usage` adds a call once it has ended, so the current month can differ from it, and a call running past midnight into a new month counts here in the earlier one. A month reads less than was billed when some of its calls were deleted, through `DELETE /v1/calls/{call_id}` or in the apps, or are before `retained_since`.
+         * @description Talk time per calendar month, oldest first, from the call log. A call counts in the month it was answered in. A month is not a billing period, and the meter of `GET /v1/usage` adds a call once it has ended, so the current month can differ from it, and a call running past midnight into a new month counts here in the earlier one. A month reads less than was billed when some of its calls were deleted, through `DELETE /v1/calls/{call_id}` or in the apps, or are before `retained_since`. With `location_id`, only that location's calls count; the locations' months add up to the account's.
          */
         UsageHistory: {
             /**
@@ -11397,7 +11500,7 @@ export interface components {
         ErrorDetail: {
             /** @enum {string} */
             type: "authentication_error" | "permission_error" | "invalid_request" | "conflict" | "rate_limit_error" | "api_error";
-            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `document_not_ready`, `unsupported_file_type`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
+            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `document_not_ready`, `unsupported_file_type`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `account_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `agent_test_session_full`, `agent_test_unavailable`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
             code: string;
             message: string;
             request_id: string;
@@ -24629,6 +24732,470 @@ export interface operations {
             };
         };
     };
+    sendAgentTest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example agent-test-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "message": "Siete aperti sabato mattina?"
+                 *     }
+                 */
+                "application/json": components["schemas"]["AgentTestMessage"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "session_id": "ats_5f0c2a9e7d4b4e1c8a3f6b2d9e7c1a04",
+                     *       "reply": "Sì, sabato siamo aperti dalle 9 alle 13. Vuole che le fissi un appuntamento?",
+                     *       "turn": 1,
+                     *       "max_turns": 20,
+                     *       "expires_at": "2026-11-09T10:30:00Z",
+                     *       "daily_remaining": 24,
+                     *       "tools_called": [
+                     *         "check_availability"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentTestReply"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No session with this `session_id` belongs to this credential, or it expired 30 minutes after its last turn; or `location_id` names no location of the account (`resource_not_found`). */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such agent test session.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The session holds its 20 turns (`agent_test_session_full`): start a new one. Or another message of the session is still being answered (`request_conflict`): wait for its reply. Or the managing partner has suspended the account (`account_suspended`). Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. `request_conflict` clears by itself and is not kept: retry with the same key. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "agent_test_session_full",
+                     *         "message": "A test session holds at most 20 turns. Start a new one by sending a message without session_id.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account has sent its 25 test messages today, or the OAuth app 300 across all the accounts it is installed on: `Retry-After` is the seconds until midnight in the account's `timezone`. Or the request rate was exceeded: 15 test messages a minute per account (API key) or installation (OAuth), on top of the write limit (`ip_rate_limited` for the calling address). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "This account may send 25 test messages a day, shared with the test in the Talki apps. Retry after the number of seconds in `Retry-After`.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Testing the assistant through the API is switched off for now (`agent_test_unavailable`). Retry later. */
+            503: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "agent_test_unavailable",
+                     *         "message": "Testing the assistant through the API is switched off for now. Retry later.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    endAgentTest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example agent-test-end-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                /** @description The `session_id` a `POST /v1/agent_test` reply returned. */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No test session with this ID was started by this credential, or it has already ended or expired (30 minutes after its last turn). */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such agent test session.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description A message of this session is still being answered (`request_conflict`): wait for its reply, then end it. Also returned when the idempotency key was reused for a different request (`idempotency_key_reuse`), or while a request with the same key is still being processed (`request_in_progress`): retry for its result. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "request_conflict",
+                     *         "message": "A message of this session is still being answered. Wait for its reply, then end it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     getUsage: {
         parameters: {
             query?: never;
@@ -24809,6 +25376,8 @@ export interface operations {
                 from?: string | null;
                 /** @description Last month, included, `YYYY-MM`. Default: the current month, which is still counting. Not after the current month. At most 13 months from `from`. */
                 to?: string | null;
+                /** @description Only the calls of this location (`Call.location_id`), an id from `GET /v1/locations` (inactive ones included). Omit for every location. Each call belongs to one location, so the locations' months add up to the account's. */
+                location_id?: string | null;
             };
             header?: {
                 /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
@@ -24930,6 +25499,27 @@ export interface operations {
                      *         "type": "permission_error",
                      *         "code": "insufficient_scope",
                      *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `location_id` names no location of the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such location.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }

@@ -262,16 +262,26 @@ paths:
           \n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/account\",\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          account = talki.account.get()
+
+          print(account)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/account', {\n\
-          \  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const account = await talki.account.get();
+
+          console.log(account);'
     patch:
       tags:
       - Account
@@ -613,25 +623,20 @@ paths:
           ,\"phone\":\"+390351234567\"}]}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/account\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"assistant-settings-2026-10\"},\n    json={\"instructions\": \"Always\
-          \ use the formal register. Never quote prices for colour treatments.\",\
-          \ \"voice\": \"Sulafat\", \"greeting\": \"Come posso aiutarla?\", \"transfer_numbers\"\
-          : [{\"label\": \"Reception\", \"phone\": \"+390351234567\"}]},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\naccount = talki.account.update(\n\
+          \    body={\n        \"instructions\": \"Always use the formal register.\
+          \ Never quote prices for colour treatments.\",\n        \"voice\": \"Sulafat\"\
+          ,\n        \"greeting\": \"Come posso aiutarla?\",\n        \"transfer_numbers\"\
+          : [{\"label\": \"Reception\", \"phone\": \"+390351234567\"}],\n    },\n\
+          \    idempotency_key=\"assistant-settings-2026-10\",\n)\nprint(account)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/account', {\n\
-          \  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'assistant-settings-2026-10',\n    'Content-Type':\
-          \ 'application/json',\n  },\n  body: JSON.stringify({\"instructions\": \"\
-          Always use the formal register. Never quote prices for colour treatments.\"\
-          , \"voice\": \"Sulafat\", \"greeting\": \"Come posso aiutarla?\", \"transfer_numbers\"\
-          : [{\"label\": \"Reception\", \"phone\": \"+390351234567\"}]}),\n})\n\n\
-          if (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst account = await talki.account.update({\n  body: {\n    instructions:\
+          \ \"Always use the formal register. Never quote prices for colour treatments.\"\
+          ,\n    voice: \"Sulafat\",\n    greeting: \"Come posso aiutarla?\",\n  \
+          \  transfer_numbers: [{ label: \"Reception\", phone: \"+390351234567\" }],\n\
+          \  },\n  idempotencyKey: \"assistant-settings-2026-10\",\n});\nconsole.log(account);"
   /v1/account/complete_onboarding:
     post:
       tags:
@@ -819,18 +824,20 @@ paths:
           \ onboarding-done\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/account/complete_onboarding\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"onboarding-done\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          account = talki.account.complete_onboarding(idempotency_key="onboarding-done")
+
+          print(account)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/account/complete_onboarding',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'onboarding-done',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst account = await talki.account.completeOnboarding({\n  idempotencyKey:\
+          \ \"onboarding-done\",\n});\nconsole.log(account);"
       parameters:
       - name: Talki-Version
         in: header
@@ -1039,16 +1046,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/locations\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          location_list = talki.locations.list()
+
+          print(location_list)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/locations',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const locationList = await talki.locations.list();
+
+          console.log(locationList);'
       parameters:
       - name: Talki-Version
         in: header
@@ -1313,17 +1330,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/calls/stats\",\n    params={\"\
-          days\": 30},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          call_stats = talki.calls.get_stats(days=30)
+
+          print(call_stats)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/calls/stats')\nurl.searchParams.set('days',\
-          \ '30')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const callStats = await talki.calls.getStats({ days: 30 });
+
+          console.log(callStats);'
   /v1/calls/count:
     get:
       tags:
@@ -1527,17 +1553,28 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/calls/count\",\n    params={\"\
-          status\": \"unread\"},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+          from talki.models import InboxStatus
+
+
+          talki = Talki()
+
+
+          call_count = talki.calls.count(status=InboxStatus.UNREAD)
+
+          print(call_count)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/calls/count')\nurl.searchParams.set('status',\
-          \ 'unread')\n\nconst response = await fetch(url, {\n  method: 'GET',\n \
-          \ headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const callCount = await talki.calls.count({ status: "unread" });
+
+          console.log(callCount);'
   /v1/calls/export:
     get:
       tags:
@@ -1806,20 +1843,17 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\" \\\n  --output calls.xlsx"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/calls/export\",\n    params={\"\
-          from\": \"2026-09-01\", \"to\": \"2026-09-30\", \"format\": \"xlsx\"},\n\
-          \    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nwith open(\"calls.xlsx\"\
-          , \"wb\") as file:\n    file.write(response.content)"
+        source: "from datetime import date\nfrom pathlib import Path\n\nfrom talki\
+          \ import Talki\nfrom talki.models import ExportFormat\n\ntalki = Talki()\n\
+          \nfile = talki.calls.export_calls(\n    from_=date(2026, 9, 1),\n    to=date(2026,\
+          \ 9, 30),\n    format_=ExportFormat.XLSX,\n)\nPath(\"calls.xlsx\").write_bytes(file.payload.read())"
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/calls/export')\nurl.searchParams.set('from',\
-          \ '2026-09-01')\nurl.searchParams.set('to', '2026-09-30')\nurl.searchParams.set('format',\
-          \ 'xlsx')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst file = await response.arrayBuffer() // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        source: "import { writeFile } from \"node:fs/promises\";\nimport { Talki }\
+          \ from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\nconst file =\
+          \ await talki.calls.exportCalls({\n  from: \"2026-09-01\",\n  to: \"2026-09-30\"\
+          ,\n  format: \"xlsx\",\n});\nawait writeFile(\"calls.xlsx\", new Uint8Array(await\
+          \ file.arrayBuffer()));"
   /v1/calls/{call_id}/export:
     get:
       tags:
@@ -2019,19 +2053,17 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\" \\\n  --output call.pdf"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8/export\"\
-          ,\n    params={\"format\": \"pdf\"},\n    headers={\"Authorization\": f\"\
-          Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nwith open(\"call.pdf\", \"wb\") as file:\n    file.write(response.content)"
+        source: "from pathlib import Path\n\nfrom talki import Talki\nfrom talki.models\
+          \ import ExportFormat\n\ntalki = Talki()\n\nfile = talki.calls.export_call(\n\
+          \    \"38d23d84-02d2-4418-b169-3608aa04a8f8\",\n    format_=ExportFormat.PDF,\n\
+          )\nPath(\"call.pdf\").write_bytes(file.payload.read())"
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8/export')\n\
-          url.searchParams.set('format', 'pdf')\n\nconst response = await fetch(url,\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst file = await response.arrayBuffer() //\
-          \ application/pdf"
+        source: "import { writeFile } from \"node:fs/promises\";\nimport { Talki }\
+          \ from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\nconst file =\
+          \ await talki.calls.exportCall(\"38d23d84-02d2-4418-b169-3608aa04a8f8\"\
+          , {\n  format: \"pdf\",\n});\nawait writeFile(\"call.pdf\", new Uint8Array(await\
+          \ file.arrayBuffer()));"
   /v1/refused_calls:
     get:
       tags:
@@ -2258,17 +2290,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/refused_calls\",\n    params={\"\
-          limit\": 10},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.calls.list_refused(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/refused_calls')\nurl.searchParams.set('limit',\
-          \ '10')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.calls.listRefused({ limit: 10 });
+
+          console.log(page.data);'
   /v1/refused_calls/count:
     get:
       tags:
@@ -2461,16 +2502,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/refused_calls/count\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          call_count = talki.calls.count_refused()
+
+          print(call_count)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/refused_calls/count',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const callCount = await talki.calls.countRefused();
+
+          console.log(callCount);'
   /v1/refused_calls/summary:
     get:
       tags:
@@ -2716,17 +2767,27 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/refused_calls/summary\",\n  \
-          \  params={\"days\": 30},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          refused_call_summary = talki.calls.get_refused_summary(days=30)
+
+          print(refused_call_summary)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/refused_calls/summary')\n\
-          url.searchParams.set('days', '30')\n\nconst response = await fetch(url,\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const refusedCallSummary = await talki.calls.getRefusedSummary({ days: 30
+          });
+
+          console.log(refusedCallSummary);'
   /v1/calls:
     get:
       tags:
@@ -3091,17 +3152,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/calls\",\n    params={\"limit\"\
-          : 10},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.calls.list(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/calls')\nurl.searchParams.set('limit',\
-          \ '10')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.calls.list({ limit: 10 });
+
+          console.log(page.data);'
   /v1/calls/{call_id}:
     get:
       tags:
@@ -3287,16 +3357,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          call = talki.calls.get("38d23d84-02d2-4418-b169-3608aa04a8f8")
+
+          print(call)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const call = await talki.calls.get("38d23d84-02d2-4418-b169-3608aa04a8f8");
+
+          console.log(call);'
     patch:
       tags:
       - Calls
@@ -3551,19 +3631,15 @@ paths:
           \ '{\"archived\":true}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"call-archive-1\"},\n    json={\"archived\": true},\n\
-          \    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ncall = talki.calls.update(\n\
+          \    \"38d23d84-02d2-4418-b169-3608aa04a8f8\",\n    body={\"archived\":\
+          \ True},\n    idempotency_key=\"call-archive-1\",\n)\nprint(call)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'call-archive-1',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"archived\": true}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst call = await talki.calls.update(\"38d23d84-02d2-4418-b169-3608aa04a8f8\"\
+          , {\n  body: { archived: true },\n  idempotencyKey: \"call-archive-1\",\n\
+          });\nconsole.log(call);"
     delete:
       tags:
       - Calls
@@ -3797,18 +3873,14 @@ paths:
           \ call-delete-1\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"call-delete-1\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.calls.delete(\n\
+          \    \"38d23d84-02d2-4418-b169-3608aa04a8f8\",\n    idempotency_key=\"call-delete-1\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'call-delete-1',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.calls.delete(\"38d23d84-02d2-4418-b169-3608aa04a8f8\", {\n\
+          \  idempotencyKey: \"call-delete-1\",\n});"
   /v1/calls/{call_id}/transcript:
     get:
       tags:
@@ -4021,16 +4093,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8/transcript\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          call_transcript = talki.calls.get_transcript("38d23d84-02d2-4418-b169-3608aa04a8f8")
+
+          print(call_transcript)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/calls/38d23d84-02d2-4418-b169-3608aa04a8f8/transcript',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const callTranscript = await talki.calls.getTranscript("38d23d84-02d2-4418-b169-3608aa04a8f8");
+
+          console.log(callTranscript);'
   /v1/calls/mark_all_read:
     post:
       tags:
@@ -4268,18 +4350,14 @@ paths:
           \ calls-read-2026-10-08\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/calls/mark_all_read\",\n   \
-          \ headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"calls-read-2026-10-08\"},\n    timeout=30,\n)\n\
-          response.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nmark_all_read_result\
+          \ = talki.calls.mark_all_read(\n    idempotency_key=\"calls-read-2026-10-08\"\
+          ,\n)\nprint(mark_all_read_result)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/calls/mark_all_read',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'calls-read-2026-10-08',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst markAllReadResult = await talki.calls.markAllRead({\n  idempotencyKey:\
+          \ \"calls-read-2026-10-08\",\n});\nconsole.log(markAllReadResult);"
   /v1/appointments:
     get:
       tags:
@@ -4568,17 +4646,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/appointments\",\n    params={\"\
-          limit\": 10},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.appointments.list(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/appointments')\nurl.searchParams.set('limit',\
-          \ '10')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.appointments.list({ limit: 10 });
+
+          console.log(page.data);'
     post:
       tags:
       - Appointments
@@ -4803,25 +4890,21 @@ paths:
           }'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/appointments\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"booking-crm-1042\"},\n    json={\"service_id\": \"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
-          , \"client_name\": \"Giulia\", \"client_surname\": \"Bianchi\", \"start_at\"\
-          : \"2026-10-08T09:00:00Z\", \"end_at\": \"2026-10-08T09:30:00Z\", \"quantity\"\
-          : 1, \"notes\": \"First visit\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nappointment = talki.appointments.create(\n\
+          \    body={\n        \"service_id\": \"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
+          ,\n        \"client_name\": \"Giulia\",\n        \"client_surname\": \"\
+          Bianchi\",\n        \"start_at\": \"2026-10-08T09:00:00Z\",\n        \"\
+          end_at\": \"2026-10-08T09:30:00Z\",\n        \"quantity\": 1,\n        \"\
+          notes\": \"First visit\",\n    },\n    idempotency_key=\"booking-crm-1042\"\
+          ,\n)\nprint(appointment)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/appointments',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'booking-crm-1042',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"service_id\": \"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
-          , \"client_name\": \"Giulia\", \"client_surname\": \"Bianchi\", \"start_at\"\
-          : \"2026-10-08T09:00:00Z\", \"end_at\": \"2026-10-08T09:30:00Z\", \"quantity\"\
-          : 1, \"notes\": \"First visit\"}),\n})\n\nif (!response.ok) {\n  throw new\
-          \ Error(`Talki API returned ${response.status}`)\n}\n\nconst data = await\
-          \ response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst appointment = await talki.appointments.create({\n  body: {\n   \
+          \ service_id: \"45c470b7-592a-42cd-8ce8-5d7a0a497d26\",\n    client_name:\
+          \ \"Giulia\",\n    client_surname: \"Bianchi\",\n    start_at: \"2026-10-08T09:00:00Z\"\
+          ,\n    end_at: \"2026-10-08T09:30:00Z\",\n    quantity: 1,\n    notes: \"\
+          First visit\",\n  },\n  idempotencyKey: \"booking-crm-1042\",\n});\nconsole.log(appointment);"
       parameters:
       - name: Talki-Version
         in: header
@@ -5034,16 +5117,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          appointment = talki.appointments.get("a3fe45ee-572f-4677-b1dd-f36c21bb47de")
+
+          print(appointment)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const appointment = await talki.appointments.get("a3fe45ee-572f-4677-b1dd-f36c21bb47de");
+
+          console.log(appointment);'
     patch:
       tags:
       - Appointments
@@ -5297,21 +5390,16 @@ paths:
           }'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"reschedule-crm-1042\"},\n    json={\"start_at\"\
-          : \"2026-10-08T10:00:00Z\", \"end_at\": \"2026-10-08T10:30:00Z\"},\n   \
-          \ timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nappointment = talki.appointments.reschedule(\n\
+          \    \"a3fe45ee-572f-4677-b1dd-f36c21bb47de\",\n    body={\"start_at\":\
+          \ \"2026-10-08T10:00:00Z\", \"end_at\": \"2026-10-08T10:30:00Z\"},\n   \
+          \ idempotency_key=\"reschedule-crm-1042\",\n)\nprint(appointment)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'reschedule-crm-1042',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"start_at\": \"2026-10-08T10:00:00Z\", \"\
-          end_at\": \"2026-10-08T10:30:00Z\"}),\n})\n\nif (!response.ok) {\n  throw\
-          \ new Error(`Talki API returned ${response.status}`)\n}\n\nconst data =\
-          \ await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst appointment = await talki.appointments.reschedule(\n  \"a3fe45ee-572f-4677-b1dd-f36c21bb47de\"\
+          ,\n  {\n    body: { start_at: \"2026-10-08T10:00:00Z\", end_at: \"2026-10-08T10:30:00Z\"\
+          \ },\n    idempotencyKey: \"reschedule-crm-1042\",\n  },\n);\nconsole.log(appointment);"
     delete:
       tags:
       - Appointments
@@ -5538,18 +5626,14 @@ paths:
           \ cancel-crm-1042\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"cancel-crm-1042\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.appointments.cancel(\n\
+          \    \"a3fe45ee-572f-4677-b1dd-f36c21bb47de\",\n    idempotency_key=\"cancel-crm-1042\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'cancel-crm-1042',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.appointments.cancel(\"a3fe45ee-572f-4677-b1dd-f36c21bb47de\"\
+          , {\n  idempotencyKey: \"cancel-crm-1042\",\n});"
   /v1/contacts:
     get:
       tags:
@@ -5783,17 +5867,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/contacts\",\n    params={\"limit\"\
-          : 10},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.contacts.list(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/contacts')\nurl.searchParams.set('limit',\
-          \ '10')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.contacts.list({ limit: 10 });
+
+          console.log(page.data);'
     put:
       tags:
       - Contacts
@@ -5987,22 +6080,18 @@ paths:
           }'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PUT\",\n    \"https://api.talki.it/v1/contacts\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"contact-crm-42\"},\n    json={\"phone_number\": \"+393331234567\", \"\
-          first_name\": \"Giulia\", \"last_name\": \"Bianchi\", \"external_id\": \"\
-          crm-contact-42\", \"system\": \"acme-crm\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ncontact = talki.contacts.upsert(\n\
+          \    body={\n        \"phone_number\": \"+393331234567\",\n        \"first_name\"\
+          : \"Giulia\",\n        \"last_name\": \"Bianchi\",\n        \"external_id\"\
+          : \"crm-contact-42\",\n        \"system\": \"acme-crm\",\n    },\n    idempotency_key=\"\
+          contact-crm-42\",\n)\nprint(contact)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/contacts',\
-          \ {\n  method: 'PUT',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'contact-crm-42',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"phone_number\": \"+393331234567\", \"first_name\"\
-          : \"Giulia\", \"last_name\": \"Bianchi\", \"external_id\": \"crm-contact-42\"\
-          , \"system\": \"acme-crm\"}),\n})\n\nif (!response.ok) {\n  throw new Error(`Talki\
-          \ API returned ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst contact = await talki.contacts.upsert({\n  body: {\n    phone_number:\
+          \ \"+393331234567\",\n    first_name: \"Giulia\",\n    last_name: \"Bianchi\"\
+          ,\n    external_id: \"crm-contact-42\",\n    system: \"acme-crm\",\n  },\n\
+          \  idempotencyKey: \"contact-crm-42\",\n});\nconsole.log(contact);"
       parameters:
       - name: Talki-Version
         in: header
@@ -6215,16 +6304,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          contact = talki.contacts.get("8fbb25f2-4f3b-4496-8aea-f0fc66de512d")
+
+          print(contact)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const contact = await talki.contacts.get("8fbb25f2-4f3b-4496-8aea-f0fc66de512d");
+
+          console.log(contact);'
     delete:
       tags:
       - Contacts
@@ -6451,18 +6550,14 @@ paths:
           \ contact-delete-crm-42\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"contact-delete-crm-42\"},\n    timeout=30,\n)\n\
-          response.raise_for_status()\n\n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.contacts.delete(\n\
+          \    \"8fbb25f2-4f3b-4496-8aea-f0fc66de512d\",\n    idempotency_key=\"contact-delete-crm-42\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'contact-delete-crm-42',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.contacts.delete(\"8fbb25f2-4f3b-4496-8aea-f0fc66de512d\",\
+          \ {\n  idempotencyKey: \"contact-delete-crm-42\",\n});"
   /v1/services:
     get:
       tags:
@@ -6727,17 +6822,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/services\",\n    params={\"limit\"\
-          : 10},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.services.list(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/services')\nurl.searchParams.set('limit',\
-          \ '10')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.services.list({ limit: 10 });
+
+          console.log(page.data);'
     post:
       tags:
       - Services
@@ -7017,23 +7121,18 @@ paths:
           ,\"price\":\"from 60€\",\"duration_minutes\":90,\"initial_capacity\":2}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/services\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"service-create-colour\"},\n    json={\"name\": \"Colour\", \"description\"\
-          : \"Full colour with blow-dry\", \"price\": \"from 60€\", \"duration_minutes\"\
-          : 90, \"initial_capacity\": 2},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nservice = talki.services.create(\n\
+          \    body={\n        \"name\": \"Colour\",\n        \"description\": \"\
+          Full colour with blow-dry\",\n        \"price\": \"from 60€\",\n       \
+          \ \"duration_minutes\": 90,\n        \"initial_capacity\": 2,\n    },\n\
+          \    idempotency_key=\"service-create-colour\",\n)\nprint(service)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/services',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'service-create-colour',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"name\": \"Colour\", \"description\": \"\
-          Full colour with blow-dry\", \"price\": \"from 60€\", \"duration_minutes\"\
-          : 90, \"initial_capacity\": 2}),\n})\n\nif (!response.ok) {\n  throw new\
-          \ Error(`Talki API returned ${response.status}`)\n}\n\nconst data = await\
-          \ response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst service = await talki.services.create({\n  body: {\n    name: \"\
+          Colour\",\n    description: \"Full colour with blow-dry\",\n    price: \"\
+          from 60€\",\n    duration_minutes: 90,\n    initial_capacity: 2,\n  },\n\
+          \  idempotencyKey: \"service-create-colour\",\n});\nconsole.log(service);"
   /v1/services/{service_id}:
     get:
       tags:
@@ -7219,16 +7318,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/services/45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          service = talki.services.get("45c470b7-592a-42cd-8ce8-5d7a0a497d26")
+
+          print(service)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/services/45c470b7-592a-42cd-8ce8-5d7a0a497d26',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const service = await talki.services.get("45c470b7-592a-42cd-8ce8-5d7a0a497d26");
+
+          console.log(service);'
     patch:
       tags:
       - Services
@@ -7467,19 +7576,15 @@ paths:
           \n  --data '{\"price\":\"30€\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/services/45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"service-price-2026-10\"},\n    json={\"price\"\
-          : \"30€\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nservice = talki.services.update(\n\
+          \    \"45c470b7-592a-42cd-8ce8-5d7a0a497d26\",\n    body={\"price\": \"\
+          30€\"},\n    idempotency_key=\"service-price-2026-10\",\n)\nprint(service)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/services/45c470b7-592a-42cd-8ce8-5d7a0a497d26',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'service-price-2026-10',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"price\": \"30€\"}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst service = await talki.services.update(\"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
+          , {\n  body: { price: \"30€\" },\n  idempotencyKey: \"service-price-2026-10\"\
+          ,\n});\nconsole.log(service);"
     delete:
       tags:
       - Services
@@ -7716,18 +7821,14 @@ paths:
           \ service-delete-1\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/services/45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"service-delete-1\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.services.delete(\n\
+          \    \"45c470b7-592a-42cd-8ce8-5d7a0a497d26\",\n    idempotency_key=\"service-delete-1\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/services/45c470b7-592a-42cd-8ce8-5d7a0a497d26',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'service-delete-1',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.services.delete(\"45c470b7-592a-42cd-8ce8-5d7a0a497d26\",\
+          \ {\n  idempotencyKey: \"service-delete-1\",\n});"
   /v1/resources:
     get:
       tags:
@@ -7979,17 +8080,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/resources\",\n    params={\"\
-          limit\": 10},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.resources.list(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/resources')\nurl.searchParams.set('limit',\
-          \ '10')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.resources.list({ limit: 10 });
+
+          console.log(page.data);'
     post:
       tags:
       - Resources
@@ -8262,21 +8372,16 @@ paths:
           45c470b7-592a-42cd-8ce8-5d7a0a497d26\"]}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/resources\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"resource-create-basins\"},\n    json={\"name\": \"Wash basins\", \"\
-          capacity\": 3, \"service_ids\": [\"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
-          ]},\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nresource = talki.resources.create(\n\
+          \    body={\n        \"name\": \"Wash basins\",\n        \"capacity\": 3,\n\
+          \        \"service_ids\": [\"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"],\n\
+          \    },\n    idempotency_key=\"resource-create-basins\",\n)\nprint(resource)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/resources',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'resource-create-basins',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"name\": \"Wash basins\", \"capacity\":\
-          \ 3, \"service_ids\": [\"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"]}),\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst resource = await talki.resources.create({\n  body: {\n    name:\
+          \ \"Wash basins\",\n    capacity: 3,\n    service_ids: [\"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
+          ],\n  },\n  idempotencyKey: \"resource-create-basins\",\n});\nconsole.log(resource);"
   /v1/resources/{resource_id}:
     get:
       tags:
@@ -8462,16 +8567,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/resources/b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          resource = talki.resources.get("b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52")
+
+          print(resource)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/resources/b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const resource = await talki.resources.get("b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52");
+
+          console.log(resource);'
     patch:
       tags:
       - Resources
@@ -8729,19 +8844,15 @@ paths:
           \ '{\"capacity\":24}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/resources/b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"capacity-2026-10\"},\n    json={\"capacity\": 24},\n\
-          \    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nresource = talki.resources.update(\n\
+          \    \"b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52\",\n    body={\"capacity\":\
+          \ 24},\n    idempotency_key=\"capacity-2026-10\",\n)\nprint(resource)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/resources/b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'capacity-2026-10',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"capacity\": 24}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst resource = await talki.resources.update(\"b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52\"\
+          , {\n  body: { capacity: 24 },\n  idempotencyKey: \"capacity-2026-10\",\n\
+          });\nconsole.log(resource);"
     delete:
       tags:
       - Resources
@@ -8980,18 +9091,14 @@ paths:
           \ resource-delete-1\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/resources/b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"resource-delete-1\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.resources.delete(\n\
+          \    \"b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52\",\n    idempotency_key=\"resource-delete-1\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/resources/b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'resource-delete-1',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.resources.delete(\"b91c5d3e-0c1a-4a2f-9e6b-7c0d4e8f1a52\"\
+          , {\n  idempotencyKey: \"resource-delete-1\",\n});"
   /v1/unresolved_requests:
     get:
       tags:
@@ -9243,17 +9350,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/unresolved_requests\",\n    params={\"\
-          limit\": 10},\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.unresolved_requests.list(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/unresolved_requests')\n\
-          url.searchParams.set('limit', '10')\n\nconst response = await fetch(url,\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.unresolvedRequests.list({ limit: 10 });
+
+          console.log(page.data);'
   /v1/unresolved_requests/{request_id}:
     get:
       tags:
@@ -9440,16 +9556,20 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/unresolved_requests/6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nunresolved_request\
+          \ = talki.unresolved_requests.get(\n    \"6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13\"\
+          ,\n)\nprint(unresolved_request)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/unresolved_requests/6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const unresolvedRequest = await talki.unresolvedRequests.get("6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13");
+
+          console.log(unresolvedRequest);'
     patch:
       tags:
       - Unresolved requests
@@ -9700,22 +9820,19 @@ paths:
           \ of each month, by appointment.\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/unresolved_requests/6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"unresolved-resolve-1\"},\n    json={\"status\"\
-          : \"resolved\", \"answer\": \"Yes, on the first Sunday of each month, by\
-          \ appointment.\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\n\
-          print(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nunresolved_request\
+          \ = talki.unresolved_requests.update(\n    \"6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13\"\
+          ,\n    body={\n        \"status\": \"resolved\",\n        \"answer\": \"\
+          Yes, on the first Sunday of each month, by appointment.\",\n    },\n   \
+          \ idempotency_key=\"unresolved-resolve-1\",\n)\nprint(unresolved_request)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/unresolved_requests/6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'unresolved-resolve-1',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"status\": \"resolved\", \"answer\": \"\
-          Yes, on the first Sunday of each month, by appointment.\"}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst unresolvedRequest = await talki.unresolvedRequests.update(\n  \"\
+          6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13\",\n  {\n    body: {\n      status:\
+          \ \"resolved\",\n      answer: \"Yes, on the first Sunday of each month,\
+          \ by appointment.\",\n    },\n    idempotencyKey: \"unresolved-resolve-1\"\
+          ,\n  },\n);\nconsole.log(unresolvedRequest);"
   /v1/unresolved_requests/{request_id}/teach:
     post:
       tags:
@@ -9992,22 +10109,19 @@ paths:
           :\"Yes, on the first Sunday of each month, by appointment only.\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/unresolved_requests/6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13/teach\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"teach-bridal-sundays\"},\n    json={\"question\"\
-          : \"Do you do bridal hair on Sundays?\", \"answer\": \"Yes, on the first\
-          \ Sunday of each month, by appointment only.\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nunresolved_request_teaching\
+          \ = talki.unresolved_requests.teach(\n    \"6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13\"\
+          ,\n    body={\n        \"question\": \"Do you do bridal hair on Sundays?\"\
+          ,\n        \"answer\": \"Yes, on the first Sunday of each month, by appointment\
+          \ only.\",\n    },\n    idempotency_key=\"teach-bridal-sundays\",\n)\nprint(unresolved_request_teaching)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/unresolved_requests/6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13/teach',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'teach-bridal-sundays',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"question\": \"Do you do bridal hair on\
-          \ Sundays?\", \"answer\": \"Yes, on the first Sunday of each month, by appointment\
-          \ only.\"}),\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst unresolvedRequestTeaching = await talki.unresolvedRequests.teach(\n\
+          \  \"6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13\",\n  {\n    body: {\n      question:\
+          \ \"Do you do bridal hair on Sundays?\",\n      answer: \"Yes, on the first\
+          \ Sunday of each month, by appointment only.\",\n    },\n    idempotencyKey:\
+          \ \"teach-bridal-sundays\",\n  },\n);\nconsole.log(unresolvedRequestTeaching);"
   /v1/documents:
     get:
       tags:
@@ -10290,19 +10404,28 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/documents\",\n    params={\"\
-          source\": \"text\", \"limit\": 20},\n    headers={\"Authorization\": f\"\
-          Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+          from talki.models import ListDocumentsSourceType0
+
+
+          talki = Talki()
+
+
+          page = talki.documents.list(source=ListDocumentsSourceType0.TEXT, limit=20)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/documents')\nurl.searchParams.set('source',\
-          \ 'text')\nurl.searchParams.set('limit', '20')\n\nconst response = await\
-          \ fetch(url, {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer\
-          \ ${process.env.TALKI_API_KEY}`,\n  },\n})\n\nif (!response.ok) {\n  throw\
-          \ new Error(`Talki API returned ${response.status}`)\n}\n\nconst data =\
-          \ await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.documents.list({ source: "text", limit: 20 });
+
+          console.log(page.data);'
     post:
       tags:
       - Documents
@@ -10628,21 +10751,18 @@ paths:
           \ the salon, entrance from Via Roma.\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/documents\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"faq-parking\"},\n    json={\"title\": \"Is there parking?\", \"body\"\
-          : \"Yes: free parking behind the salon, entrance from Via Roma.\"},\n  \
-          \  timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\nfrom talki.models import DocumentCreate\n\
+          \ntalki = Talki()\n\ndocument = talki.documents.create(\n    body=DocumentCreate(\n\
+          \        title=\"Is there parking?\",\n        body=\"Yes: free parking\
+          \ behind the salon, entrance from Via Roma.\",\n    ),\n    idempotency_key=\"\
+          faq-parking\",\n)\nprint(document)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/documents',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'faq-parking',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"title\": \"Is there parking?\", \"body\"\
-          : \"Yes: free parking behind the salon, entrance from Via Roma.\"}),\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst document = await talki.documents.create({\n  body: {\n    title:\
+          \ \"Is there parking?\",\n    body: \"Yes: free parking behind the salon,\
+          \ entrance from Via Roma.\",\n  },\n  idempotencyKey: \"faq-parking\",\n\
+          });\nconsole.log(document);"
   /v1/documents/{document_id}:
     get:
       tags:
@@ -10828,16 +10948,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          document = talki.documents.get("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36")
+
+          print(document)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const document = await talki.documents.get("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36");
+
+          console.log(document);'
     put:
       tags:
       - Documents
@@ -11179,23 +11309,18 @@ paths:
           \ 8:00 to 20:00.\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PUT\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
-          ,\n    params={\"also\": \"copies\"},\n    headers={\"Authorization\": f\"\
-          Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\": \"faq-parking-v2\"\
-          },\n    json={\"body\": \"Yes: free parking behind the salon, entrance from\
-          \ Via Roma, 8:00 to 20:00.\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\nfrom talki.models import DocumentAlso, DocumentReplace\n\
+          \ntalki = Talki()\n\ndocument = talki.documents.replace(\n    \"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
+          ,\n    also=DocumentAlso.COPIES,\n    body=DocumentReplace(\n        body=\"\
+          Yes: free parking behind the salon, entrance from Via Roma, 8:00 to 20:00.\"\
+          ,\n    ),\n    idempotency_key=\"faq-parking-v2\",\n)\nprint(document)"
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36')\n\
-          url.searchParams.set('also', 'copies')\n\nconst response = await fetch(url,\
-          \ {\n  method: 'PUT',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'faq-parking-v2',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"body\": \"Yes: free parking behind the\
-          \ salon, entrance from Via Roma, 8:00 to 20:00.\"}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst document = await talki.documents.replace(\"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
+          , {\n  also: \"copies\",\n  body: {\n    body: \"Yes: free parking behind\
+          \ the salon, entrance from Via Roma, 8:00 to 20:00.\",\n  },\n  idempotencyKey:\
+          \ \"faq-parking-v2\",\n});\nconsole.log(document);"
     patch:
       tags:
       - Documents
@@ -11477,19 +11602,15 @@ paths:
           \ '{\"enabled\":false}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"faq-parking-off\"},\n    json={\"enabled\": false},\n\
-          \    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ndocument = talki.documents.update(\n\
+          \    \"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\",\n    body={\"enabled\": False},\n\
+          \    idempotency_key=\"faq-parking-off\",\n)\nprint(document)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'faq-parking-off',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"enabled\": false}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst document = await talki.documents.update(\"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
+          , {\n  body: { enabled: false },\n  idempotencyKey: \"faq-parking-off\"\
+          ,\n});\nconsole.log(document);"
     delete:
       tags:
       - Documents
@@ -11733,19 +11854,15 @@ paths:
           \ faq-parking-delete\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
-          ,\n    params={\"also\": \"copies\"},\n    headers={\"Authorization\": f\"\
-          Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\": \"faq-parking-delete\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\n# 204 No Content"
+        source: "from talki import Talki\nfrom talki.models import DocumentAlso\n\n\
+          talki = Talki()\n\ntalki.documents.delete(\n    \"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
+          ,\n    also=DocumentAlso.COPIES,\n    idempotency_key=\"faq-parking-delete\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36')\n\
-          url.searchParams.set('also', 'copies')\n\nconst response = await fetch(url,\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'faq-parking-delete',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.documents.delete(\"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
+          , {\n  also: \"copies\",\n  idempotencyKey: \"faq-parking-delete\",\n});"
   /v1/documents/{document_id}/text:
     get:
       tags:
@@ -11954,16 +12071,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/text\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          document_text = talki.documents.get_text("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36")
+
+          print(document_text)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/text',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const documentText = await talki.documents.getText("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36");
+
+          console.log(documentText);'
   /v1/documents/{document_id}/pages:
     get:
       tags:
@@ -12149,16 +12276,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/pages\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          document_page_list = talki.documents.list_pages("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36")
+
+          print(document_page_list)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/pages',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const documentPageList = await talki.documents.listPages("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36");
+
+          console.log(documentPageList);'
   /v1/documents/{document_id}/file:
     get:
       tags:
@@ -12371,18 +12508,31 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\" \\\n  --output listino.pdf"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/file\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nwith open(\"listino.pdf\"\
-          , \"wb\") as file:\n    file.write(response.content)"
+        source: 'from pathlib import Path
+
+
+          from talki import Talki
+
+
+          talki = Talki()
+
+
+          file = talki.documents.get_file("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36")
+
+          Path("listino.pdf").write_bytes(file.payload.read())'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/file',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst file = await response.arrayBuffer() //\
-          \ audio/wav"
+        source: 'import { writeFile } from "node:fs/promises";
+
+          import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const file = await talki.documents.getFile("5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36");
+
+          await writeFile("listino.pdf", new Uint8Array(await file.arrayBuffer()));'
   /v1/voices:
     get:
       tags:
@@ -12563,16 +12713,26 @@ paths:
           \  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/voices\",\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          voice_list = talki.voices.list()
+
+          print(voice_list)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/voices', {\n\
-          \  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const voiceList = await talki.voices.list();
+
+          console.log(voiceList);'
       parameters:
       - name: Talki-Version
         in: header
@@ -12766,18 +12926,31 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\" \\\n  --output voice.wav"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/voices/Sulafat/preview\",\n \
-          \   headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nwith open(\"voice.wav\"\
-          , \"wb\") as file:\n    file.write(response.content)"
+        source: 'from pathlib import Path
+
+
+          from talki import Talki
+
+
+          talki = Talki()
+
+
+          file = talki.voices.get_preview("Sulafat")
+
+          Path("voice.wav").write_bytes(file.payload.read())'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/voices/Sulafat/preview',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst file = await response.arrayBuffer() //\
-          \ audio/wav"
+        source: 'import { writeFile } from "node:fs/promises";
+
+          import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const file = await talki.voices.getPreview("Sulafat");
+
+          await writeFile("voice.wav", new Uint8Array(await file.arrayBuffer()));'
   /v1/working_hours:
     get:
       tags:
@@ -12996,16 +13169,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/working_hours\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          working_hours = talki.working_hours.get()
+
+          print(working_hours)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/working_hours',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const workingHours = await talki.workingHours.get();
+
+          console.log(workingHours);'
     put:
       tags:
       - Working hours
@@ -13292,24 +13475,20 @@ paths:
           start\":\"09:00\",\"end\":\"17:00\"}]}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PUT\",\n    \"https://api.talki.it/v1/working_hours\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"hours-2026-10\"},\n    json={\"slots\": [{\"days\": [2, 3, 4, 5], \"\
-          start\": \"09:00\", \"end\": \"13:00\"}, {\"days\": [2, 3, 4, 5], \"start\"\
-          : \"14:30\", \"end\": \"19:00\"}, {\"days\": [6], \"start\": \"09:00\",\
-          \ \"end\": \"17:00\"}]},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nworking_hours = talki.working_hours.replace(\n\
+          \    body={\n        \"slots\": [\n            {\"days\": [2, 3, 4, 5],\
+          \ \"start\": \"09:00\", \"end\": \"13:00\"},\n            {\"days\": [2,\
+          \ 3, 4, 5], \"start\": \"14:30\", \"end\": \"19:00\"},\n            {\"\
+          days\": [6], \"start\": \"09:00\", \"end\": \"17:00\"},\n        ],\n  \
+          \  },\n    idempotency_key=\"hours-2026-10\",\n)\nprint(working_hours)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/working_hours',\
-          \ {\n  method: 'PUT',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'hours-2026-10',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"slots\": [{\"days\": [2, 3, 4, 5], \"start\"\
-          : \"09:00\", \"end\": \"13:00\"}, {\"days\": [2, 3, 4, 5], \"start\": \"\
-          14:30\", \"end\": \"19:00\"}, {\"days\": [6], \"start\": \"09:00\", \"end\"\
-          : \"17:00\"}]}),\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API\
-          \ returned ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst workingHours = await talki.workingHours.replace({\n  body: {\n \
+          \   slots: [\n      { days: [2, 3, 4, 5], start: \"09:00\", end: \"13:00\"\
+          \ },\n      { days: [2, 3, 4, 5], start: \"14:30\", end: \"19:00\" },\n\
+          \      { days: [6], start: \"09:00\", end: \"17:00\" },\n    ],\n  },\n\
+          \  idempotencyKey: \"hours-2026-10\",\n});\nconsole.log(workingHours);"
   /v1/closures:
     get:
       tags:
@@ -13557,19 +13736,31 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/closures\",\n    params={\"from\"\
-          : \"2026-10-01\", \"to\": \"2026-12-31\"},\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from datetime import date
+
+
+          from talki import Talki
+
+
+          talki = Talki()
+
+
+          closure_list = talki.closures.list(from_=date(2026, 10, 1), to=date(2026,
+          12, 31))
+
+          print(closure_list)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/closures')\nurl.searchParams.set('from',\
-          \ '2026-10-01')\nurl.searchParams.set('to', '2026-12-31')\n\nconst response\
-          \ = await fetch(url, {\n  method: 'GET',\n  headers: {\n    Authorization:\
-          \ `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const closureList = await talki.closures.list({ from: "2026-10-01", to:
+          "2026-12-31" });
+
+          console.log(closureList);'
     post:
       tags:
       - Closures
@@ -13786,21 +13977,18 @@ paths:
           :\"2026-12-26\",\"reason\":\"Christmas holidays\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/closures\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"closure-2026-12-24\"},\n    json={\"all_day\": true, \"start_date\"\
-          : \"2026-12-24\", \"end_date\": \"2026-12-26\", \"reason\": \"Christmas\
-          \ holidays\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nclosure = talki.closures.create(\n\
+          \    body={\n        \"all_day\": True,\n        \"start_date\": \"2026-12-24\"\
+          ,\n        \"end_date\": \"2026-12-26\",\n        \"reason\": \"Christmas\
+          \ holidays\",\n    },\n    idempotency_key=\"closure-2026-12-24\",\n)\n\
+          print(closure)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/closures',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'closure-2026-12-24',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"all_day\": true, \"start_date\": \"2026-12-24\"\
-          , \"end_date\": \"2026-12-26\", \"reason\": \"Christmas holidays\"}),\n\
-          })\n\nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst closure = await talki.closures.create({\n  body: {\n    all_day:\
+          \ true,\n    start_date: \"2026-12-24\",\n    end_date: \"2026-12-26\",\n\
+          \    reason: \"Christmas holidays\",\n  },\n  idempotencyKey: \"closure-2026-12-24\"\
+          ,\n});\nconsole.log(closure);"
       parameters:
       - name: Talki-Version
         in: header
@@ -14083,21 +14271,16 @@ paths:
           \ \\\n  --data '{\"reason\":\"Closed for the Christmas holidays\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/closures/e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"closure-reason-2026-12-24\"},\n    json={\"reason\"\
-          : \"Closed for the Christmas holidays\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nclosure = talki.closures.update(\n\
+          \    \"e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35\",\n    body={\"reason\": \"\
+          Closed for the Christmas holidays\"},\n    idempotency_key=\"closure-reason-2026-12-24\"\
+          ,\n)\nprint(closure)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/closures/e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'closure-reason-2026-12-24',\n    'Content-Type':\
-          \ 'application/json',\n  },\n  body: JSON.stringify({\"reason\": \"Closed\
-          \ for the Christmas holidays\"}),\n})\n\nif (!response.ok) {\n  throw new\
-          \ Error(`Talki API returned ${response.status}`)\n}\n\nconst data = await\
-          \ response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst closure = await talki.closures.update(\"e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35\"\
+          , {\n  body: { reason: \"Closed for the Christmas holidays\" },\n  idempotencyKey:\
+          \ \"closure-reason-2026-12-24\",\n});\nconsole.log(closure);"
     delete:
       tags:
       - Closures
@@ -14322,18 +14505,14 @@ paths:
           \ closure-delete-2026-12-24\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/closures/e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"closure-delete-2026-12-24\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.closures.delete(\n\
+          \    \"e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35\",\n    idempotency_key=\"closure-delete-2026-12-24\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/closures/e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'closure-delete-2026-12-24',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.closures.delete(\"e2a7c9d4-5b18-4f63-8a0e-9c4d2b7f1e35\",\
+          \ {\n  idempotencyKey: \"closure-delete-2026-12-24\",\n});"
   /v1/forwarding_check:
     get:
       tags:
@@ -14531,16 +14710,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/forwarding_check\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          forwarding_check = talki.account.get_forwarding_check()
+
+          print(forwarding_check)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/forwarding_check',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const forwardingCheck = await talki.account.getForwardingCheck();
+
+          console.log(forwardingCheck);'
     post:
       tags:
       - Account
@@ -14853,18 +15042,557 @@ paths:
           \ forwarding-check-1\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/forwarding_check\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"forwarding-check-1\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nforwarding_check =\
+          \ talki.account.start_forwarding_check(\n    idempotency_key=\"forwarding-check-1\"\
+          ,\n)\nprint(forwarding_check)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/forwarding_check',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'forwarding-check-1',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst forwardingCheck = await talki.account.startForwardingCheck({\n \
+          \ idempotencyKey: \"forwarding-check-1\",\n});\nconsole.log(forwardingCheck);"
+  /v1/agent_test:
+    post:
+      tags:
+      - Agent test
+      summary: Send a test message
+      description: 'Send one message to the account''s assistant, as a caller would
+        say it, and return its answer: what a call to the location would hear, from
+        the same settings, documents, services, calendar and partner tools, written
+        as text. Nothing is saved: a booking the assistant makes is not made, and
+        no call, appointment or unresolved request is recorded. The first message
+        starts a session; send its `session_id` with the next ones. Talki keeps the
+        history for 30 minutes after the last turn, and a session holds at most 20
+        turns (then `agent_test_session_full`). A session belongs to the credential
+        that started it. Your app''s own partner tools run, sent with `test_drive:
+        true`, writes included; no other app''s do. The assistant here runs on a text
+        model, not the one that answers calls, so a reply can be worded differently
+        from what a caller would hear. Refused while the managing partner has suspended
+        the account (`account_suspended`). An account may send 25 test messages a
+        day, shared with the test in the Talki apps, and an OAuth app 300 a day across
+        all the accounts it is installed on; past either, `429` `rate_limit_exceeded`
+        with `Retry-After`. Requires `account:write` and `knowledge:read`. Limited
+        to 120 requests per minute per account (API key) or per installation (OAuth),
+        and to 15 test messages per minute.'
+      operationId: sendAgentTest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentTestMessage'
+            example:
+              message: Siete aperti sabato mattina?
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTestReply'
+              example:
+                session_id: ats_5f0c2a9e7d4b4e1c8a3f6b2d9e7c1a04
+                reply: Sì, sabato siamo aperti dalle 9 alle 13. Vuole che le fissi
+                  un appuntamento?
+                turn: 1
+                max_turns: 20
+                expires_at: '2026-11-09T10:30:00Z'
+                daily_remaining: 24
+                tools_called:
+                - check_availability
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+            Talki-Version:
+              description: The dated contract version this response was served at.
+              schema:
+                type: string
+                example: '2026-10-01'
+            Idempotency-Replayed:
+              description: '`true` when this response was replayed from a prior request
+                with the same key.'
+              schema:
+                type: string
+                enum:
+                - 'true'
+        '401':
+          description: The credential is missing, malformed, expired, revoked, or
+            unknown.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: authentication_error
+                  code: invalid_credentials
+                  message: The supplied API credential is invalid.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '402':
+          description: The account does not have an active subscription.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: subscription_inactive
+                  message: This account does not have an active subscription.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '403':
+          description: The account or credential may not perform this request.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: insufficient_scope
+                  message: This credential does not have the required scope.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '429':
+          description: 'The account has sent its 25 test messages today, or the OAuth
+            app 300 across all the accounts it is installed on: `Retry-After` is the
+            seconds until midnight in the account''s `timezone`. Or the request rate
+            was exceeded: 15 test messages a minute per account (API key) or installation
+            (OAuth), on top of the write limit (`ip_rate_limited` for the calling
+            address).'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+            Retry-After: *id005
+            X-RateLimit-Limit: *id006
+            X-RateLimit-Remaining: *id007
+            X-RateLimit-Reset: *id008
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: rate_limit_error
+                  code: rate_limit_exceeded
+                  message: This account may send 25 test messages a day, shared with
+                    the test in the Talki apps. Retry after the number of seconds
+                    in `Retry-After`.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '500':
+          description: An unexpected error occurred.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: api_error
+                  code: internal_error
+                  message: An unexpected error occurred. Quote the request_id when
+                    reporting it.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '400':
+          description: A parameter, cursor, body field, or required idempotency key
+            is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: invalid_parameter
+                  message: One or more request values are invalid.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '409':
+          description: 'The session holds its 20 turns (`agent_test_session_full`):
+            start a new one. Or another message of the session is still being answered
+            (`request_conflict`): wait for its reply. Or the managing partner has
+            suspended the account (`account_suspended`). Or the idempotency key was
+            reused for a different request. Except `idempotency_key_reuse`, the other
+            refusals are replayed for 24 hours to a request with the same idempotency
+            key: once the cause is gone, retry with a new key. `request_conflict`
+            clears by itself and is not kept: retry with the same key.'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: conflict
+                  code: agent_test_session_full
+                  message: A test session holds at most 20 turns. Start a new one
+                    by sending a message without session_id.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '404':
+          description: No session with this `session_id` belongs to this credential,
+            or it expired 30 minutes after its last turn; or `location_id` names no
+            location of the account (`resource_not_found`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: resource_not_found
+                  message: No such agent test session.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '503':
+          description: Testing the assistant through the API is switched off for now
+            (`agent_test_unavailable`). Retry later.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: api_error
+                  code: agent_test_unavailable
+                  message: Testing the assistant through the API is switched off for
+                    now. Retry later.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+      security:
+      - ApiKeyAuth: []
+      x-codeSamples:
+      - lang: sh
+        label: cURL
+        source: "curl --fail-with-body -X POST 'https://api.talki.it/v1/agent_test'\
+          \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\" \\\n  -H \"Idempotency-Key:\
+          \ agent-test-1\" \\\n  -H \"Content-Type: application/json\" \\\n  --data\
+          \ '{\"message\":\"Siete aperti sabato mattina?\"}'"
+      - lang: python
+        label: Python
+        source: "from talki import Talki\n\ntalki = Talki()\n\nagent_test_reply =\
+          \ talki.agent_test.send(\n    body={\"message\": \"Siete aperti sabato mattina?\"\
+          },\n    idempotency_key=\"agent-test-1\",\n)\nprint(agent_test_reply)"
+      - lang: ts
+        label: TypeScript
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst agentTestReply = await talki.agentTest.send({\n  body: { message:\
+          \ \"Siete aperti sabato mattina?\" },\n  idempotencyKey: \"agent-test-1\"\
+          ,\n});\nconsole.log(agentTestReply);"
+      parameters:
+      - name: Talki-Version
+        in: header
+        required: false
+        description: Serve this one request at the given dated contract version instead
+          of the credential's pin. An unsupported value is refused with `400 unsupported_version`,
+          never downgraded.
+        schema: *id001
+      - name: Idempotency-Key
+        in: header
+        required: false
+        description: 'Unique key for this logical write. Reuse it only when retrying
+          the same method, path, query and body. Required on appointment writes, on
+          creating a service, a resource, a closure, a tag, a caller rule or a document,
+          and on teaching the assistant; optional on every other write. Retained for
+          24 hours: a retry with the same key gets the first response again, marked
+          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
+          (a time taken, a list full) is replayed too. A response a retry can change
+          is not kept when the request saved nothing, and the retry runs the request
+          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
+          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
+          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
+          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+        schema:
+          type: string
+          maxLength: 255
+        example: agent-test-1
+  /v1/agent_test/{session_id}:
+    delete:
+      tags:
+      - Agent test
+      summary: End a test session
+      description: Drop a test session and its history now, rather than 30 minutes
+        after its last turn. Only the credential that started it can end it. Refused
+        with `409` `request_conflict` while a message of the session is being answered.
+        Requires `account:write` and `knowledge:read`. Limited to 120 requests per
+        minute per account (API key) or per installation (OAuth).
+      operationId: endAgentTest
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: The `session_id` a `POST /v1/agent_test` reply returned.
+          title: Session Id
+        description: The `session_id` a `POST /v1/agent_test` reply returned.
+      - name: Talki-Version
+        in: header
+        required: false
+        description: Serve this one request at the given dated contract version instead
+          of the credential's pin. An unsupported value is refused with `400 unsupported_version`,
+          never downgraded.
+        schema: *id001
+      - name: Idempotency-Key
+        in: header
+        required: false
+        description: 'Unique key for this logical write. Reuse it only when retrying
+          the same method, path, query and body. Required on appointment writes, on
+          creating a service, a resource, a closure, a tag, a caller rule or a document,
+          and on teaching the assistant; optional on every other write. Retained for
+          24 hours: a retry with the same key gets the first response again, marked
+          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
+          (a time taken, a list full) is replayed too. A response a retry can change
+          is not kept when the request saved nothing, and the retry runs the request
+          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
+          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
+          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
+          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+        schema:
+          type: string
+          maxLength: 255
+        example: agent-test-end-1
+      responses:
+        '204':
+          description: Successful Response
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+            Talki-Version:
+              description: The dated contract version this response was served at.
+              schema:
+                type: string
+                example: '2026-10-01'
+            Idempotency-Replayed:
+              description: '`true` when this response was replayed from a prior request
+                with the same key.'
+              schema:
+                type: string
+                enum:
+                - 'true'
+        '401':
+          description: The credential is missing, malformed, expired, revoked, or
+            unknown.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: authentication_error
+                  code: invalid_credentials
+                  message: The supplied API credential is invalid.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '402':
+          description: The account does not have an active subscription.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: subscription_inactive
+                  message: This account does not have an active subscription.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '403':
+          description: The account or credential may not perform this request.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: insufficient_scope
+                  message: This credential does not have the required scope.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '429':
+          description: The account or installation exceeded its request rate (`rate_limit_exceeded`),
+            or the calling address did (`ip_rate_limited`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+            Retry-After: *id005
+            X-RateLimit-Limit: *id006
+            X-RateLimit-Remaining: *id007
+            X-RateLimit-Reset: *id008
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: rate_limit_error
+                  code: rate_limit_exceeded
+                  message: Too many requests. Retry after the interval in Retry-After.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '500':
+          description: An unexpected error occurred.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: api_error
+                  code: internal_error
+                  message: An unexpected error occurred. Quote the request_id when
+                    reporting it.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '400':
+          description: A parameter, cursor, body field, or required idempotency key
+            is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: invalid_parameter
+                  message: One or more request values are invalid.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '404':
+          description: No test session with this ID was started by this credential,
+            or it has already ended or expired (30 minutes after its last turn).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: resource_not_found
+                  message: No such agent test session.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '409':
+          description: 'A message of this session is still being answered (`request_conflict`):
+            wait for its reply, then end it. Also returned when the idempotency key
+            was reused for a different request (`idempotency_key_reuse`), or while
+            a request with the same key is still being processed (`request_in_progress`):
+            retry for its result.'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: conflict
+                  code: request_conflict
+                  message: A message of this session is still being answered. Wait
+                    for its reply, then end it.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+      x-codeSamples:
+      - lang: sh
+        label: cURL
+        source: "curl --fail-with-body -X DELETE 'https://api.talki.it/v1/agent_test/ats_5f0c2a9e7d4b4e1c8a3f6b2d9e7c1a04'\
+          \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\" \\\n  -H \"Idempotency-Key:\
+          \ agent-test-end-1\""
+      - lang: python
+        label: Python
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.agent_test.end(\n\
+          \    \"ats_5f0c2a9e7d4b4e1c8a3f6b2d9e7c1a04\",\n    idempotency_key=\"agent-test-end-1\"\
+          ,\n)"
+      - lang: ts
+        label: TypeScript
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.agentTest.end(\"ats_5f0c2a9e7d4b4e1c8a3f6b2d9e7c1a04\", {\n\
+          \  idempotencyKey: \"agent-test-end-1\",\n});"
   /v1/usage:
     get:
       tags:
@@ -15016,9 +15744,12 @@ paths:
                   request_id: req_7f24a2f8c6b64e699901563a458b5031
       security:
       - ApiKeyAuth: []
-      description: Return the talk time used in the current period, what is left,
-        and when it resets. Requires `account:read`. Limited to 600 requests per minute
-        per account (API key) or per installation (OAuth).
+      description: 'Return the talk time used in the current period, what is left,
+        and when it resets, for the whole account: the meter is one for every location.
+        For one location''s talk time, read the current month of `GET /v1/usage/history`
+        with its `location_id`; that month can differ from this meter, as `UsageHistory`
+        explains. Requires `account:read`. Limited to 600 requests per minute per
+        account (API key) or per installation (OAuth).'
       x-codeSamples:
       - lang: sh
         label: cURL
@@ -15026,16 +15757,26 @@ paths:
           \  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/usage\",\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          usage = talki.usage.get()
+
+          print(usage)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/usage', {\n\
-          \  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const usage = await talki.usage.get();
+
+          console.log(usage);'
       parameters:
       - name: Talki-Version
         in: header
@@ -15050,9 +15791,10 @@ paths:
       - Usage
       summary: Retrieve usage history
       description: Return the talk time billed in each calendar month, up to 13 months,
-        oldest first. A call counts, whole, in the month it was answered in. Requires
-        `account:read`. Limited to 600 requests per minute per account (API key) or
-        per installation (OAuth).
+        oldest first. A call counts, whole, in the month it was answered in. With
+        `location_id`, only the calls of that location count. Requires `account:read`.
+        Limited to 600 requests per minute per account (API key) or per installation
+        (OAuth).
       operationId: getUsageHistory
       security:
       - ApiKeyAuth: []
@@ -15081,6 +15823,21 @@ paths:
         description: 'Last month, included, `YYYY-MM`. Default: the current month,
           which is still counting. Not after the current month. At most 13 months
           from `from`.'
+      - name: location_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Only the calls of this location (`Call.location_id`), an id
+            from `GET /v1/locations` (inactive ones included). Omit for every location.
+            Each call belongs to one location, so the locations' months add up to
+            the account's.
+          title: Location Id
+        description: Only the calls of this location (`Call.location_id`), an id from
+          `GET /v1/locations` (inactive ones included). Omit for every location. Each
+          call belongs to one location, so the locations' months add up to the account's.
       - name: Talki-Version
         in: header
         required: false
@@ -15234,26 +15991,40 @@ paths:
                   code: invalid_parameter
                   message: One or more request values are invalid.
                   request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '404':
+          description: '`location_id` names no location of the authenticated account.'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: resource_not_found
+                  message: No such location.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
       x-codeSamples:
       - lang: sh
         label: cURL
-        source: "curl --fail-with-body -X GET 'https://api.talki.it/v1/usage/history?from=2026-05&to=2026-10'\
+        source: "curl --fail-with-body -X GET 'https://api.talki.it/v1/usage/history?from=2026-05&to=2026-10&location_id=0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40'\
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/usage/history\",\n    params={\"\
-          from\": \"2026-05\", \"to\": \"2026-10\"},\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nusage_history = talki.usage.get_history(\n\
+          \    from_=\"2026-05\",\n    to=\"2026-10\",\n    location_id=\"0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40\"\
+          ,\n)\nprint(usage_history)"
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/usage/history')\nurl.searchParams.set('from',\
-          \ '2026-05')\nurl.searchParams.set('to', '2026-10')\n\nconst response =\
-          \ await fetch(url, {\n  method: 'GET',\n  headers: {\n    Authorization:\
-          \ `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst usageHistory = await talki.usage.getHistory({\n  from: \"2026-05\"\
+          ,\n  to: \"2026-10\",\n  location_id: \"0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40\"\
+          ,\n});\nconsole.log(usageHistory);"
   /v1/availability:
     get:
       tags:
@@ -15510,21 +16281,16 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/availability\",\n    params={\"\
-          service_id\": \"45c470b7-592a-42cd-8ce8-5d7a0a497d26\", \"from\": \"2026-10-08\"\
-          , \"to\": \"2026-10-10\", \"quantity\": 1},\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from datetime import date\n\nfrom talki import Talki\n\ntalki = Talki()\n\
+          \navailability = talki.availability.get(\n    service_id=\"45c470b7-592a-42cd-8ce8-5d7a0a497d26\"\
+          ,\n    from_=date(2026, 10, 8),\n    to=date(2026, 10, 10),\n    quantity=1,\n\
+          )\nprint(availability)"
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/availability')\nurl.searchParams.set('service_id',\
-          \ '45c470b7-592a-42cd-8ce8-5d7a0a497d26')\nurl.searchParams.set('from',\
-          \ '2026-10-08')\nurl.searchParams.set('to', '2026-10-10')\nurl.searchParams.set('quantity',\
-          \ '1')\n\nconst response = await fetch(url, {\n  method: 'GET',\n  headers:\
-          \ {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n  },\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst availability = await talki.availability.get({\n  service_id: \"\
+          45c470b7-592a-42cd-8ce8-5d7a0a497d26\",\n  from: \"2026-10-08\",\n  to:\
+          \ \"2026-10-10\",\n  quantity: 1,\n});\nconsole.log(availability);"
   /v1/appointments/{appointment_id}/restore:
     post:
       tags:
@@ -15778,18 +16544,14 @@ paths:
           \ restore-crm-1042\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de/restore\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"restore-crm-1042\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nappointment = talki.appointments.restore(\n\
+          \    \"a3fe45ee-572f-4677-b1dd-f36c21bb47de\",\n    idempotency_key=\"restore-crm-1042\"\
+          ,\n)\nprint(appointment)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/appointments/a3fe45ee-572f-4677-b1dd-f36c21bb47de/restore',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'restore-crm-1042',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst appointment = await talki.appointments.restore(\n  \"a3fe45ee-572f-4677-b1dd-f36c21bb47de\"\
+          ,\n  { idempotencyKey: \"restore-crm-1042\" },\n);\nconsole.log(appointment);"
   /v1/tags:
     get:
       tags:
@@ -15953,16 +16715,26 @@ paths:
           \  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/tags\",\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          tag_list = talki.tags.list()
+
+          print(tag_list)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/tags', {\n\
-          \  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const tagList = await talki.tags.list();
+
+          console.log(tagList);'
       parameters:
       - name: Talki-Version
         in: header
@@ -16167,19 +16939,15 @@ paths:
           \  --data '{\"name\":\"Suppliers\",\"color\":\"#e0867a\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/tags\",\n    headers={\"Authorization\"\
-          : f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\": \"tag-create-suppliers\"\
-          },\n    json={\"name\": \"Suppliers\", \"color\": \"#e0867a\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntag = talki.tags.create(\n\
+          \    body={\"name\": \"Suppliers\", \"color\": \"#e0867a\"},\n    idempotency_key=\"\
+          tag-create-suppliers\",\n)\nprint(tag)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/tags', {\n\
-          \  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'tag-create-suppliers',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"name\": \"Suppliers\", \"color\": \"#e0867a\"\
-          }),\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst tag = await talki.tags.create({\n  body: { name: \"Suppliers\",\
+          \ color: \"#e0867a\" },\n  idempotencyKey: \"tag-create-suppliers\",\n});\n\
+          console.log(tag);"
       parameters:
       - name: Talki-Version
         in: header
@@ -16450,20 +17218,15 @@ paths:
           \  --data '{\"name\":\"Wholesale suppliers\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"tag-rename-suppliers\"},\n    json={\"name\": \"\
-          Wholesale suppliers\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntag = talki.tags.update(\n\
+          \    \"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\",\n    body={\"name\": \"Wholesale\
+          \ suppliers\"},\n    idempotency_key=\"tag-rename-suppliers\",\n)\nprint(tag)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'tag-rename-suppliers',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"name\": \"Wholesale suppliers\"}),\n})\n\
-          \nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst tag = await talki.tags.update(\"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\"\
+          , {\n  body: { name: \"Wholesale suppliers\" },\n  idempotencyKey: \"tag-rename-suppliers\"\
+          ,\n});\nconsole.log(tag);"
     delete:
       tags:
       - Tags
@@ -16688,18 +17451,14 @@ paths:
           \ tag-delete-suppliers\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"tag-delete-suppliers\"},\n    timeout=30,\n)\n\
-          response.raise_for_status()\n\n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.tags.delete(\n\
+          \    \"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\",\n    idempotency_key=\"tag-delete-suppliers\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'tag-delete-suppliers',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.tags.delete(\"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\", {\n\
+          \  idempotencyKey: \"tag-delete-suppliers\",\n});"
   /v1/tags/{tag_id}/contacts/{contact_id}:
     put:
       tags:
@@ -16937,18 +17696,15 @@ paths:
           \ tag-contact-42\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PUT\",\n    \"https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"tag-contact-42\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntag = talki.tags.tag_contact(\n\
+          \    \"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\",\n    \"8fbb25f2-4f3b-4496-8aea-f0fc66de512d\"\
+          ,\n    idempotency_key=\"tag-contact-42\",\n)\nprint(tag)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d',\
-          \ {\n  method: 'PUT',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'tag-contact-42',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst tag = await talki.tags.tagContact(\n  \"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\"\
+          ,\n  \"8fbb25f2-4f3b-4496-8aea-f0fc66de512d\",\n  { idempotencyKey: \"tag-contact-42\"\
+          \ },\n);\nconsole.log(tag);"
     delete:
       tags:
       - Tags
@@ -17190,18 +17946,15 @@ paths:
           \ untag-contact-42\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"untag-contact-42\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntag = talki.tags.untag_contact(\n\
+          \    \"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\",\n    \"8fbb25f2-4f3b-4496-8aea-f0fc66de512d\"\
+          ,\n    idempotency_key=\"untag-contact-42\",\n)\nprint(tag)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/tags/4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014/contacts/8fbb25f2-4f3b-4496-8aea-f0fc66de512d',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'untag-contact-42',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst tag = await talki.tags.untagContact(\n  \"4b9e1c62-7a3d-4f08-b5c1-93e2d7a6f014\"\
+          ,\n  \"8fbb25f2-4f3b-4496-8aea-f0fc66de512d\",\n  { idempotencyKey: \"untag-contact-42\"\
+          \ },\n);\nconsole.log(tag);"
   /v1/pending_contacts:
     get:
       tags:
@@ -17364,16 +18117,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/pending_contacts\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          pending_contact_list = talki.pending_contacts.list()
+
+          print(pending_contact_list)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/pending_contacts',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const pendingContactList = await talki.pendingContacts.list();
+
+          console.log(pendingContactList);'
       parameters:
       - name: Talki-Version
         in: header
@@ -17631,19 +18394,15 @@ paths:
           \ --data '{\"last_name\":\"Verdi\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/pending_contacts/d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68/approve\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"pending-approve-1\"},\n    json={\"last_name\"\
-          : \"Verdi\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ncontact = talki.pending_contacts.approve(\n\
+          \    \"d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68\",\n    body={\"last_name\"\
+          : \"Verdi\"},\n    idempotency_key=\"pending-approve-1\",\n)\nprint(contact)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/pending_contacts/d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68/approve',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'pending-approve-1',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"last_name\": \"Verdi\"}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst contact = await talki.pendingContacts.approve(\n  \"d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68\"\
+          ,\n  { body: { last_name: \"Verdi\" }, idempotencyKey: \"pending-approve-1\"\
+          \ },\n);\nconsole.log(contact);"
   /v1/pending_contacts/{pending_id}:
     delete:
       tags:
@@ -17869,18 +18628,14 @@ paths:
           \ pending-discard-1\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/pending_contacts/d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"pending-discard-1\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.pending_contacts.discard(\n\
+          \    \"d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68\",\n    idempotency_key=\"pending-discard-1\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/pending_contacts/d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'pending-discard-1',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.pendingContacts.discard(\"d58a2f17-6c4b-4e93-a1f0-7b3c9e2d5a68\"\
+          , {\n  idempotencyKey: \"pending-discard-1\",\n});"
   /v1/caller_rules:
     get:
       tags:
@@ -18117,19 +18872,28 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/caller_rules\",\n    params={\"\
-          kind\": \"blocked\", \"limit\": 10},\n    headers={\"Authorization\": f\"\
-          Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+          from talki.models import CallerRuleKind
+
+
+          talki = Talki()
+
+
+          page = talki.caller_rules.list(kind=CallerRuleKind.BLOCKED, limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/caller_rules')\nurl.searchParams.set('kind',\
-          \ 'blocked')\nurl.searchParams.set('limit', '10')\n\nconst response = await\
-          \ fetch(url, {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer\
-          \ ${process.env.TALKI_API_KEY}`,\n  },\n})\n\nif (!response.ok) {\n  throw\
-          \ new Error(`Talki API returned ${response.status}`)\n}\n\nconst data =\
-          \ await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.callerRules.list({ kind: "blocked", limit: 10 });
+
+          console.log(page.data);'
     post:
       tags:
       - Caller rules
@@ -18406,21 +19170,16 @@ paths:
           Telemarketing\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/caller_rules\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"block-spam-1\"},\n    json={\"phone_number\": \"+393401234567\", \"\
-          kind\": \"blocked\", \"label\": \"Telemarketing\"},\n    timeout=30,\n)\n\
-          response.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ncaller_rule = talki.caller_rules.create(\n\
+          \    body={\n        \"phone_number\": \"+393401234567\",\n        \"kind\"\
+          : \"blocked\",\n        \"label\": \"Telemarketing\",\n    },\n    idempotency_key=\"\
+          block-spam-1\",\n)\nprint(caller_rule)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/caller_rules',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'block-spam-1',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"phone_number\": \"+393401234567\", \"kind\"\
-          : \"blocked\", \"label\": \"Telemarketing\"}),\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst callerRule = await talki.callerRules.create({\n  body: { phone_number:\
+          \ \"+393401234567\", kind: \"blocked\", label: \"Telemarketing\" },\n  idempotencyKey:\
+          \ \"block-spam-1\",\n});\nconsole.log(callerRule);"
   /v1/caller_rules/blocked_attempts:
     get:
       tags:
@@ -18644,18 +19403,27 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/caller_rules/blocked_attempts\"\
-          ,\n    params={\"limit\": 10},\n    headers={\"Authorization\": f\"Bearer\
-          \ {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          page = talki.caller_rules.list_blocked_call_attempts(limit=10)
+
+          print(page.data)'
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/caller_rules/blocked_attempts')\n\
-          url.searchParams.set('limit', '10')\n\nconst response = await fetch(url,\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const page = await talki.callerRules.listBlockedCallAttempts({ limit: 10
+          });
+
+          console.log(page.data);'
   /v1/caller_rules/{rule_id}:
     patch:
       tags:
@@ -18905,20 +19673,15 @@ paths:
           \ '{\"kind\":\"vip\",\"label\":\"Supplier\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"PATCH\",\n    \"https://api.talki.it/v1/caller_rules/93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"rule-move-1\"},\n    json={\"kind\": \"vip\", \"\
-          label\": \"Supplier\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ncaller_rule = talki.caller_rules.update(\n\
+          \    \"93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30\",\n    body={\"kind\": \"vip\"\
+          , \"label\": \"Supplier\"},\n    idempotency_key=\"rule-move-1\",\n)\nprint(caller_rule)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/caller_rules/93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30',\
-          \ {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'rule-move-1',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"kind\": \"vip\", \"label\": \"Supplier\"\
-          }),\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst callerRule = await talki.callerRules.update(\n  \"93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30\"\
+          ,\n  { body: { kind: \"vip\", label: \"Supplier\" }, idempotencyKey: \"\
+          rule-move-1\" },\n);\nconsole.log(callerRule);"
     delete:
       tags:
       - Caller rules
@@ -19142,18 +19905,14 @@ paths:
           \ rule-delete-1\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/caller_rules/93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30\"\
-          ,\n    headers={\"Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"\
-          , \"Idempotency-Key\": \"rule-delete-1\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \n# 204 No Content"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ntalki.caller_rules.delete(\n\
+          \    \"93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30\",\n    idempotency_key=\"rule-delete-1\"\
+          ,\n)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/caller_rules/93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30',\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'rule-delete-1',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.callerRules.delete(\"93c7e0a5-2d1f-4b68-8e4a-c6f19b2d7e30\"\
+          , {\n  idempotencyKey: \"rule-delete-1\",\n});"
   /v1/documents/discover:
     post:
       tags:
@@ -19366,19 +20125,15 @@ paths:
           \ '{\"url\":\"https://www.example.com\"}'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/documents/discover\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"discover-bellini\"},\n    json={\"url\": \"https://www.example.com\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\ndocument_discovery\
+          \ = talki.documents.discover_pages(\n    body={\"url\": \"https://www.example.com\"\
+          },\n    idempotency_key=\"discover-bellini\",\n)\nprint(document_discovery)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/documents/discover',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'discover-bellini',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"url\": \"https://www.example.com\"}),\n\
-          })\n\nif (!response.ok) {\n  throw new Error(`Talki API returned ${response.status}`)\n\
-          }\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst documentDiscovery = await talki.documents.discoverPages({\n  body:\
+          \ { url: \"https://www.example.com\" },\n  idempotencyKey: \"discover-bellini\"\
+          ,\n});\nconsole.log(documentDiscovery);"
       parameters:
       - name: Talki-Version
         in: header
@@ -19690,19 +20445,16 @@ paths:
           \ site-drop-careers\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"DELETE\",\n    \"https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/pages/8e3a1c57-b2d4-4f9e-a6c0-5d7f1b9e2a43\"\
-          ,\n    params={\"also\": \"copies\"},\n    headers={\"Authorization\": f\"\
-          Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\": \"site-drop-careers\"\
-          },\n    timeout=30,\n)\nresponse.raise_for_status()\n\n# 204 No Content"
+        source: "from talki import Talki\nfrom talki.models import DocumentAlso\n\n\
+          talki = Talki()\n\ntalki.documents.delete_page(\n    \"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
+          ,\n    \"8e3a1c57-b2d4-4f9e-a6c0-5d7f1b9e2a43\",\n    also=DocumentAlso.COPIES,\n\
+          \    idempotency_key=\"site-drop-careers\",\n)"
       - lang: ts
         label: TypeScript
-        source: "const url = new URL('https://api.talki.it/v1/documents/5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36/pages/8e3a1c57-b2d4-4f9e-a6c0-5d7f1b9e2a43')\n\
-          url.searchParams.set('also', 'copies')\n\nconst response = await fetch(url,\
-          \ {\n  method: 'DELETE',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'site-drop-careers',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\n//\
-          \ 204 No Content"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nawait talki.documents.deletePage(\n  \"5d2e8b17-3c9a-4f60-b4e1-8a7c2d9f0e36\"\
+          ,\n  \"8e3a1c57-b2d4-4f9e-a6c0-5d7f1b9e2a43\",\n  { also: \"copies\", idempotencyKey:\
+          \ \"site-drop-careers\" },\n);"
   /v1/sandbox/scenarios:
     get:
       tags:
@@ -19879,16 +20631,26 @@ paths:
           \ \\\n  -H \"Authorization: Bearer $TALKI_API_KEY\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"GET\",\n    \"https://api.talki.it/v1/sandbox/scenarios\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\"},\n    timeout=30,\n\
-          )\nresponse.raise_for_status()\n\nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          result = talki.sandbox.list_scenarios()
+
+          print(result)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/sandbox/scenarios',\
-          \ {\n  method: 'GET',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \  },\n})\n\nif (!response.ok) {\n  throw new Error(`Talki API returned\
-          \ ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const result = await talki.sandbox.listScenarios();
+
+          console.log(result);'
       parameters:
       - name: Talki-Version
         in: header
@@ -20107,20 +20869,16 @@ paths:
           }'"
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/sandbox/calls\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"sandbox-call-1\"},\n    json={\"scenario\": \"booking_created\", \"\
-          caller_phone\": \"+393480000001\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: "from talki import Talki\n\ntalki = Talki()\n\nfake_call_response\
+          \ = talki.sandbox.create_call(\n    body={\"scenario\": \"booking_created\"\
+          , \"caller_phone\": \"+393480000001\"},\n    idempotency_key=\"sandbox-call-1\"\
+          ,\n)\nprint(fake_call_response)"
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/sandbox/calls',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'sandbox-call-1',\n    'Content-Type': 'application/json',\n\
-          \  },\n  body: JSON.stringify({\"scenario\": \"booking_created\", \"caller_phone\"\
-          : \"+393480000001\"}),\n})\n\nif (!response.ok) {\n  throw new Error(`Talki\
-          \ API returned ${response.status}`)\n}\n\nconst data = await response.json()"
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki();\n\
+          \nconst fakeCallResponse = await talki.sandbox.createCall({\n  body: { scenario:\
+          \ \"booking_created\", caller_phone: \"+393480000001\" },\n  idempotencyKey:\
+          \ \"sandbox-call-1\",\n});\nconsole.log(fakeCallResponse);"
       parameters:
       - name: Talki-Version
         in: header
@@ -20350,18 +21108,27 @@ paths:
           \ sandbox-reset-1\""
       - lang: python
         label: Python
-        source: "import os\n\nimport requests\n\nresponse = requests.request(\n  \
-          \  \"POST\",\n    \"https://api.talki.it/v1/sandbox/reset\",\n    headers={\"\
-          Authorization\": f\"Bearer {os.environ['TALKI_API_KEY']}\", \"Idempotency-Key\"\
-          : \"sandbox-reset-1\"},\n    timeout=30,\n)\nresponse.raise_for_status()\n\
-          \nprint(response.json())"
+        source: 'from talki import Talki
+
+
+          talki = Talki()
+
+
+          reset_response = talki.sandbox.reset(idempotency_key="sandbox-reset-1")
+
+          print(reset_response)'
       - lang: ts
         label: TypeScript
-        source: "const response = await fetch('https://api.talki.it/v1/sandbox/reset',\
-          \ {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${process.env.TALKI_API_KEY}`,\n\
-          \    'Idempotency-Key': 'sandbox-reset-1',\n  },\n})\n\nif (!response.ok)\
-          \ {\n  throw new Error(`Talki API returned ${response.status}`)\n}\n\nconst\
-          \ data = await response.json()"
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki();
+
+
+          const resetResponse = await talki.sandbox.reset({ idempotencyKey: "sandbox-reset-1"
+          });
+
+          console.log(resetResponse);'
       parameters:
       - name: Talki-Version
         in: header
@@ -20574,11 +21341,12 @@ components:
             - 7
             - 30
             - 90
+            - 180
           - type: 'null'
           title: Call Auto Archive Days
           description: 'How many days after it started a call that has been read is
-            archived on its own: `7`, `30` or `90`, as in the Talki apps. Null when
-            calls are never archived on their own. An unread call is never archived
+            archived on its own: `7`, `30`, `90` or `180`, as in the Talki apps. Null
+            when calls are never archived on their own. An unread call is never archived
             this way. Archiving runs once a night, sends `call.updated` for each call,
             and can be undone like an archive by hand. The account''s own setting:
             the same at every location.'
@@ -20817,11 +21585,12 @@ components:
             - 7
             - 30
             - 90
+            - 180
           - type: 'null'
           title: Call Auto Archive Days
-          description: '`7`, `30` or `90`, or `null` to stop archiving calls on their
-            own. The account''s own setting: refused with `location_id` naming a location
-            other than the main one.'
+          description: '`7`, `30`, `90` or `180`, or `null` to stop archiving calls
+            on their own. The account''s own setting: refused with `location_id` naming
+            a location other than the main one.'
         forwarding_number:
           anyOf:
           - type: string
@@ -20842,6 +21611,90 @@ components:
         it; a voice, a switch or the transfer list cannot be null. With `?location_id=`,
         the settings change at that location only. `call_auto_archive_days` is the
         account''s: it is refused with a `location_id` other than the main location''s.'
+    AgentTestMessage:
+      properties:
+        message:
+          type: string
+          maxLength: 1000
+          minLength: 1
+          title: Message
+          description: What the caller says, at most 1,000 characters.
+        session_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Session Id
+          description: The session to continue, from an earlier reply. Omit it to
+            start a new one.
+        location_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Id
+          description: 'The location whose assistant answers, an id from `GET /v1/locations`.
+            Omit it for the main location. A session stays at the location it started
+            at: with `session_id`, send the same one or none.'
+      type: object
+      required:
+      - message
+      title: AgentTestMessage
+      description: 'One message to the assistant, as a caller would say it. Omit `session_id`
+        to start a session, and send the one from the reply to continue it: Talki
+        keeps the history, and there is no way to send one. A session stays at the
+        location it started at.'
+    AgentTestReply:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+          description: The session this turn belongs to; send it with the next message.
+        reply:
+          type: string
+          title: Reply
+          description: What the assistant answered.
+        turn:
+          type: integer
+          title: Turn
+          description: This turn's number in the session, from 1.
+        max_turns:
+          type: integer
+          title: Max Turns
+          description: The most turns a session holds; start a new one after the last.
+        expires_at:
+          type: string
+          title: Expires At
+          description: When the session is dropped if no message continues it, 30
+            minutes after this turn.
+          format: date-time
+        daily_remaining:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Daily Remaining
+          description: Test messages the account may still send today, shared with
+            the test in the Talki apps. Resets at midnight in the account's `timezone`.
+            `null` when it could not be read.
+        tools_called:
+          items:
+            type: string
+          type: array
+          title: Tools Called
+          description: 'The tools the assistant used to answer, in order, by the names
+            it sees: Talki''s own (such as `check_availability`) and your app''s,
+            as `<prefix>__<name>`.'
+      type: object
+      required:
+      - session_id
+      - reply
+      - turn
+      - max_turns
+      - expires_at
+      - daily_remaining
+      - tools_called
+      title: AgentTestReply
+      description: The assistant's answer to one test message, and where the session
+        stands. Send `session_id` with the next message before `expires_at`, at most
+        `max_turns` turns in all.
     Appointment:
       properties:
         id:
@@ -23031,8 +23884,9 @@ components:
           description: 'Why the call was refused: `user_concurrency` (the plan''s
             simultaneous calls in use); `minutes` (talk time used up); `entitlement`
             (no active subscription); `trial_suspended` (the free trial was suspended);
-            `deletion_pending` (the account is scheduled for deletion); `no_user`
-            (the number no longer belongs to the account); `platform_concurrency`
+            `suspended` (the service was suspended by the partner that manages the
+            account); `deletion_pending` (the account is scheduled for deletion);
+            `no_user` (the number no longer belongs to the account); `platform_concurrency`
             (Talki at capacity). New reasons may be added: show an unknown one as
             a generic refusal.'
           x-extensible-enum:
@@ -23040,6 +23894,7 @@ components:
           - minutes
           - entitlement
           - trial_suspended
+          - suspended
           - deletion_pending
           - no_user
           - platform_concurrency
@@ -23050,8 +23905,9 @@ components:
           title: Action
           description: 'What the business can do about it: `cancel_deletion` (for
             `deletion_pending`); `check_forwarding` (for `no_user`); `reactivate_subscription`
-            (for `entitlement`, `trial_suspended`); `upgrade_plan` (for `user_concurrency`,
-            `minutes`). Null when there is nothing it can do. New actions may be added.'
+            (for `entitlement`, `trial_suspended`, `suspended`); `upgrade_plan` (for
+            `user_concurrency`, `minutes`). Null when there is nothing it can do.
+            New actions may be added.'
           x-extensible-enum:
           - cancel_deletion
           - check_forwarding
@@ -23132,6 +23988,7 @@ components:
             - minutes
             - entitlement
             - trial_suspended
+            - suspended
             - deletion_pending
             - no_user
             - platform_concurrency
@@ -24002,7 +24859,9 @@ components:
           type: string
           title: Phone
           description: The number. E.164, or a national number, which is read in the
-            country of the account's `phone_number`. Stored as E.164.
+            country of the account's `phone_number`. Stored as E.164. A premium-rate
+            or shared-cost number is refused, unless the list being replaced already
+            holds it.
       type: object
       required:
       - label
@@ -24200,8 +25059,9 @@ components:
         unlimited:
           type: boolean
           title: Unlimited
-          description: True when the plan sets no limit on talk time. The allowance
-            fields are then null.
+          description: 'True when nothing limits talk time: the plan sets no limit
+            and the partner that manages the account has set no monthly minutes. The
+            allowance fields are then null.'
         used_seconds:
           type: integer
           title: Used Seconds
@@ -24211,7 +25071,9 @@ components:
           - type: integer
           - type: 'null'
           title: Included Seconds
-          description: Talk time the plan includes per period. Null when `unlimited`.
+          description: 'Talk time included per period: the plan''s, or the monthly
+            minutes the partner that manages the account set for it, when those are
+            lower or the plan has no limit. Null when `unlimited`.'
         extra_seconds:
           type: integer
           title: Extra Seconds
@@ -24223,9 +25085,8 @@ components:
           - type: integer
           - type: 'null'
           title: Allowance Seconds
-          description: 'Everything the current period may spend: the time the plan
-            includes plus every bought second not spent in an earlier period. Null
-            when `unlimited`.'
+          description: 'Everything the current period may spend: `included_seconds`
+            plus every bought second not spent in an earlier period. Null when `unlimited`.'
         remaining_seconds:
           anyOf:
           - type: integer
@@ -24247,7 +25108,7 @@ components:
             format: date-time
           - type: 'null'
           title: Resets At
-          description: When `used_seconds` returns to 0 and the plan's time is available
+          description: When `used_seconds` returns to 0 and the included time is available
             again, RFC 3339 UTC. Null when nothing will renew it, such as a subscription
             that has ended.
       type: object
@@ -24261,8 +25122,10 @@ components:
       - period_start
       - resets_at
       title: Usage
-      description: Talk time used in the current period and what is left, in seconds.
-        To show minutes, round `remaining_seconds` down.
+      description: Talk time used in the current period and what is left, in seconds,
+        for the whole account. To show minutes, round `remaining_seconds` down. For
+        one location's share, read the current month of `GET /v1/usage/history` with
+        its `location_id`, which can differ from this meter.
     UsageHistory:
       properties:
         months:
@@ -24288,7 +25151,8 @@ components:
         month can differ from it, and a call running past midnight into a new month
         counts here in the earlier one. A month reads less than was billed when some
         of its calls were deleted, through `DELETE /v1/calls/{call_id}` or in the
-        apps, or are before `retained_since`.
+        apps, or are before `retained_since`. With `location_id`, only that location's
+        calls count; the locations' months add up to the account's.
     UsageMonth:
       properties:
         month:
@@ -24649,18 +25513,19 @@ components:
             `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`,
             `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`,
             `tag_limit_reached`, `caller_rule_limit_reached`, `transcript_not_available`,
-            `trial_suspended`, `phone_number_missing`, `forwarding_number_missing`,
+            `trial_suspended`, `account_suspended`, `phone_number_missing`, `forwarding_number_missing`,
             `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`,
-            `checks_busy`, `check_call_failed`, `unknown_scenario`, `sandbox_not_ready`,
-            `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`,
-            `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`,
-            `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`,
-            `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`,
-            `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`,
-            `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`,
-            `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`,
-            `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an
-            unknown one by its HTTP status.'
+            `checks_busy`, `check_call_failed`, `agent_test_session_full`, `agent_test_unavailable`,
+            `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`,
+            `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`,
+            `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`,
+            `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`,
+            `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`,
+            `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`,
+            `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`,
+            `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`,
+            `stay_dates_invalid`. New codes may be added; treat an unknown one by
+            its HTTP status.'
         message:
           type: string
         request_id:
@@ -24770,6 +25635,9 @@ tags:
 - name: Locations
   description: List the places the business works from, each with its own Talki number
     and line.
+- name: Agent test
+  description: Chat in text with the account's assistant, as the test in the Talki
+    apps does, to check how it answers before a caller does.
 - name: Usage
   description: Read the talk time used and left in the current period.
 - name: Voices
@@ -31861,8 +32729,8 @@ webhooks:
                       title: Used Seconds
                       type: integer
                     included_seconds:
-                      description: Seconds the plan includes in the period, without
-                        extra minutes.
+                      description: 'Seconds included in the period, without extra
+                        minutes: the same figure as `Usage.included_seconds`.'
                       title: Included Seconds
                       type: integer
                     allowance_seconds:
@@ -31893,8 +32761,8 @@ webhooks:
                       title: Minutes Used
                       type: integer
                     minutes_included:
-                      description: Minutes the plan includes in the period, without
-                        extra minutes.
+                      description: 'Minutes included in the period, without extra
+                        minutes: `Usage.included_seconds` in minutes.'
                       title: Minutes Included
                       type: integer
                     minutes_remaining:
@@ -32124,8 +32992,8 @@ webhooks:
                       title: Used Seconds
                       type: integer
                     minutes_included:
-                      description: Minutes the plan includes in the period, without
-                        extra minutes.
+                      description: 'Minutes included in the period, without extra
+                        minutes: `Usage.included_seconds` in minutes.'
                       title: Minutes Included
                       type: integer
                     extra_seconds_balance:

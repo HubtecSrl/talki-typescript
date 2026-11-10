@@ -30,7 +30,8 @@ const SPEC_IN_BACKEND = "api-cli/openapi/talki-v1.yaml";
 const args = process.argv.slice(2);
 const refAt = args.indexOf("--ref");
 const ref = refAt === -1 ? "origin/main" : args[refAt + 1];
-const source = args.find((arg, i) => !arg.startsWith("--") && i !== refAt + 1);
+// With no --ref, refAt + 1 is 0: skip the --ref value only when there is one.
+const source = args.find((arg, i) => !arg.startsWith("--") && (refAt === -1 || i !== refAt + 1));
 
 function git(backend, ...rest) {
   // The document has outgrown execFileSync's default 1 MiB of output.
