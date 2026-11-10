@@ -1210,7 +1210,7 @@ export class AgentTestResourceWithRawResponse {
    *
    * Returns the whole answer: its status and headers, and `data`, the value.
    *
-   * @param sessionId - session_id
+   * @param sessionId - The `session_id` a `POST /v1/agent_test` reply returned.
    * @param params - the query, body and options; see `EndAgentTestParams`.
    * @see DELETE /v1/agent_test/{session_id}
    */
@@ -1254,7 +1254,7 @@ export class AgentTestResource {
    * the session is being answered. Requires `account:write` and `knowledge:read`. Limited to 120
    * requests per minute per account (API key) or per installation (OAuth).
    *
-   * @param sessionId - session_id
+   * @param sessionId - The `session_id` a `POST /v1/agent_test` reply returned.
    * @param params - the query, body and options; see `EndAgentTestParams`.
    * @see DELETE /v1/agent_test/{session_id}
    */

@@ -24998,6 +24998,7 @@ export interface operations {
                 "Idempotency-Key"?: string;
             };
             path: {
+                /** @description The `session_id` a `POST /v1/agent_test` reply returned. */
                 session_id: string;
             };
             cookie?: never;
@@ -25101,7 +25102,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description No agent test session with this ID exists in the authenticated account. */
+            /** @description No test session with this ID was started by this credential, or it has already ended or expired (30 minutes after its last turn). */
             404: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -25122,7 +25123,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The write conflicts with current state or a previous idempotency key use. */
+            /** @description A message of this session is still being answered (`request_conflict`): wait for its reply, then end it. Also returned when the idempotency key was reused for a different request (`idempotency_key_reuse`), or while a request with the same key is still being processed (`request_in_progress`): retry for its result. */
             409: {
                 headers: {
                     /** @description Identifier to include when contacting Talki support. */
@@ -25134,8 +25135,8 @@ export interface operations {
                      * @example {
                      *       "error": {
                      *         "type": "conflict",
-                     *         "code": "idempotency_key_reuse",
-                     *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "code": "request_conflict",
+                     *         "message": "A message of this session is still being answered. Wait for its reply, then end it.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }

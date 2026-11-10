@@ -15370,7 +15370,9 @@ paths:
         required: true
         schema:
           type: string
+          description: The `session_id` a `POST /v1/agent_test` reply returned.
           title: Session Id
+        description: The `session_id` a `POST /v1/agent_test` reply returned.
       - name: Talki-Version
         in: header
         required: false
@@ -15534,8 +15536,8 @@ paths:
                   message: One or more request values are invalid.
                   request_id: req_7f24a2f8c6b64e699901563a458b5031
         '404':
-          description: No agent test session with this ID exists in the authenticated
-            account.
+          description: No test session with this ID was started by this credential,
+            or it has already ended or expired (30 minutes after its last turn).
           headers:
             X-Request-Id:
               description: Identifier to include when contacting Talki support.
@@ -15553,8 +15555,11 @@ paths:
                   message: No such agent test session.
                   request_id: req_7f24a2f8c6b64e699901563a458b5031
         '409':
-          description: The write conflicts with current state or a previous idempotency
-            key use.
+          description: 'A message of this session is still being answered (`request_conflict`):
+            wait for its reply, then end it. Also returned when the idempotency key
+            was reused for a different request (`idempotency_key_reuse`), or while
+            a request with the same key is still being processed (`request_in_progress`):
+            retry for its result.'
           headers:
             X-Request-Id:
               description: Identifier to include when contacting Talki support.
@@ -15568,8 +15573,9 @@ paths:
               example:
                 error:
                   type: conflict
-                  code: idempotency_key_reuse
-                  message: This Idempotency-Key was already used for a different request.
+                  code: request_conflict
+                  message: A message of this session is still being answered. Wait
+                    for its reply, then end it.
                   request_id: req_7f24a2f8c6b64e699901563a458b5031
       x-codeSamples:
       - lang: sh
