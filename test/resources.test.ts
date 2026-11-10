@@ -12,6 +12,7 @@ import {
   PagePromise,
   PaginationError,
   position,
+  RateLimitError,
   type RawResponse,
   ServerError,
   Talki,
@@ -24,6 +25,7 @@ import { empty, envelope, json, make, Recorder, type Seen } from "./helpers.js";
 // changelog line, as a breaking change.
 const METHODS: Record<string, string[]> = {
   account: ["completeOnboarding", "get", "getForwardingCheck", "startForwardingCheck", "update"],
+  agentTest: ["end", "send"],
   appointments: ["cancel", "create", "get", "list", "reschedule", "restore"],
   availability: ["get"],
   callerRules: ["create", "delete", "list", "listBlockedCallAttempts", "update"],
@@ -277,6 +279,49 @@ describe("methods", () => {
     const client = make(new Recorder(json(201, TAG)));
     await expect(client.tags.create({} as never)).rejects.toThrow(TypeError);
     await expect(client.calls.get("")).rejects.toThrow(TypeError);
+  });
+
+  it("hold a test session with the assistant: send, continue, end", async () => {
+    const reply = {
+      session_id: "ats_1",
+      reply: "Sì",
+      turn: 1,
+      max_turns: 20,
+      expires_at: "2026-11-09T10:30:00Z",
+      daily_remaining: 24,
+      tools_called: ["check_availability"],
+    };
+    const recorder = new Recorder(json(200, reply), json(200, { ...reply, turn: 2 }), empty(204));
+    const client = make(recorder);
+    const first = await client.agentTest.send({ body: { message: "Siete aperti sabato?" } });
+    expectTypeOf(first.daily_remaining).toEqualTypeOf<number | null>();
+    const second = await client.agentTest.send({ body: { message: "E domenica?", session_id: first.session_id } });
+    expect(second.turn).toBe(2);
+    expect(await client.agentTest.end(first.session_id)).toBe(undefined);
+    expect(recorder.requests.map((request) => `${request.method} ${request.url.pathname}`)).toEqual([
+      "POST /v1/agent_test",
+      "POST /v1/agent_test",
+      "DELETE /v1/agent_test/ats_1",
+    ]);
+    expect(JSON.parse(recorder.requests[1]?.body ?? "")).toEqual({ message: "E domenica?", session_id: "ats_1" });
+    for (const request of recorder.requests) expect(request.headers.get("Idempotency-Key")).toBeTruthy();
+  });
+
+  it("throw the daily test-message limit at once: its Retry-After runs to midnight", async () => {
+    const sleeps: number[] = [];
+    const recorder = new Recorder(envelope(429, "rate_limit_error", "rate_limit_exceeded", { "Retry-After": "36000" }));
+    const error = await make(recorder, { sleeps })
+      .agentTest.send({ body: { message: "Ciao" } })
+      .catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(RateLimitError);
+    expect(recorder.requests).toHaveLength(1);
+    expect(sleeps).toEqual([]);
+  });
+
+  it("read one location's usage history", async () => {
+    const recorder = new Recorder(json(200, {}));
+    await make(recorder).usage.getHistory({ location_id: "11111111-1111-1111-1111-111111111111", from: "2026-01" });
+    expect(recorder.requests[0]?.url.search).toBe("?from=2026-01&location_id=11111111-1111-1111-1111-111111111111");
   });
 
   it("send a Date in a body as its ISO string", async () => {

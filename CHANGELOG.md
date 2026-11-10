@@ -5,6 +5,69 @@ version each release targets by default is `API_VERSION`.
 
 ## Unreleased
 
+## 0.4.0-beta.1
+
+Still API version `2026-10-01`. No method was renamed or removed; one type
+widened, which can break code that lists every value of it.
+
+New:
+
+- `talki.agentTest`: chat in text with the account's assistant, as the test in
+  the Talki apps does, to check how it answers before a caller does.
+  `talki.agentTest.send({ body: { message } })` returns an `AgentTestReply`:
+  `reply`, the `session_id` to send with the next message, `turn` and
+  `max_turns`, `expires_at`, `daily_remaining` and `tools_called`. Pass
+  `location_id` to talk to another location's assistant; a session stays at
+  the location it started at. `talki.agentTest.end(sessionId)` drops a session
+  before it expires. Talki saves nothing from a test: no call, appointment or
+  unresolved request is recorded, and a booking is not made. Your app's own
+  partner tools do run, writes included, sent with `test_drive: true`: check
+  that flag in your tool to keep a test from changing your records. No other
+  app's tools run. Both methods need `account:write` and `knowledge:read`.
+  Limits and refusals:
+  - A session holds 20 turns and is kept for 30 minutes after its last one; a
+    message past the last turn is a `ConflictError` with code
+    `agent_test_session_full`. A session belongs to the credential that
+    started it.
+  - A second message sent while the session is still answering the first is a
+    `ConflictError` with code `request_conflict`: wait for the reply, then send
+    it again.
+  - An account may send 25 test messages a day, shared with the Talki apps, and
+    an OAuth app 300 a day across its installations. Past either, a
+    `RateLimitError` whose `retryAfter` runs to midnight in the account's
+    timezone. That is longer than the client waits on its own, so it is thrown
+    at once, except in the last minute before midnight. Past 15 messages a
+    minute, the client waits and retries as for any other `429`.
+  - A `ConflictError` with code `account_suspended` while the managing partner
+    has suspended the account, and a `ServerError` with code
+    `agent_test_unavailable` while the feature is switched off (not retried:
+    try again later).
+- `talki.usage.getHistory({ location_id })` counts only that location's calls;
+  the locations' months add up to the account's. An unknown `location_id` is a
+  `404`. `talki.usage.get()` stays one meter for the whole account.
+- `Account.call_auto_archive_days` and `AccountUpdate.call_auto_archive_days`
+  take `180`.
+- `RefusedCall.reason` and `RefusedCallSummary.by_reason` list `suspended`: the
+  partner that manages the account has suspended the service. Its `action` is
+  `reactivate_subscription`.
+- `ErrorDetail.code` lists three new codes: `account_suspended`,
+  `agent_test_session_full` and `agent_test_unavailable`.
+- New types: `AgentTestMessage` and `AgentTestReply`, with the parameter and
+  response types of the two new methods.
+
+What changes for your code:
+
+- `call_auto_archive_days` is now `7 | 30 | 90 | 180 | null`. A `switch` that
+  checks it is exhaustive, or a `Record<7 | 30 | 90, …>` indexed by it, no longer
+  compiles until it handles `180`.
+- `Usage.included_seconds` is the plan's talk time, or the monthly minutes the
+  managing partner set for the account when those are lower or the plan has no
+  limit; `Usage.unlimited` is true only when neither limits it. The same goes
+  for `included_seconds` of `usage.threshold_reached` and `minutes_included`
+  of `usage.threshold_reached` and `usage.extra_credits_low`.
+- `talki.account.update()` refuses a premium-rate or shared-cost number in
+  `transfer_numbers`, unless the list being replaced already holds it.
+
 ## 0.3.0-beta.1
 
 Still API version `2026-10-01`. No method was added, renamed or removed, but

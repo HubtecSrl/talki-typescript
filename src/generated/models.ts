@@ -33,6 +33,17 @@ export type AccountLine = components["schemas"]["AccountLine"];
  */
 export type AccountUpdate = components["schemas"]["AccountUpdate"];
 /**
+ * One message to the assistant, as a caller would say it. Omit `session_id` to start a session, and
+ * send the one from the reply to continue it: Talki keeps the history, and there is no way to send
+ * one. A session stays at the location it started at.
+ */
+export type AgentTestMessage = components["schemas"]["AgentTestMessage"];
+/**
+ * The assistant's answer to one test message, and where the session stands. Send `session_id` with the
+ * next message before `expires_at`, at most `max_turns` turns in all.
+ */
+export type AgentTestReply = components["schemas"]["AgentTestReply"];
+/**
  * Which name the assistant answers calls in and speaks for: `business` uses the business name, `owner`
  * the account holder's own name.
  */
@@ -509,8 +520,9 @@ export type UnresolvedRequestTeaching = components["schemas"]["UnresolvedRequest
  */
 export type UnresolvedRequestUpdate = components["schemas"]["UnresolvedRequestUpdate"];
 /**
- * Talk time used in the current period and what is left, in seconds. To show minutes, round
- * `remaining_seconds` down.
+ * Talk time used in the current period and what is left, in seconds, for the whole account. To show
+ * minutes, round `remaining_seconds` down. For one location's share, read the current month of `GET
+ * /v1/usage/history` with its `location_id`, which can differ from this meter.
  */
 export type Usage = components["schemas"]["Usage"];
 /**
@@ -518,7 +530,8 @@ export type Usage = components["schemas"]["Usage"];
  * answered in. A month is not a billing period, and the meter of `GET /v1/usage` adds a call once it
  * has ended, so the current month can differ from it, and a call running past midnight into a new
  * month counts here in the earlier one. A month reads less than was billed when some of its calls were
- * deleted, through `DELETE /v1/calls/{call_id}` or in the apps, or are before `retained_since`.
+ * deleted, through `DELETE /v1/calls/{call_id}` or in the apps, or are before `retained_since`. With
+ * `location_id`, only that location's calls count; the locations' months add up to the account's.
  */
 export type UsageHistory = components["schemas"]["UsageHistory"];
 /**

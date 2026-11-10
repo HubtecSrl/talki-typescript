@@ -247,6 +247,16 @@ export const OPERATIONS = {
     success: [200],
     binary: false,
   },
+  endAgentTest: {
+    method: "DELETE",
+    path: "/v1/agent_test/{session_id}",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: null,
+    form: false,
+    success: [204],
+    binary: false,
+  },
   exportCall: {
     method: "GET",
     path: "/v1/calls/{call_id}/export",
@@ -430,7 +440,7 @@ export const OPERATIONS = {
   getUsageHistory: {
     method: "GET",
     path: "/v1/usage/history",
-    query: ["from", "to"],
+    query: ["from", "to", "location_id"],
     headers: {},
     body: null,
     form: false,
@@ -683,6 +693,16 @@ export const OPERATIONS = {
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  sendAgentTest: {
+    method: "POST",
+    path: "/v1/agent_test",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
     form: false,
     success: [200],
     binary: false,
@@ -1139,6 +1159,136 @@ export class LocationsResource {
 }
 
 /**
+ * Options for `endAgentTest`.
+ */
+export type EndAgentTestParams = RequestOptions & {
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `endAgentTest` returns.
+ */
+export type EndAgentTestResponse = undefined;
+
+/**
+ * Options for `sendAgentTest`.
+ */
+export type SendAgentTestParams = RequestOptions & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["sendAgentTest"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `sendAgentTest` returns.
+ */
+export type SendAgentTestResponse = operations["sendAgentTest"]["responses"][200]["content"]["application/json"];
+
+/**
+ * `talki.agentTest.withRawResponse`: the methods of `talki.agentTest`, each returning the whole
+ * answer, a `RawResponse` whose `data` is what the method returns. An error throws as it does there.
+ */
+export class AgentTestResourceWithRawResponse {
+  readonly #requester: Requester;
+
+  constructor(requester: Requester) {
+    this.#requester = requester;
+  }
+
+  /**
+   * End a test session
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param sessionId - session_id
+   * @param params - the query, body and options; see `EndAgentTestParams`.
+   * @see DELETE /v1/agent_test/{session_id}
+   */
+  end(sessionId: string, params: EndAgentTestParams = {}): Promise<RawResponse<EndAgentTestResponse>> {
+    return this.#requester.request<EndAgentTestResponse>(OPERATIONS.endAgentTest, [sessionId], params);
+  }
+
+  /**
+   * Send a test message
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `SendAgentTestParams`.
+   * @see POST /v1/agent_test
+   */
+  send(params: SendAgentTestParams): Promise<RawResponse<SendAgentTestResponse>> {
+    return this.#requester.request<SendAgentTestResponse>(OPERATIONS.sendAgentTest, [], params);
+  }
+}
+
+/**
+ * `talki.agentTest`: Chat in text with the account's assistant, as the test in the Talki apps does, to
+ * check how it answers before a caller does.
+ *
+ * Each method sends one operation and returns its value, or throws the `ApiError` subclass for its
+ * error.
+ */
+export class AgentTestResource {
+  /** The same methods, each returning the whole answer: its status and headers with the value. */
+  readonly withRawResponse: AgentTestResourceWithRawResponse;
+
+  constructor(requester: Requester) {
+    this.withRawResponse = new AgentTestResourceWithRawResponse(requester);
+  }
+
+  /**
+   * End a test session
+   *
+   * Drop a test session and its history now, rather than 30 minutes after its last turn. Only the
+   * credential that started it can end it. Refused with `409` `request_conflict` while a message of
+   * the session is being answered. Requires `account:write` and `knowledge:read`. Limited to 120
+   * requests per minute per account (API key) or per installation (OAuth).
+   *
+   * @param sessionId - session_id
+   * @param params - the query, body and options; see `EndAgentTestParams`.
+   * @see DELETE /v1/agent_test/{session_id}
+   */
+  async end(sessionId: string, params: EndAgentTestParams = {}): Promise<EndAgentTestResponse> {
+    return (await this.withRawResponse.end(sessionId, params)).data;
+  }
+
+  /**
+   * Send a test message
+   *
+   * Send one message to the account's assistant, as a caller would say it, and return its answer: what
+   * a call to the location would hear, from the same settings, documents, services, calendar and
+   * partner tools, written as text. Nothing is saved: a booking the assistant makes is not made, and
+   * no call, appointment or unresolved request is recorded. The first message starts a session; send
+   * its `session_id` with the next ones. Talki keeps the history for 30 minutes after the last turn,
+   * and a session holds at most 20 turns (then `agent_test_session_full`). A session belongs to the
+   * credential that started it. Your app's own partner tools run, sent with `test_drive: true`, writes
+   * included; no other app's do. The assistant here runs on a text model, not the one that answers
+   * calls, so a reply can be worded differently from what a caller would hear. Refused while the
+   * managing partner has suspended the account (`account_suspended`). An account may send 25 test
+   * messages a day, shared with the test in the Talki apps, and an OAuth app 300 a day across all the
+   * accounts it is installed on; past either, `429` `rate_limit_exceeded` with `Retry-After`. Requires
+   * `account:write` and `knowledge:read`. Limited to 120 requests per minute per account (API key) or
+   * per installation (OAuth), and to 15 test messages per minute.
+   *
+   * @param params - the query, body and options; see `SendAgentTestParams`.
+   * @see POST /v1/agent_test
+   */
+  async send(params: SendAgentTestParams): Promise<SendAgentTestResponse> {
+    return (await this.withRawResponse.send(params)).data;
+  }
+}
+
+/**
  * Options for `getUsage`.
  */
 export type GetUsageParams = RequestOptions;
@@ -1211,9 +1361,11 @@ export class UsageResource {
   /**
    * Retrieve usage
    *
-   * Return the talk time used in the current period, what is left, and when it resets. Requires
-   * `account:read`. Limited to 600 requests per minute per account (API key) or per installation
-   * (OAuth).
+   * Return the talk time used in the current period, what is left, and when it resets, for the whole
+   * account: the meter is one for every location. For one location's talk time, read the current month
+   * of `GET /v1/usage/history` with its `location_id`; that month can differ from this meter, as
+   * `UsageHistory` explains. Requires `account:read`. Limited to 600 requests per minute per account
+   * (API key) or per installation (OAuth).
    *
    * @param params - the query, body and options; see `GetUsageParams`.
    * @see GET /v1/usage
@@ -1226,8 +1378,9 @@ export class UsageResource {
    * Retrieve usage history
    *
    * Return the talk time billed in each calendar month, up to 13 months, oldest first. A call counts,
-   * whole, in the month it was answered in. Requires `account:read`. Limited to 600 requests per
-   * minute per account (API key) or per installation (OAuth).
+   * whole, in the month it was answered in. With `location_id`, only the calls of that location count.
+   * Requires `account:read`. Limited to 600 requests per minute per account (API key) or per
+   * installation (OAuth).
    *
    * @param params - the query, body and options; see `GetUsageHistoryParams`.
    * @see GET /v1/usage/history
@@ -4908,6 +5061,7 @@ export class Resources {
   readonly #requester: Requester;
   #account: AccountResource | undefined;
   #locations: LocationsResource | undefined;
+  #agentTest: AgentTestResource | undefined;
   #usage: UsageResource | undefined;
   #voices: VoicesResource | undefined;
   #workingHours: WorkingHoursResource | undefined;
@@ -4944,6 +5098,15 @@ export class Resources {
   get locations(): LocationsResource {
     this.#locations ??= new LocationsResource(this.#requester);
     return this.#locations;
+  }
+
+  /**
+   * Chat in text with the account's assistant, as the test in the Talki apps does, to check how it
+   * answers before a caller does.
+   */
+  get agentTest(): AgentTestResource {
+    this.#agentTest ??= new AgentTestResource(this.#requester);
+    return this.#agentTest;
   }
 
   /**
@@ -5087,6 +5250,7 @@ export class Resources {
 export const SURFACE = {
   account: ["completeOnboarding", "get", "getForwardingCheck", "startForwardingCheck", "update"],
   locations: ["list"],
+  agentTest: ["end", "send"],
   usage: ["get", "getHistory"],
   voices: ["getPreview", "list"],
   workingHours: ["get", "replace"],
