@@ -64,6 +64,7 @@ paths:
                 voice: Sulafat
                 answers_as: business
                 call_auto_archive_days: null
+                call_auto_delete_days: null
                 greeting: null
                 call_opening: null
                 multilingual_enabled: true
@@ -382,6 +383,7 @@ paths:
                 voice: Sulafat
                 answers_as: business
                 call_auto_archive_days: null
+                call_auto_delete_days: null
                 greeting: Come posso aiutarla?
                 call_opening: null
                 multilingual_enabled: true
@@ -21350,6 +21352,23 @@ components:
             this way. Archiving runs once a night, sends `call.updated` for each call,
             and can be undone like an archive by hand. The account''s own setting:
             the same at every location.'
+        call_auto_delete_days:
+          anyOf:
+          - type: integer
+            enum:
+            - 30
+            - 60
+            - 90
+            - 180
+          - type: 'null'
+          title: Call Auto Delete Days
+          description: 'How many days after it started a call is deleted for good,
+            read or not: `30`, `60`, `90` or `180`, as in the Talki apps. Null when
+            calls are kept until the 365-day retention limit. Deletion runs once a
+            night and is the same as `DELETE /v1/calls/{id}`: the transcript, the
+            questions the call left and the contacts it proposed go with it, its appointments
+            stay, and each call sends `call.deleted`. Not applied during a free trial.
+            The account''s own setting: the same at every location.'
         multi_sede:
           type: boolean
           title: Multi Sede
@@ -21393,6 +21412,7 @@ components:
       - forwarding_number
       - line
       - call_auto_archive_days
+      - call_auto_delete_days
       - multi_sede
       - onboarding_completed
       title: Account
@@ -21403,12 +21423,13 @@ components:
         call to validate a new credential. The settings are those of one location:
         the main one, or the one `?location_id=` names, the switches included. Only
         the account''s own fields (`id`, `timezone`, `livemode`, `test`, `multi_sede`,
-        `onboarding_completed` and `call_auto_archive_days`) read the same at every
-        location. The response''s `ETag` covers every writable field at that location;
-        send it back as `If-Match` on `PATCH /v1/account` with the same `location_id`.
-        `account.updated` reports a change to the main location''s settings or to
-        `call_auto_archive_days`, `location.settings_updated` one to another location''s
-        settings, its switches included.'
+        `onboarding_completed`, `call_auto_archive_days` and `call_auto_delete_days`)
+        read the same at every location. The response''s `ETag` covers every writable
+        field at that location; send it back as `If-Match` on `PATCH /v1/account`
+        with the same `location_id`. `account.updated` reports a change to the main
+        location''s settings or to `call_auto_archive_days` or `call_auto_delete_days`,
+        `location.settings_updated` one to another location''s settings, its switches
+        included.'
     AccountLanguages:
       properties:
         primary:
@@ -21591,6 +21612,22 @@ components:
           description: '`7`, `30`, `90` or `180`, or `null` to stop archiving calls
             on their own. The account''s own setting: refused with `location_id` naming
             a location other than the main one.'
+        call_auto_delete_days:
+          anyOf:
+          - type: integer
+            enum:
+            - 30
+            - 60
+            - 90
+            - 180
+          - type: 'null'
+          title: Call Auto Delete Days
+          description: '`30`, `60`, `90` or `180`, or `null` to stop deleting calls
+            on their own. Calls older than the window, which cannot be recovered,
+            are deleted the next night, so a number needs the `calls:delete` scope
+            as well and is refused in test mode with `livemode_required`; `null` needs
+            neither. The account''s own setting: refused with `location_id` naming
+            a location other than the main one.'
         forwarding_number:
           anyOf:
           - type: string
@@ -21609,8 +21646,9 @@ components:
       description: 'The settings you can change. Every field is optional and an omitted
         one is left unchanged, but send at least one. A `null` or empty text clears
         it; a voice, a switch or the transfer list cannot be null. With `?location_id=`,
-        the settings change at that location only. `call_auto_archive_days` is the
-        account''s: it is refused with a `location_id` other than the main location''s.'
+        the settings change at that location only. `call_auto_archive_days` and `call_auto_delete_days`
+        are the account''s: they are refused with a `location_id` other than the main
+        location''s.'
     AgentTestMessage:
       properties:
         message:
@@ -29060,9 +29098,10 @@ webhooks:
     post:
       summary: account.updated
       description: A writable field of the account, `onboarding_completed` or `phone_number`
-        changes at the main location, or `call_auto_archive_days` changes. `data.object`
-        is the account at the main location. Sent to the account's webhooks, and to
-        an OAuth app that subscribes to it while its installation grants `account:read`.
+        changes at the main location, or `call_auto_archive_days` or `call_auto_delete_days`
+        changes. `data.object` is the account at the main location. Sent to the account's
+        webhooks, and to an OAuth app that subscribes to it while its installation
+        grants `account:read`.
       parameters:
       - name: X-Talki-Signature
         in: header
@@ -29215,6 +29254,7 @@ webhooks:
                   voice: Sulafat
                   answers_as: business
                   call_auto_archive_days: null
+                  call_auto_delete_days: null
                   greeting: null
                   call_opening: null
                   multilingual_enabled: true
@@ -30716,6 +30756,7 @@ webhooks:
                   voice: Sulafat
                   answers_as: business
                   call_auto_archive_days: null
+                  call_auto_delete_days: null
                   greeting: null
                   call_opening: null
                   multilingual_enabled: true

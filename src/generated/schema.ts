@@ -4077,7 +4077,7 @@ export interface webhooks {
         put?: never;
         /**
          * account.updated
-         * @description A writable field of the account, `onboarding_completed` or `phone_number` changes at the main location, or `call_auto_archive_days` changes. `data.object` is the account at the main location. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         * @description A writable field of the account, `onboarding_completed` or `phone_number` changes at the main location, or `call_auto_archive_days` or `call_auto_delete_days` changes. `data.object` is the account at the main location. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
          */
         post: {
             parameters: {
@@ -4121,6 +4121,7 @@ export interface webhooks {
                      *           "voice": "Sulafat",
                      *           "answers_as": "business",
                      *           "call_auto_archive_days": null,
+                     *           "call_auto_delete_days": null,
                      *           "greeting": null,
                      *           "call_opening": null,
                      *           "multilingual_enabled": true,
@@ -5404,6 +5405,7 @@ export interface webhooks {
                      *           "voice": "Sulafat",
                      *           "answers_as": "business",
                      *           "call_auto_archive_days": null,
+                     *           "call_auto_delete_days": null,
                      *           "greeting": null,
                      *           "call_opening": null,
                      *           "multilingual_enabled": true,
@@ -8517,7 +8519,7 @@ export interface components {
     schemas: {
         /**
          * Account
-         * @description The account a credential belongs to, and everything its owner sets up for the assistant: the business name and texts, the voice, the opening and greeting, the switches, the transfer numbers, and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the call to validate a new credential. The settings are those of one location: the main one, or the one `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`, `livemode`, `test`, `multi_sede`, `onboarding_completed` and `call_auto_archive_days`) read the same at every location. The response's `ETag` covers every writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change to the main location's settings or to `call_auto_archive_days`, `location.settings_updated` one to another location's settings, its switches included.
+         * @description The account a credential belongs to, and everything its owner sets up for the assistant: the business name and texts, the voice, the opening and greeting, the switches, the transfer numbers, and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the call to validate a new credential. The settings are those of one location: the main one, or the one `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`, `livemode`, `test`, `multi_sede`, `onboarding_completed`, `call_auto_archive_days` and `call_auto_delete_days`) read the same at every location. The response's `ETag` covers every writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change to the main location's settings or to `call_auto_archive_days` or `call_auto_delete_days`, `location.settings_updated` one to another location's settings, its switches included.
          */
         Account: {
             /**
@@ -8642,6 +8644,11 @@ export interface components {
              */
             call_auto_archive_days: (7 | 30 | 90 | 180) | null;
             /**
+             * Call Auto Delete Days
+             * @description How many days after it started a call is deleted for good, read or not: `30`, `60`, `90` or `180`, as in the Talki apps. Null when calls are kept until the 365-day retention limit. Deletion runs once a night and is the same as `DELETE /v1/calls/{id}`: the transcript, the questions the call left and the contacts it proposed go with it, its appointments stay, and each call sends `call.deleted`. Not applied during a free trial. The account's own setting: the same at every location.
+             */
+            call_auto_delete_days: (30 | 60 | 90 | 180) | null;
+            /**
              * Multi Sede
              * @description True when the account works from several locations, or may add them: show locations (`GET /v1/locations`) to the owner only when true. False for an account that has only ever had its main location and cannot add another; it still has that one location, every record still carries its `location_id`, and nothing changes shape when this turns true. Read only.
              */
@@ -8693,7 +8700,7 @@ export interface components {
         };
         /**
          * AccountUpdate
-         * @description The settings you can change. Every field is optional and an omitted one is left unchanged, but send at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` is the account's: it is refused with a `location_id` other than the main location's.
+         * @description The settings you can change. Every field is optional and an omitted one is left unchanged, but send at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` and `call_auto_delete_days` are the account's: they are refused with a `location_id` other than the main location's.
          */
         AccountUpdate: {
             /**
@@ -8781,6 +8788,11 @@ export interface components {
              * @description `7`, `30`, `90` or `180`, or `null` to stop archiving calls on their own. The account's own setting: refused with `location_id` naming a location other than the main one.
              */
             call_auto_archive_days?: (7 | 30 | 90 | 180) | null;
+            /**
+             * Call Auto Delete Days
+             * @description `30`, `60`, `90` or `180`, or `null` to stop deleting calls on their own. Calls older than the window, which cannot be recovered, are deleted the next night, so a number needs the `calls:delete` scope as well and is refused in test mode with `livemode_required`; `null` needs neither. The account's own setting: refused with `location_id` naming a location other than the main one.
+             */
+            call_auto_delete_days?: (30 | 60 | 90 | 180) | null;
             /**
              * Forwarding Number
              * @description Replaces the location's forwarding number: a mobile or landline that can be rung, E.164 or national (read as Italian). Send `null` or an empty string to clear it. Refused if it equals a transfer target of any location, or the line of another location, unless the same request replaces this location's `transfer_numbers`. The main location's cannot be cleared while any location has `transfer_numbers`. A change discards the result of the last forwarding check, and `last_verified_at` reads null until a check of the new number succeeds.
@@ -11608,6 +11620,7 @@ export interface operations {
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
                      *       "call_auto_archive_days": null,
+                     *       "call_auto_delete_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -11870,6 +11883,7 @@ export interface operations {
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
                      *       "call_auto_archive_days": null,
+                     *       "call_auto_delete_days": null,
                      *       "greeting": "Come posso aiutarla?",
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -12154,6 +12168,7 @@ export interface operations {
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
                      *       "call_auto_archive_days": null,
+                     *       "call_auto_delete_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,

@@ -5,6 +5,18 @@ version each release targets by default is `API_VERSION`.
 
 ## Unreleased
 
+## 0.5.0-beta.1
+
+Still API version `2026-10-01`. One field added; nothing renamed or removed.
+
+- `call_auto_delete_days` on `Account` and `AccountUpdate`: how many days after
+  it started a call is deleted for good, read or not (`30`, `60`, `90` or
+  `180`), or `null` to keep calls until the 365-day retention limit. Deletion
+  runs once a night, as `talki.calls.delete` would, and sends `call.deleted`
+  for each call. Setting a number needs the `calls:delete` scope as well as
+  `account:write`, and is refused in test mode (`livemode_required`). The
+  account's own setting: the same at every location.
+
 ## 0.4.0-beta.1
 
 Still API version `2026-10-01`. No method was renamed or removed; one type

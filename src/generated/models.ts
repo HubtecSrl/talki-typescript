@@ -8,11 +8,12 @@ import type { components } from "./schema.js";
  * and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the
  * call to validate a new credential. The settings are those of one location: the main one, or the one
  * `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`,
- * `livemode`, `test`, `multi_sede`, `onboarding_completed` and `call_auto_archive_days`) read the same
- * at every location. The response's `ETag` covers every writable field at that location; send it back
- * as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change
- * to the main location's settings or to `call_auto_archive_days`, `location.settings_updated` one to
- * another location's settings, its switches included.
+ * `livemode`, `test`, `multi_sede`, `onboarding_completed`, `call_auto_archive_days` and
+ * `call_auto_delete_days`) read the same at every location. The response's `ETag` covers every
+ * writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same
+ * `location_id`. `account.updated` reports a change to the main location's settings or to
+ * `call_auto_archive_days` or `call_auto_delete_days`, `location.settings_updated` one to another
+ * location's settings, its switches included.
  */
 export type Account = components["schemas"]["Account"];
 /**
@@ -28,8 +29,9 @@ export type AccountLine = components["schemas"]["AccountLine"];
 /**
  * The settings you can change. Every field is optional and an omitted one is left unchanged, but send
  * at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be
- * null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` is
- * the account's: it is refused with a `location_id` other than the main location's.
+ * null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` and
+ * `call_auto_delete_days` are the account's: they are refused with a `location_id` other than the main
+ * location's.
  */
 export type AccountUpdate = components["schemas"]["AccountUpdate"];
 /**
