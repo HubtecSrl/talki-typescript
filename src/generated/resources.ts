@@ -3686,6 +3686,8 @@ export type CreateWhatsappContactRuleParams = RequestOptions & {
   /**
    * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
    * pass your own to send the same write again as the same one.
+   *
+   * Required by this operation: without one, the API refuses the request.
    */
   idempotencyKey?: string | undefined;
 };
