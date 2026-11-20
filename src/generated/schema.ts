@@ -408,7 +408,7 @@ export interface paths {
         put?: never;
         /**
          * Create a service
-         * @description Create a service with a fixed duration, bookable at once, at the location `location_id` names, the main location without it. Send at most one of `initial_capacity` or `resource_ids` (resources of the same location); with neither, it draws on that location's default resource. Requires `Idempotency-Key`. Requires `services:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags and caller rules you create.
+         * @description Create a service with a fixed duration, bookable at once, at the location `location_id` names, the main location without it. Send at most one of `initial_capacity` or `resource_ids` (resources of the same location); with neither, it draws on that location's default resource. Requires `Idempotency-Key`. Requires `services:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags, caller rules and WhatsApp contact rules you create.
          */
         post: operations["createService"];
         delete?: never;
@@ -460,7 +460,7 @@ export interface paths {
         put?: never;
         /**
          * Create a resource
-         * @description Create a `shared` resource at the location `location_id` names, the main location without it, optionally drawn on by existing services of that location. Requires `Idempotency-Key`. Requires `resources:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags and caller rules you create.
+         * @description Create a `shared` resource at the location `location_id` names, the main location without it, optionally drawn on by existing services of that location. Requires `Idempotency-Key`. Requires `resources:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags, caller rules and WhatsApp contact rules you create.
          */
         post: operations["createResource"];
         delete?: never;
@@ -948,7 +948,7 @@ export interface paths {
         put?: never;
         /**
          * Create a tag
-         * @description Create a tag. An account holds at most 50. Requires `Idempotency-Key`. Requires `contacts:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags and caller rules you create.
+         * @description Create a tag. An account holds at most 50. Requires `Idempotency-Key`. Requires `contacts:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags, caller rules and WhatsApp contact rules you create.
          */
         post: operations["createTag"];
         delete?: never;
@@ -1080,7 +1080,7 @@ export interface paths {
         put?: never;
         /**
          * Add a caller rule
-         * @description Add a number to the VIP or blocked list: `201` with the new rule. A number that already has a rule answers `200` with it, moved or relabelled as the request asks, or unchanged. Requires `Idempotency-Key`. Requires `contacts:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags and caller rules you create.
+         * @description Add a number to the VIP or blocked list: `201` with the new rule. A number that already has a rule answers `200` with it, moved or relabelled as the request asks, or unchanged. Requires `Idempotency-Key`. Requires `contacts:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags, caller rules and WhatsApp contact rules you create.
          */
         post: operations["createCallerRule"];
         delete?: never;
@@ -1171,6 +1171,162 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/whatsapp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve the WhatsApp settings
+         * @description Return the connected WhatsApp Business number and how Talki answers its chats: the mode, the schedule, the conversations used this period and the owner's open questions. Requires `whatsapp:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["getWhatsapp"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update the WhatsApp settings
+         * @description Change the mode, the schedule, or both. Turning the answers on from `off` is refused without a plan that includes WhatsApp chats (`plan_feature_unavailable`), without a connected number (`whatsapp_not_connected`), or while Talki does not answer WhatsApp chats for any account yet (`whatsapp_chats_unavailable`; `blocked_reason` is `disabled`). Set the contact rules first: from then on Talki answers whoever writes, apart from the contacts it judges personal. Requires `whatsapp:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        patch: operations["updateWhatsapp"];
+        trace?: never;
+    };
+    "/v1/whatsapp/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List WhatsApp conversations
+         * @description Return the conversations Talki took part in or kept out of, newest first. `needs_answer=true` lists those waiting for the owner's «è un cliente?». Requires `whatsapp:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["listWhatsappConversations"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete the stored WhatsApp chats
+         * @description Delete every stored conversation and its messages. Refused while Talki answers the chats (`whatsapp_answers_on`): set `mode` to `off` first. The contact rules, the appointments booked in a chat and the requests it left stay. Not in test mode. Requires `whatsapp:delete`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        delete: operations["deleteWhatsappConversations"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/whatsapp/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a WhatsApp conversation
+         * @description Return one conversation: who wrote, its summary and outcome, and the owner's question about the contact. Requires `whatsapp:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["getWhatsappConversation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/whatsapp/conversations/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a WhatsApp conversation's messages
+         * @description Return the messages of one conversation, oldest first. `whatsapp:read` does not grant them: the account owner ticks `transcripts:read` on its own. Messages are kept 30 days. Requires `transcripts:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["getWhatsappConversationMessages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/whatsapp/conversations/{conversation_id}/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer «è un cliente?»
+         * @description Answer for the owner about the conversation's contact: `customer` (Talki answers them, now if WhatsApp's 24-hour window is open), `ignore` (never), or `owner` (the owner replies). Allowed on any conversation, asked or not. Requires `whatsapp:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        post: operations["answerWhatsappConversation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/whatsapp/contact_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List WhatsApp contact rules
+         * @description Return the contacts Talki never answers (`ignore`) or answers as customers (`customer`), newest first. Requires `whatsapp:read`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["listWhatsappContactRules"];
+        put?: never;
+        /**
+         * Add a WhatsApp contact rule
+         * @description Add a rule for a number. A number holds one rule: change it with `PATCH`. Requires `Idempotency-Key`. Requires `whatsapp:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20 creations per minute shared by the services, resources, tags, caller rules and WhatsApp contact rules you create.
+         */
+        post: operations["createWhatsappContactRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/whatsapp/contact_rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a WhatsApp contact rule
+         * @description Remove a rule. The contact goes back to Talki's own judgement. Requires `whatsapp:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        delete: operations["deleteWhatsappContactRule"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a WhatsApp contact rule
+         * @description Change a rule from `ignore` to `customer` or back. Requires `whatsapp:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        patch: operations["updateWhatsappContactRule"];
         trace?: never;
     };
     "/v1/sandbox/scenarios": {
@@ -2013,6 +2169,188 @@ export interface webhooks {
                                  * @description The pending contacts deleted with the call. Each also sends `pending_contact.deleted` with `outcome` `discarded`.
                                  */
                                 pending_contact_ids: string[];
+                            };
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "whatsapp.message_sent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * whatsapp.message_sent
+         * @description After a call, the assistant sent the caller a WhatsApp message from the business's own number, with the caller's consent, and WhatsApp accepted it. Delivery is not reported. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `calls:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "whatsapp.message_sent",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "caller": {
+                     *             "contact_id": "8fbb25f2-4f3b-4496-8aea-f0fc66de512d",
+                     *             "phone_number": "+393331234567",
+                     *             "display_name": "Giulia Bianchi"
+                     *           },
+                     *           "started_at": "2026-09-15T09:14:31Z",
+                     *           "answered_at": "2026-09-15T09:14:34Z",
+                     *           "ended_at": "2026-09-15T09:18:02Z",
+                     *           "duration_seconds": 208,
+                     *           "summary": "Giulia booked a haircut for the morning of 8 October.",
+                     *           "appointment_ids": [
+                     *             "a3fe45ee-572f-4677-b1dd-f36c21bb47de"
+                     *           ],
+                     *           "outcome": "booked",
+                     *           "transfers": [],
+                     *           "appointment_changes": [],
+                     *           "unresolved_request_ids": [],
+                     *           "created_at": "2026-09-15T09:18:03Z",
+                     *           "read_at": "2026-09-15T10:02:11Z",
+                     *           "archived_at": null
+                     *         },
+                     *         "message": {
+                     *           "id": "wamid.HBgMMzkzMzMxMTEyMjMzFQIAERgSQ0FMTF9BX0ZPTExPV19VUAA=",
+                     *           "type": "booking_confirmation",
+                     *           "language": "it",
+                     *           "sent_at": "2026-09-22T15:04:05.731204Z"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "whatsapp.message_sent";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The Call object, as the REST API returns it. */
+                            object: components["schemas"]["Call"];
+                            /**
+                             * WhatsAppMessage
+                             * @description The message sent to the caller from the business's own WhatsApp number. Its text is not included: it is the call's facts in a fixed template.
+                             */
+                            message: {
+                                /**
+                                 * Id
+                                 * @description WhatsApp's own ID for the message (`wamid`).
+                                 */
+                                id: string;
+                                /**
+                                 * Type
+                                 * @description Which message it was: the booking confirmation, the moved booking (each also `_details`, with the information the caller asked for), the information the caller asked for, or the confirmation that a question was taken.
+                                 * @enum {string}
+                                 */
+                                type: "booking_confirmation" | "booking_rescheduled" | "booking_confirmation_details" | "booking_rescheduled_details" | "info_follow_up" | "callback_promise";
+                                /**
+                                 * Language
+                                 * @description The language it was written in, as an ISO 639-1 code.
+                                 * @enum {string}
+                                 */
+                                language: "it" | "en" | "fr" | "de" | "es";
+                                /**
+                                 * Sent At
+                                 * Format: date-time
+                                 * @description When WhatsApp accepted it, RFC 3339 UTC.
+                                 */
+                                sent_at: string;
                             };
                         };
                     };
@@ -3670,6 +4008,298 @@ export interface webhooks {
         patch?: never;
         trace?: never;
     };
+    "whatsapp.conversation_ended": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * whatsapp.conversation_ended
+         * @description A WhatsApp conversation closed, about 30 minutes after its last message, with its outcome and, when Talki replied or handed it to the owner, its summary: every conversation, also those Talki kept out of. Sent again for the same conversation if it reopens and closes once more. A conversation closed otherwise (the contact's two chats merged, or found still open when the contact wrote again much later) sends none: `GET /v1/whatsapp/conversations` lists it all the same. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `whatsapp:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "whatsapp.conversation_ended",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "7a1c3e95-4b2d-4f80-9e6a-2d8c5b1f3e47",
+                     *           "chat_id": "c3e8a1f4-9d27-4b65-8f0c-6a2e9d4b7c18",
+                     *           "contact": {
+                     *             "name": "Giulia",
+                     *             "phone_number": "+393479876543",
+                     *             "rule": null
+                     *           },
+                     *           "started_at": "2026-11-19T17:42:08Z",
+                     *           "ended_at": "2026-11-19T18:16:30Z",
+                     *           "summary": null,
+                     *           "outcome": "silent_unsure",
+                     *           "relevance": "unsure",
+                     *           "category": "unclear",
+                     *           "replies": 0,
+                     *           "paused_until": null,
+                     *           "question": {
+                     *             "state": "pending",
+                     *             "asked_at": "2026-11-19T17:44:51Z",
+                     *             "answered_at": null
+                     *           },
+                     *           "appointment_ids": []
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "whatsapp.conversation_ended";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The WhatsAppConversation object, as the REST API returns it. */
+                            object: components["schemas"]["WhatsAppConversation"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "whatsapp.question_asked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * whatsapp.question_asked
+         * @description Talki kept silent with an unknown WhatsApp contact and asks the owner «è un cliente?»: answer with `POST /v1/whatsapp/conversations/{id}/answer`. Once per contact: an unanswered question that moves to the contact's newer conversation is not sent again. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `whatsapp:read`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description `t=<unix seconds>,v1=<hex HMAC-SHA256>`, the HMAC computed over `<t>.<raw body>` with the signing secret. During a secret rotation it carries one `v1` per secret: accept the request if any matches. */
+                    "X-Talki-Signature": string;
+                    /** @description The event type, as in `type`. */
+                    "X-Talki-Event": string;
+                    /** @description The event ID, as in `id`. */
+                    "X-Talki-Delivery": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "evt_04d8e87897db4ecab459a456ea55e754",
+                     *       "type": "whatsapp.question_asked",
+                     *       "created_at": "2026-09-22T15:04:06.218734+00:00",
+                     *       "api_version": "2026-10-01",
+                     *       "account_id": "f7e39b9a-1ac8-45e4-93da-2600f17cb286",
+                     *       "livemode": true,
+                     *       "origin": {
+                     *         "source": "voice",
+                     *         "credential_id": null,
+                     *         "idempotency_key": null
+                     *       },
+                     *       "data": {
+                     *         "object": {
+                     *           "id": "7a1c3e95-4b2d-4f80-9e6a-2d8c5b1f3e47",
+                     *           "chat_id": "c3e8a1f4-9d27-4b65-8f0c-6a2e9d4b7c18",
+                     *           "contact": {
+                     *             "name": "Giulia",
+                     *             "phone_number": "+393479876543",
+                     *             "rule": null
+                     *           },
+                     *           "started_at": "2026-11-19T17:42:08Z",
+                     *           "ended_at": "2026-11-19T18:16:30Z",
+                     *           "summary": null,
+                     *           "outcome": "silent_unsure",
+                     *           "relevance": "unsure",
+                     *           "category": "unclear",
+                     *           "replies": 0,
+                     *           "paused_until": null,
+                     *           "question": {
+                     *             "state": "pending",
+                     *             "asked_at": "2026-11-19T17:44:51Z",
+                     *             "answered_at": null
+                     *           },
+                     *           "appointment_ids": []
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        /**
+                         * Id
+                         * @description The event's ID, `evt_` and 32 hex characters. Equal to the `X-Talki-Delivery` header and unchanged on a redelivery: deduplicate on it.
+                         */
+                        id: string;
+                        /** @enum {string} */
+                        type: "whatsapp.question_asked";
+                        /**
+                         * Created At
+                         * Format: date-time
+                         * @description When the event was written, ISO 8601 with a `+00:00` offset, possibly with microseconds. Parse it as an instant.
+                         */
+                        created_at: string;
+                        /**
+                         * Api Version
+                         * @description The dated contract version `data` is shaped for: the endpoint's version on a webhook, the app's on an app event.
+                         */
+                        api_version: string;
+                        /**
+                         * Account Id
+                         * @description The Talki account the event happened on.
+                         */
+                        account_id: string;
+                        /**
+                         * Livemode
+                         * @description `false` for an event from a sandbox account.
+                         */
+                        livemode: boolean;
+                        /** @description What caused the change. Null on installation events, and null when the cause was not recorded; treat null as unknown. */
+                        origin: {
+                            /**
+                             * Source
+                             * @description Where the change came from: `voice` (the assistant, during a call), `dashboard` (a person in the Talki web or mobile app), `api` (a credential through the API) or `system` (a rule Talki applied on its own). New values may be added; treat one you do not recognise as unknown.
+                             */
+                            source: "voice" | "dashboard" | "api" | "system" | (string & {});
+                            /**
+                             * Credential Id
+                             * @description With `source` `api`, the credential that made the change: an API key's ID, or an OAuth app's installation ID. On an app event it is set only when your own installation made the change, and null when another app or one of the account's API keys did. Null for every other `source`.
+                             */
+                            credential_id: string | null;
+                            /**
+                             * Idempotency Key
+                             * @description The `Idempotency-Key` of the request that made the change, whenever `credential_id` is set and the request sent one. Null otherwise.
+                             */
+                            idempotency_key: string | null;
+                        } | null;
+                        /**
+                         * Installation Id
+                         * @description On app events only: the installation the event belongs to. Absent from an account's own webhooks.
+                         * @default null
+                         */
+                        installation_id?: string | null;
+                        /** @description The event's payload. */
+                        data: {
+                            /** @description The WhatsAppConversation object, as the REST API returns it. */
+                            object: components["schemas"]["WhatsAppConversation"];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Any `2xx` acknowledges the event. Any other status, a redirect, or no answer within 10 seconds is a failure and is retried; `410` disables a webhook endpoint at once. */
+                "2XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "caller_rule.created": {
         parameters: {
             query?: never;
@@ -4077,7 +4707,7 @@ export interface webhooks {
         put?: never;
         /**
          * account.updated
-         * @description A writable field of the account, `onboarding_completed` or `phone_number` changes at the main location, or `call_auto_archive_days` changes. `data.object` is the account at the main location. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
+         * @description A writable field of the account, `onboarding_completed` or `phone_number` changes at the main location, or `call_auto_archive_days` or `call_auto_delete_days` changes. `data.object` is the account at the main location. Sent to the account's webhooks, and to an OAuth app that subscribes to it while its installation grants `account:read`.
          */
         post: {
             parameters: {
@@ -4121,6 +4751,7 @@ export interface webhooks {
                      *           "voice": "Sulafat",
                      *           "answers_as": "business",
                      *           "call_auto_archive_days": null,
+                     *           "call_auto_delete_days": null,
                      *           "greeting": null,
                      *           "call_opening": null,
                      *           "multilingual_enabled": true,
@@ -5404,6 +6035,7 @@ export interface webhooks {
                      *           "voice": "Sulafat",
                      *           "answers_as": "business",
                      *           "call_auto_archive_days": null,
+                     *           "call_auto_delete_days": null,
                      *           "greeting": null,
                      *           "call_opening": null,
                      *           "multilingual_enabled": true,
@@ -7025,7 +7657,9 @@ export interface webhooks {
                      *         "object": {
                      *           "id": "6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13",
                      *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "source": "call",
                      *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "whatsapp_conversation_id": null,
                      *           "caller_phone": "+393331234567",
                      *           "question": "Whether the salon does bridal hair on Sundays.",
                      *           "status": "open",
@@ -8517,7 +9151,7 @@ export interface components {
     schemas: {
         /**
          * Account
-         * @description The account a credential belongs to, and everything its owner sets up for the assistant: the business name and texts, the voice, the opening and greeting, the switches, the transfer numbers, and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the call to validate a new credential. The settings are those of one location: the main one, or the one `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`, `livemode`, `test`, `multi_sede`, `onboarding_completed` and `call_auto_archive_days`) read the same at every location. The response's `ETag` covers every writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change to the main location's settings or to `call_auto_archive_days`, `location.settings_updated` one to another location's settings, its switches included.
+         * @description The account a credential belongs to, and everything its owner sets up for the assistant: the business name and texts, the voice, the opening and greeting, the switches, the transfer numbers, and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the call to validate a new credential. The settings are those of one location: the main one, or the one `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`, `livemode`, `test`, `multi_sede`, `onboarding_completed`, `call_auto_archive_days` and `call_auto_delete_days`) read the same at every location. The response's `ETag` covers every writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change to the main location's settings or to `call_auto_archive_days` or `call_auto_delete_days`, `location.settings_updated` one to another location's settings, its switches included.
          */
         Account: {
             /**
@@ -8642,6 +9276,11 @@ export interface components {
              */
             call_auto_archive_days: (7 | 30 | 90 | 180) | null;
             /**
+             * Call Auto Delete Days
+             * @description How many days after it started a call is deleted for good, read or not: `30`, `60`, `90` or `180`, as in the Talki apps. Null when calls are kept until the 365-day retention limit. Deletion runs once a night and is the same as `DELETE /v1/calls/{id}`: the transcript, the questions the call left and the contacts it proposed go with it, its appointments stay, and each call sends `call.deleted`. Not applied during a free trial. The account's own setting: the same at every location.
+             */
+            call_auto_delete_days: (30 | 60 | 90 | 180) | null;
+            /**
              * Multi Sede
              * @description True when the account works from several locations, or may add them: show locations (`GET /v1/locations`) to the owner only when true. False for an account that has only ever had its main location and cannot add another; it still has that one location, every record still carries its `location_id`, and nothing changes shape when this turns true. Read only.
              */
@@ -8693,7 +9332,7 @@ export interface components {
         };
         /**
          * AccountUpdate
-         * @description The settings you can change. Every field is optional and an omitted one is left unchanged, but send at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` is the account's: it is refused with a `location_id` other than the main location's.
+         * @description The settings you can change. Every field is optional and an omitted one is left unchanged, but send at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` and `call_auto_delete_days` are the account's: they are refused with a `location_id` other than the main location's.
          */
         AccountUpdate: {
             /**
@@ -8781,6 +9420,11 @@ export interface components {
              * @description `7`, `30`, `90` or `180`, or `null` to stop archiving calls on their own. The account's own setting: refused with `location_id` naming a location other than the main one.
              */
             call_auto_archive_days?: (7 | 30 | 90 | 180) | null;
+            /**
+             * Call Auto Delete Days
+             * @description `30`, `60`, `90` or `180`, or `null` to stop deleting calls on their own. Calls older than the window, which cannot be recovered, are deleted the next night, so a number needs the `calls:delete` scope as well and is refused in test mode with `livemode_required`; `null` needs neither. The account's own setting: refused with `location_id` naming a location other than the main one.
+             */
+            call_auto_delete_days?: (30 | 60 | 90 | 180) | null;
             /**
              * Forwarding Number
              * @description Replaces the location's forwarding number: a mobile or landline that can be rung, E.164 or national (read as Italian). Send `null` or an empty string to clear it. Refused if it equals a transfer target of any location, or the line of another location, unless the same request replaces this location's `transfer_numbers`. The main location's cannot be cleared while any location has `transfer_numbers`. A change discards the result of the last forwarding check, and `last_verified_at` reads null until a check of the new number succeeds.
@@ -11074,14 +11718,24 @@ export interface components {
             id: string;
             /**
              * Location Id
-             * @description The location the question was about: that of the call it was raised on (`Call.location_id`). Never null, and it never changes.
+             * @description The location the question was about: that of the call it was raised on (`Call.location_id`), or the main location for a WhatsApp chat. Never null, and it never changes.
              */
             location_id: string;
             /**
+             * Source
+             * @description Where the question was asked: `call`, on a call the assistant answered, or `whatsapp`, in a WhatsApp chat it answered on the business's number. It never changes. Other values may be added: treat one you do not know as a request to handle all the same.
+             */
+            source: "call" | "whatsapp" | (string & {});
+            /**
              * Call Id
-             * @description The call it was raised on, readable through `GET /v1/calls/{id}` with `calls:read`. Null once that call has aged out of retention.
+             * @description The call it was raised on, readable through `GET /v1/calls/{id}` with `calls:read`. Null for a request from WhatsApp, and once the call has aged out of retention.
              */
             call_id: string | null;
+            /**
+             * Whatsapp Conversation Id
+             * @description The WhatsApp conversation it was raised in, readable through `GET /v1/whatsapp/conversations/{id}` with `whatsapp:read`. Null for a request from a call, and once the conversation is deleted: the request stays.
+             */
+            whatsapp_conversation_id: string | null;
             /**
              * Caller Phone
              * @description E.164 number to call back, as presented. Null when the caller withheld it.
@@ -11332,6 +11986,428 @@ export interface components {
             has_more: boolean;
         };
         /**
+         * WhatsApp
+         * @description The account's WhatsApp Business number and how Talki answers chats on it. Talki answers customers like a front desk, with the same knowledge, services, hours and calendar as on the phone, and steps back as soon as the owner writes in a chat. The owner connects the number in the Talki app.
+         */
+        WhatsApp: {
+            /** @description The connected number. */
+            connection: components["schemas"]["WhatsAppConnection"];
+            /** @description `off`: Talki reads and stores nothing. `always`: Talki answers every customer. `scheduled`: only inside `schedule`. */
+            mode: components["schemas"]["WhatsAppMode"];
+            /**
+             * Schedule
+             * @description The ranges of `scheduled`. Kept when `mode` changes, so switching back to `scheduled` finds them.
+             */
+            schedule: components["schemas"]["WhatsAppScheduleRange"][];
+            /**
+             * After Hours Schedule
+             * @description Every time of the week the main location's weekly hours leave closed, ready to send as `schedule` for answers outside opening hours only.
+             */
+            after_hours_schedule: components["schemas"]["WhatsAppScheduleRange"][];
+            /**
+             * Available
+             * @description Whether Talki can answer chats on this account: its plan includes them, and they are available. `blocked_reason` says why not.
+             */
+            available: boolean;
+            /**
+             * Blocked Reason
+             * @description Why Talki is not answering now although `mode` is not `off`, or why turning it on would be refused: `disabled` (not available yet), `upgrade` (the plan has no WhatsApp chats), `not_connected` (no number). Null when nothing stands in the way.
+             */
+            blocked_reason: "disabled" | "upgrade" | "not_connected" | (string & {}) | null;
+            /** @description This period's answered conversations, or null when the plan has no chats. */
+            usage: components["schemas"]["WhatsAppUsage"] | null;
+            /**
+             * Pending Questions
+             * @description Conversations whose «è un cliente?» the owner has not answered.
+             */
+            pending_questions: number;
+            /**
+             * Stored Conversations
+             * @description Conversations stored, what `DELETE /v1/whatsapp/conversations` deletes.
+             */
+            stored_conversations: number;
+        };
+        /**
+         * WhatsAppChatMessage
+         * @description One message of a WhatsApp conversation.
+         */
+        WhatsAppChatMessage: {
+            /**
+             * Id
+             * @description Message identifier.
+             */
+            id: string;
+            /**
+             * Direction
+             * @description `customer`, `owner` (written by the owner in the WhatsApp Business app) or `talki`.
+             */
+            direction: "customer" | "owner" | "talki" | (string & {});
+            /**
+             * Type
+             * @description WhatsApp's message type: `text`, `audio`, `image`, `document`, `reaction`, …
+             */
+            type: string;
+            /**
+             * Text
+             * @description The text. A voice note's is its automatic transcript. Null for media Talki does not read.
+             */
+            text: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             * @description RFC 3339 UTC.
+             */
+            created_at: string;
+            /**
+             * Failed
+             * @description True for a reply of Talki's that never reached the customer.
+             */
+            failed: boolean;
+        };
+        /**
+         * WhatsAppConnection
+         * @description The connected WhatsApp Business number.
+         */
+        WhatsAppConnection: {
+            /**
+             * State
+             * @description `not_connected` (never connected), `connected`, or `disconnected` (connected once, removed since). The owner connects the number in the Talki app; the API cannot.
+             */
+            state: "not_connected" | "connected" | "disconnected" | (string & {});
+            /**
+             * Phone Number
+             * @description The number, E.164: the connected one, or the last one connected once `disconnected`. Null when never connected.
+             */
+            phone_number: string | null;
+            /**
+             * Business Name
+             * @description The business's name as WhatsApp shows it to customers, or null.
+             */
+            business_name: string | null;
+            /**
+             * Connected At
+             * @description When it was connected, RFC 3339 UTC, or null.
+             */
+            connected_at: string | null;
+            /**
+             * Disconnected At
+             * @description When it was removed, RFC 3339 UTC, or null while connected.
+             */
+            disconnected_at: string | null;
+            /**
+             * Quality Rating
+             * @description WhatsApp's quality rating of the number: `GREEN`, `YELLOW`, `RED` or `UNKNOWN`, or null when WhatsApp has not given one.
+             */
+            quality_rating: string | null;
+            /**
+             * Restricted
+             * @description True while WhatsApp restricts the number: Talki sends nothing.
+             */
+            restricted: boolean;
+            /**
+             * Payment Method
+             * @description Whether the WhatsApp account has a payment method: `false` once WhatsApp refused a message for lack of one, and then Talki sends nothing; `true` once a message went through. Null until the first message settles it, as for a number just connected: Talki sends.
+             */
+            payment_method: boolean | null;
+        };
+        /**
+         * WhatsAppContact
+         * @description Who wrote.
+         */
+        WhatsAppContact: {
+            /**
+             * Name
+             * @description The name the contact gave their WhatsApp profile, or null.
+             */
+            name: string | null;
+            /**
+             * Phone Number
+             * @description The contact's number, E.164, or null when WhatsApp did not share it (the contact uses a username).
+             */
+            phone_number: string | null;
+            /**
+             * Rule
+             * @description The account's contact rule for them, `ignore` or `customer`, or null.
+             */
+            rule: components["schemas"]["WhatsAppRule"] | null;
+        };
+        /**
+         * WhatsAppContactRule
+         * @description A contact Talki never answers (`ignore`), or answers as a customer without judging first (`customer`). One list for the account, at most 500 rules.
+         */
+        WhatsAppContactRule: {
+            /**
+             * Id
+             * @description Rule identifier.
+             */
+            id: string;
+            /**
+             * Phone Number
+             * @description The number, E.164. Null for a rule set by answering «è un cliente?» about a contact whose number WhatsApp did not share.
+             */
+            phone_number: string | null;
+            /**
+             * Contact Name
+             * @description The contact's WhatsApp profile name, when they have written.
+             */
+            contact_name: string | null;
+            /** @description `ignore`: Talki never answers. `customer`: answered without the relevance check. */
+            rule: components["schemas"]["WhatsAppRule"];
+            /**
+             * Source
+             * @description How it was set: `owner` (added by number), `activation` (when the answers were turned on), `question` (an answer to «è un cliente?»), `suggestion`.
+             */
+            source: "owner" | "activation" | "question" | "suggestion" | (string & {});
+            /**
+             * Created At
+             * Format: date-time
+             * @description RFC 3339 UTC.
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description RFC 3339 UTC.
+             */
+            updated_at: string;
+        };
+        /**
+         * WhatsAppContactRuleCreate
+         * @description A rule for a number.
+         */
+        WhatsAppContactRuleCreate: {
+            /**
+             * Phone Number
+             * @description The number, E.164 or Italian national format. Stored as E.164.
+             */
+            phone_number: string;
+            /** @description `ignore` or `customer`. */
+            rule: components["schemas"]["WhatsAppRule"];
+        };
+        /**
+         * WhatsAppContactRuleList
+         * @description A page of WhatsApp contact rules, newest first. Loop while `has_more` is true.
+         */
+        WhatsAppContactRuleList: {
+            /** Data */
+            data: components["schemas"]["WhatsAppContactRule"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page, or null on the last page. Pass it back unmodified as `cursor`; do not parse it.
+             */
+            next_cursor: string | null;
+            /**
+             * Has More
+             * @description True when another page is available.
+             * @default false
+             */
+            has_more: boolean;
+        };
+        /**
+         * WhatsAppContactRuleUpdate
+         * @description A rule's new value.
+         */
+        WhatsAppContactRuleUpdate: {
+            /** @description `ignore` or `customer`. */
+            rule: components["schemas"]["WhatsAppRule"];
+        };
+        /**
+         * WhatsAppConversation
+         * @description One conversation with one contact, from their first message until about 30 minutes after the last. Talki answers known customers; with an unknown contact it first judges whether they write about the business, and when they do not it keeps silent and asks the owner «è un cliente?» (`question`). The record stays as long as a call's; its messages are kept 30 days.
+         */
+        WhatsAppConversation: {
+            /**
+             * Id
+             * @description Conversation identifier.
+             */
+            id: string;
+            /**
+             * Chat Id
+             * @description The chat with this contact: the same for each of their conversations.
+             */
+            chat_id: string;
+            contact: components["schemas"]["WhatsAppContact"];
+            /**
+             * Started At
+             * Format: date-time
+             * @description The contact's first message, RFC 3339 UTC.
+             */
+            started_at: string;
+            /**
+             * Ended At
+             * @description When the conversation closed, about 30 minutes after its last message, RFC 3339 UTC. Null while open.
+             */
+            ended_at: string | null;
+            /**
+             * Summary
+             * @description A short summary, in Italian, written when it closes and only when Talki replied or handed the chat to the owner. Null otherwise.
+             */
+            summary: string | null;
+            /**
+             * Outcome
+             * @description What Talki did: `answered`, `handed_over` (passed to the owner), `silent_*` (not a customer: `silent_personal`, `silent_unsure`, `silent_spam`, `silent_supplier`), `skipped_*` (a rule kept Talki out, e.g. `skipped_owner_replied`, `skipped_out_of_schedule`, `skipped_cap_reached`), `dropped` (the owner wrote first), `failed`, `no_reply`, `merged`. Provisional while the conversation is open. Treat a value you do not know as Talki not having answered.
+             */
+            outcome: "answered" | "handed_over" | "silent_personal" | "silent_unsure" | "silent_spam" | "silent_supplier" | "skipped_owner_replied" | "skipped_owner_paused" | "skipped_ignored" | "skipped_blocked" | "skipped_out_of_schedule" | "skipped_window_closed" | "skipped_restricted" | "skipped_payment_missing" | "skipped_cap_reached" | "skipped_not_live" | "dropped" | "failed" | "no_reply" | "merged" | (string & {});
+            /**
+             * Relevance
+             * @description Talki's reading of an unknown contact: `business`, `personal`, `unsure` or `greeting_only`. Null for a known customer, who is not checked.
+             */
+            relevance: "business" | "personal" | "unsure" | "greeting_only" | (string & {}) | null;
+            /**
+             * Category
+             * @description Who the unknown contact seemed to be, e.g. `customer`, `supplier_vendor`, or null.
+             */
+            category: "customer" | "personal_contact" | "wrong_number" | "spam_scam" | "supplier_vendor" | "job_applicant" | "institution" | "unclear" | (string & {}) | null;
+            /**
+             * Replies
+             * @description Replies Talki sent in it.
+             */
+            replies: number;
+            /**
+             * Paused Until
+             * @description Until when Talki leaves the chat to the owner, who wrote in it, RFC 3339 UTC; null when Talki is not paused.
+             */
+            paused_until: string | null;
+            /** @description The owner's «è un cliente?» about the contact, or null when not asked. */
+            question: components["schemas"]["WhatsAppQuestion"] | null;
+            /**
+             * Appointment Ids
+             * @description Appointments booked in it (`GET /v1/appointments/{id}`).
+             */
+            appointment_ids: string[];
+        };
+        /**
+         * WhatsAppConversationAnswer
+         * @description The owner's answer to «è un cliente?».
+         */
+        WhatsAppConversationAnswer: {
+            /**
+             * Answer
+             * @description `customer`: Talki answers the contact, now if WhatsApp's 24-hour window is still open (a `customer` rule). `ignore`: never again (an `ignore` rule). `owner`: the owner replies; Talki leaves the chat until the next day, no rule.
+             * @enum {string}
+             */
+            answer: "customer" | "ignore" | "owner";
+        };
+        /**
+         * WhatsAppConversationList
+         * @description A page of WhatsApp conversations, newest first. Loop while `has_more` is true.
+         */
+        WhatsAppConversationList: {
+            /** Data */
+            data: components["schemas"]["WhatsAppConversation"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page, or null on the last page. Pass it back unmodified as `cursor`; do not parse it.
+             */
+            next_cursor: string | null;
+            /**
+             * Has More
+             * @description True when another page is available.
+             * @default false
+             */
+            has_more: boolean;
+        };
+        /**
+         * WhatsAppConversationMessages
+         * @description The messages of one conversation, oldest first: the customer's, the owner's and Talki's.
+         */
+        WhatsAppConversationMessages: {
+            /**
+             * Conversation Id
+             * @description The conversation.
+             */
+            conversation_id: string;
+            /**
+             * Messages
+             * @description Oldest first.
+             */
+            messages: components["schemas"]["WhatsAppChatMessage"][];
+            /**
+             * Messages Expired
+             * @description True once the conversation is older than 30 days: the messages are deleted, the conversation's record stays.
+             */
+            messages_expired: boolean;
+        };
+        /**
+         * WhatsAppQuestion
+         * @description «È un cliente?»: Talki kept silent with an unknown contact and asks the owner. Asked once per contact: while unanswered it moves to the contact's newest conversation (same `chat_id`), and the older one's `question` becomes null.
+         */
+        WhatsAppQuestion: {
+            /**
+             * State
+             * @description `pending` until the owner answers, then the answer: `customer`, `ignore` or `owner`.
+             */
+            state: "pending" | "customer" | "ignore" | "owner" | (string & {});
+            /**
+             * Asked At
+             * @description RFC 3339 UTC.
+             */
+            asked_at: string | null;
+            /**
+             * Answered At
+             * @description RFC 3339 UTC, or null while pending.
+             */
+            answered_at: string | null;
+        };
+        /**
+         * WhatsAppScheduleRange
+         * @description One time range of the `scheduled` mode, in Rome time.
+         */
+        WhatsAppScheduleRange: {
+            /**
+             * Days
+             * @description Weekdays the range applies to, as ISO weekday numbers: 1 is Monday, 7 is Sunday.
+             */
+            days: number[];
+            /**
+             * Start
+             * @description Start, `HH:MM`, Rome time.
+             */
+            start: string;
+            /**
+             * End
+             * @description End, `HH:MM`, Rome time, after `start`. `23:59` runs to midnight: a night is two ranges, `18:00`-`23:59` and `00:00`-`09:00` of the next day.
+             */
+            end: string;
+        };
+        /**
+         * WhatsAppUpdate
+         * @description A change of the mode, the schedule, or both. Omitted fields stay unchanged.
+         */
+        WhatsAppUpdate: {
+            /**
+             * Mode
+             * @description `off`, `always` or `scheduled`. Turning the answers on from `off` needs a plan with WhatsApp chats and a connected number. `scheduled` needs at least one range, sent now or already stored.
+             */
+            mode?: components["schemas"]["WhatsAppMode"] | null;
+            /**
+             * Schedule
+             * @description The whole schedule, replacing the stored one.
+             */
+            schedule?: components["schemas"]["WhatsAppScheduleRange"][] | null;
+        };
+        /**
+         * WhatsAppUsage
+         * @description The conversations Talki answered this period, against the plan's cap.
+         */
+        WhatsAppUsage: {
+            /**
+             * Used
+             * @description Conversations Talki answered this period.
+             */
+            used: number;
+            /**
+             * Limit
+             * @description The plan's conversations per period, or null for no cap.
+             */
+            limit: number | null;
+            /**
+             * Resets At
+             * @description When the period ends, RFC 3339 UTC.
+             */
+            resets_at: string | null;
+        };
+        /**
          * WorkingHours
          * @description One location's regular weekly opening hours, the main one unless `?location_id=` names another: what the assistant offers that location's callers and what `GET /v1/availability` is computed from for its services. Dated exceptions are `Closure` objects. The response's `ETag` goes back as `If-Match` on `PUT /v1/working_hours` with the same `location_id`.
          */
@@ -11500,7 +12576,7 @@ export interface components {
         ErrorDetail: {
             /** @enum {string} */
             type: "authentication_error" | "permission_error" | "invalid_request" | "conflict" | "rate_limit_error" | "api_error";
-            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `document_not_ready`, `unsupported_file_type`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `account_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `agent_test_session_full`, `agent_test_unavailable`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
+            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `document_not_ready`, `unsupported_file_type`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `whatsapp_not_connected`, `whatsapp_chats_unavailable`, `whatsapp_answers_on`, `whatsapp_contact_rule_exists`, `whatsapp_contact_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `account_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `agent_test_session_full`, `agent_test_unavailable`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
             code: string;
             message: string;
             request_id: string;
@@ -11555,6 +12631,16 @@ export interface components {
          */
         UnresolvedRequestStatus: "open" | "resolved" | "dismissed";
         /**
+         * @description `off`: Talki reads and stores nothing. `always`: Talki answers every customer. `scheduled`: only inside `schedule`.
+         * @enum {string}
+         */
+        WhatsAppMode: "off" | "always" | "scheduled";
+        /**
+         * @description `ignore`: Talki never answers the contact. `customer`: answered without judging first.
+         * @enum {string}
+         */
+        WhatsAppRule: "ignore" | "customer";
+        /**
          * @description What a call came to: `booked` (it booked an appointment, not cancelled again on the same call), `rescheduled` (it moved one), `cancelled` (it cancelled one), `transferred` (a person took the call over), `unresolved` (it left a question for the owner), `info` (none of these). `Call.outcome` carries the same values, and may carry new ones.
          * @enum {string}
          */
@@ -11608,6 +12694,7 @@ export interface operations {
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
                      *       "call_auto_archive_days": null,
+                     *       "call_auto_delete_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -11870,6 +12957,7 @@ export interface operations {
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
                      *       "call_auto_archive_days": null,
+                     *       "call_auto_delete_days": null,
                      *       "greeting": "Come posso aiutarla?",
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -12154,6 +13242,7 @@ export interface operations {
                      *       "voice": "Sulafat",
                      *       "answers_as": "business",
                      *       "call_auto_archive_days": null,
+                     *       "call_auto_delete_days": null,
                      *       "greeting": null,
                      *       "call_opening": null,
                      *       "multilingual_enabled": true,
@@ -19551,7 +20640,9 @@ export interface operations {
                      *         {
                      *           "id": "6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13",
                      *           "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *           "source": "call",
                      *           "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *           "whatsapp_conversation_id": null,
                      *           "caller_phone": "+393331234567",
                      *           "question": "Whether the salon does bridal hair on Sundays.",
                      *           "status": "open",
@@ -19752,7 +20843,9 @@ export interface operations {
                      * @example {
                      *       "id": "6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13",
                      *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *       "source": "call",
                      *       "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *       "whatsapp_conversation_id": null,
                      *       "caller_phone": "+393331234567",
                      *       "question": "Whether the salon does bridal hair on Sundays.",
                      *       "status": "open",
@@ -19966,7 +21059,9 @@ export interface operations {
                      * @example {
                      *       "id": "6c1f9a74-1d0b-4c8e-9a3d-2f5b7e0c4d13",
                      *       "location_id": "0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40",
+                     *       "source": "call",
                      *       "call_id": "38d23d84-02d2-4418-b169-3608aa04a8f8",
+                     *       "whatsapp_conversation_id": null,
                      *       "caller_phone": "+393331234567",
                      *       "question": "Whether the salon does bridal hair on Sundays.",
                      *       "status": "resolved",
@@ -29485,6 +30580,2404 @@ export interface operations {
                      *         "type": "api_error",
                      *         "code": "api_error",
                      *         "message": "The knowledge index is temporarily unavailable. Retry later.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getWhatsapp: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "connection": {
+                     *         "state": "connected",
+                     *         "phone_number": "+390212345678",
+                     *         "business_name": "Studio Bellini",
+                     *         "connected_at": "2026-11-10T08:30:00Z",
+                     *         "disconnected_at": null,
+                     *         "quality_rating": "GREEN",
+                     *         "restricted": false,
+                     *         "payment_method": true
+                     *       },
+                     *       "mode": "always",
+                     *       "schedule": [],
+                     *       "after_hours_schedule": [
+                     *         {
+                     *           "days": [
+                     *             1,
+                     *             2,
+                     *             3,
+                     *             4,
+                     *             5
+                     *           ],
+                     *           "start": "00:00",
+                     *           "end": "09:00"
+                     *         },
+                     *         {
+                     *           "days": [
+                     *             1,
+                     *             2,
+                     *             3,
+                     *             4,
+                     *             5
+                     *           ],
+                     *           "start": "18:00",
+                     *           "end": "23:59"
+                     *         },
+                     *         {
+                     *           "days": [
+                     *             6,
+                     *             7
+                     *           ],
+                     *           "start": "00:00",
+                     *           "end": "23:59"
+                     *         }
+                     *       ],
+                     *       "available": true,
+                     *       "blocked_reason": null,
+                     *       "usage": {
+                     *         "used": 41,
+                     *         "limit": 200,
+                     *         "resets_at": "2026-12-01T00:00:00Z"
+                     *       },
+                     *       "pending_questions": 1,
+                     *       "stored_conversations": 57
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsApp"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    updateWhatsapp: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example whatsapp-after-hours-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "mode": "scheduled",
+                 *       "schedule": [
+                 *         {
+                 *           "days": [
+                 *             1,
+                 *             2,
+                 *             3,
+                 *             4,
+                 *             5
+                 *           ],
+                 *           "start": "18:00",
+                 *           "end": "23:59"
+                 *         },
+                 *         {
+                 *           "days": [
+                 *             6,
+                 *             7
+                 *           ],
+                 *           "start": "00:00",
+                 *           "end": "23:59"
+                 *         }
+                 *       ]
+                 *     }
+                 */
+                "application/json": components["schemas"]["WhatsAppUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "connection": {
+                     *         "state": "connected",
+                     *         "phone_number": "+390212345678",
+                     *         "business_name": "Studio Bellini",
+                     *         "connected_at": "2026-11-10T08:30:00Z",
+                     *         "disconnected_at": null,
+                     *         "quality_rating": "GREEN",
+                     *         "restricted": false,
+                     *         "payment_method": true
+                     *       },
+                     *       "mode": "scheduled",
+                     *       "schedule": [
+                     *         {
+                     *           "days": [
+                     *             1,
+                     *             2,
+                     *             3,
+                     *             4,
+                     *             5
+                     *           ],
+                     *           "start": "18:00",
+                     *           "end": "23:59"
+                     *         },
+                     *         {
+                     *           "days": [
+                     *             6,
+                     *             7
+                     *           ],
+                     *           "start": "00:00",
+                     *           "end": "23:59"
+                     *         }
+                     *       ],
+                     *       "after_hours_schedule": [
+                     *         {
+                     *           "days": [
+                     *             1,
+                     *             2,
+                     *             3,
+                     *             4,
+                     *             5
+                     *           ],
+                     *           "start": "00:00",
+                     *           "end": "09:00"
+                     *         },
+                     *         {
+                     *           "days": [
+                     *             1,
+                     *             2,
+                     *             3,
+                     *             4,
+                     *             5
+                     *           ],
+                     *           "start": "18:00",
+                     *           "end": "23:59"
+                     *         },
+                     *         {
+                     *           "days": [
+                     *             6,
+                     *             7
+                     *           ],
+                     *           "start": "00:00",
+                     *           "end": "23:59"
+                     *         }
+                     *       ],
+                     *       "available": true,
+                     *       "blocked_reason": null,
+                     *       "usage": {
+                     *         "used": 41,
+                     *         "limit": 200,
+                     *         "resets_at": "2026-12-01T00:00:00Z"
+                     *       },
+                     *       "pending_questions": 1,
+                     *       "stored_conversations": 57
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsApp"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description This account's plan does not include WhatsApp chats (`plan_feature_unavailable`), or the credential lacks the scope (`insufficient_scope`). */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "plan_feature_unavailable",
+                     *         "message": "Talki answers WhatsApp chats on the Business plan. This account's plan does not include it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No WhatsApp number is connected (`whatsapp_not_connected`), Talki does not answer WhatsApp chats yet (`whatsapp_chats_unavailable`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "whatsapp_not_connected",
+                     *         "message": "No WhatsApp Business number is connected. The owner connects it in the Talki app.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    listWhatsappConversations: {
+        parameters: {
+            query?: {
+                /** @description Only the conversations whose «è un cliente?» waits for the owner's answer. */
+                needs_answer?: boolean;
+                /** @description Maximum number of conversations to return. */
+                limit?: number;
+                /** @description Opaque cursor from a previous response's `next_cursor`. Omit for the first page. */
+                cursor?: string | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "id": "7a1c3e95-4b2d-4f80-9e6a-2d8c5b1f3e47",
+                     *           "chat_id": "c3e8a1f4-9d27-4b65-8f0c-6a2e9d4b7c18",
+                     *           "contact": {
+                     *             "name": "Giulia",
+                     *             "phone_number": "+393479876543",
+                     *             "rule": null
+                     *           },
+                     *           "started_at": "2026-11-19T17:42:08Z",
+                     *           "ended_at": "2026-11-19T18:16:30Z",
+                     *           "summary": null,
+                     *           "outcome": "silent_unsure",
+                     *           "relevance": "unsure",
+                     *           "category": "unclear",
+                     *           "replies": 0,
+                     *           "paused_until": null,
+                     *           "question": {
+                     *             "state": "pending",
+                     *             "asked_at": "2026-11-19T17:44:51Z",
+                     *             "answered_at": null
+                     *           },
+                     *           "appointment_ids": []
+                     *         }
+                     *       ],
+                     *       "next_cursor": null,
+                     *       "has_more": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsAppConversationList"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    deleteWhatsappConversations: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example whatsapp-delete-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Talki is answering the chats (`whatsapp_answers_on`): set `mode` to `off` first. Or a test-mode credential was used (`livemode_required`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "whatsapp_answers_on",
+                     *         "message": "Talki is answering this account's WhatsApp chats. Set `mode` to `off` first.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getWhatsappConversation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "7a1c3e95-4b2d-4f80-9e6a-2d8c5b1f3e47",
+                     *       "chat_id": "c3e8a1f4-9d27-4b65-8f0c-6a2e9d4b7c18",
+                     *       "contact": {
+                     *         "name": "Mario",
+                     *         "phone_number": "+393331112233",
+                     *         "rule": null
+                     *       },
+                     *       "started_at": "2026-11-19T17:42:08Z",
+                     *       "ended_at": "2026-11-19T18:16:30Z",
+                     *       "summary": "Mario Rossi ha chiesto un taglio per sabato mattina: prenotato alle 10:00.",
+                     *       "outcome": "answered",
+                     *       "relevance": "business",
+                     *       "category": "customer",
+                     *       "replies": 3,
+                     *       "paused_until": null,
+                     *       "question": null,
+                     *       "appointment_ids": [
+                     *         "a3fe45ee-572f-4677-b1dd-f36c21bb47de"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsAppConversation"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No WhatsApp conversation with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such WhatsApp conversation.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getWhatsappConversationMessages: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "conversation_id": "7a1c3e95-4b2d-4f80-9e6a-2d8c5b1f3e47",
+                     *       "messages": [
+                     *         {
+                     *           "id": "1f6a9c3e-8b2d-4e57-a0c4-3d9e7b1f5a28",
+                     *           "direction": "customer",
+                     *           "type": "text",
+                     *           "text": "Buongiorno, avete posto sabato mattina per un taglio?",
+                     *           "created_at": "2026-11-19T17:42:08Z",
+                     *           "failed": false
+                     *         },
+                     *         {
+                     *           "id": "4b8e2d7a-1c5f-4a93-9e60-7f2c8d3b1e49",
+                     *           "direction": "talki",
+                     *           "type": "text",
+                     *           "text": "Buongiorno! Sono l'assistente virtuale dello Studio Bellini. Sabato ho libero alle 10:00 o alle 11:30: quale preferisce?",
+                     *           "created_at": "2026-11-19T17:44:02Z",
+                     *           "failed": false
+                     *         }
+                     *       ],
+                     *       "messages_expired": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsAppConversationMessages"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No WhatsApp conversation with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such WhatsApp conversation.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    answerWhatsappConversation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example whatsapp-answer-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "answer": "customer"
+                 *     }
+                 */
+                "application/json": components["schemas"]["WhatsAppConversationAnswer"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "7a1c3e95-4b2d-4f80-9e6a-2d8c5b1f3e47",
+                     *       "chat_id": "c3e8a1f4-9d27-4b65-8f0c-6a2e9d4b7c18",
+                     *       "contact": {
+                     *         "name": "Giulia",
+                     *         "phone_number": "+393479876543",
+                     *         "rule": "customer"
+                     *       },
+                     *       "started_at": "2026-11-19T17:42:08Z",
+                     *       "ended_at": "2026-11-19T18:16:30Z",
+                     *       "summary": null,
+                     *       "outcome": "silent_unsure",
+                     *       "relevance": "unsure",
+                     *       "category": "unclear",
+                     *       "replies": 0,
+                     *       "paused_until": null,
+                     *       "question": {
+                     *         "state": "customer",
+                     *         "asked_at": "2026-11-19T17:44:51Z",
+                     *         "answered_at": "2026-11-19T18:02:10Z"
+                     *       },
+                     *       "appointment_ids": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsAppConversation"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description This account's plan does not include WhatsApp chats (`plan_feature_unavailable`), or the credential lacks the scope (`insufficient_scope`). */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "plan_feature_unavailable",
+                     *         "message": "Talki answers WhatsApp chats on the Business plan. This account's plan does not include it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No WhatsApp conversation with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such WhatsApp conversation.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The answer would add a contact rule past the account's 500 (`whatsapp_contact_rule_limit_reached`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "whatsapp_contact_rule_limit_reached",
+                     *         "message": "The account holds at most 500 contact rules. Delete one first.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    listWhatsappContactRules: {
+        parameters: {
+            query?: {
+                /** @description Only `ignore` or only `customer` rules. Omit for both. */
+                rule?: components["schemas"]["WhatsAppRule"] | null;
+                /** @description Maximum number of rules to return. */
+                limit?: number;
+                /** @description Opaque cursor from a previous response's `next_cursor`. Omit for the first page. */
+                cursor?: string | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "id": "e9b4d2a7-1c6f-4e83-a5d0-8f3b7c2e1a96",
+                     *           "phone_number": "+393471234567",
+                     *           "contact_name": "Mamma",
+                     *           "rule": "ignore",
+                     *           "source": "owner",
+                     *           "created_at": "2026-11-19T09:00:00Z",
+                     *           "updated_at": "2026-11-19T09:00:00Z"
+                     *         }
+                     *       ],
+                     *       "next_cursor": null,
+                     *       "has_more": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsAppContactRuleList"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    createWhatsappContactRule: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example whatsapp-ignore-mum-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "phone_number": "+393471234567",
+                 *       "rule": "ignore"
+                 *     }
+                 */
+                "application/json": components["schemas"]["WhatsAppContactRuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "e9b4d2a7-1c6f-4e83-a5d0-8f3b7c2e1a96",
+                     *       "phone_number": "+393471234567",
+                     *       "contact_name": "Mamma",
+                     *       "rule": "ignore",
+                     *       "source": "owner",
+                     *       "created_at": "2026-11-19T09:00:00Z",
+                     *       "updated_at": "2026-11-19T09:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsAppContactRule"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description This account's plan does not include WhatsApp chats (`plan_feature_unavailable`), or the credential lacks the scope (`insufficient_scope`). */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "plan_feature_unavailable",
+                     *         "message": "Talki answers WhatsApp chats on the Business plan. This account's plan does not include it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The number already has a rule (`whatsapp_contact_rule_exists`): change it with `PATCH`. Or the account holds 500 rules (`whatsapp_contact_rule_limit_reached`), or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "whatsapp_contact_rule_exists",
+                     *         "message": "This number already has a contact rule. Change that one instead.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    deleteWhatsappContactRule: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example whatsapp-rule-delete-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or credential may not perform this request. */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "insufficient_scope",
+                     *         "message": "This credential does not have the required scope.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No WhatsApp contact rule with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such WhatsApp contact rule.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The write conflicts with current state or a previous idempotency key use. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "idempotency_key_reuse",
+                     *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    updateWhatsappContactRule: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example whatsapp-rule-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "rule": "customer"
+                 *     }
+                 */
+                "application/json": components["schemas"]["WhatsAppContactRuleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "e9b4d2a7-1c6f-4e83-a5d0-8f3b7c2e1a96",
+                     *       "phone_number": "+393471234567",
+                     *       "contact_name": "Mamma",
+                     *       "rule": "customer",
+                     *       "source": "owner",
+                     *       "created_at": "2026-11-19T09:00:00Z",
+                     *       "updated_at": "2026-11-20T10:15:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WhatsAppContactRule"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description This account's plan does not include WhatsApp chats (`plan_feature_unavailable`), or the credential lacks the scope (`insufficient_scope`). */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "plan_feature_unavailable",
+                     *         "message": "Talki answers WhatsApp chats on the Business plan. This account's plan does not include it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No WhatsApp contact rule with this ID exists in the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such WhatsApp contact rule.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The write conflicts with current state or a previous idempotency key use. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "idempotency_key_reuse",
+                     *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }

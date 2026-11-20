@@ -8,11 +8,12 @@ import type { components } from "./schema.js";
  * and the line that forwards to Talki. `GET /v1/account` needs only `account:read`, which makes it the
  * call to validate a new credential. The settings are those of one location: the main one, or the one
  * `?location_id=` names, the switches included. Only the account's own fields (`id`, `timezone`,
- * `livemode`, `test`, `multi_sede`, `onboarding_completed` and `call_auto_archive_days`) read the same
- * at every location. The response's `ETag` covers every writable field at that location; send it back
- * as `If-Match` on `PATCH /v1/account` with the same `location_id`. `account.updated` reports a change
- * to the main location's settings or to `call_auto_archive_days`, `location.settings_updated` one to
- * another location's settings, its switches included.
+ * `livemode`, `test`, `multi_sede`, `onboarding_completed`, `call_auto_archive_days` and
+ * `call_auto_delete_days`) read the same at every location. The response's `ETag` covers every
+ * writable field at that location; send it back as `If-Match` on `PATCH /v1/account` with the same
+ * `location_id`. `account.updated` reports a change to the main location's settings or to
+ * `call_auto_archive_days` or `call_auto_delete_days`, `location.settings_updated` one to another
+ * location's settings, its switches included.
  */
 export type Account = components["schemas"]["Account"];
 /**
@@ -28,8 +29,9 @@ export type AccountLine = components["schemas"]["AccountLine"];
 /**
  * The settings you can change. Every field is optional and an omitted one is left unchanged, but send
  * at least one. A `null` or empty text clears it; a voice, a switch or the transfer list cannot be
- * null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` is
- * the account's: it is refused with a `location_id` other than the main location's.
+ * null. With `?location_id=`, the settings change at that location only. `call_auto_archive_days` and
+ * `call_auto_delete_days` are the account's: they are refused with a `location_id` other than the main
+ * location's.
  */
 export type AccountUpdate = components["schemas"]["AccountUpdate"];
 /**
@@ -546,6 +548,87 @@ export type Voice = components["schemas"]["Voice"];
  * Every voice on offer, in one page: `next_cursor` is always null.
  */
 export type VoiceList = components["schemas"]["VoiceList"];
+/**
+ * The account's WhatsApp Business number and how Talki answers chats on it. Talki answers customers
+ * like a front desk, with the same knowledge, services, hours and calendar as on the phone, and steps
+ * back as soon as the owner writes in a chat. The owner connects the number in the Talki app.
+ */
+export type WhatsApp = components["schemas"]["WhatsApp"];
+/**
+ * One message of a WhatsApp conversation.
+ */
+export type WhatsAppChatMessage = components["schemas"]["WhatsAppChatMessage"];
+/**
+ * The connected WhatsApp Business number.
+ */
+export type WhatsAppConnection = components["schemas"]["WhatsAppConnection"];
+/**
+ * Who wrote.
+ */
+export type WhatsAppContact = components["schemas"]["WhatsAppContact"];
+/**
+ * A contact Talki never answers (`ignore`), or answers as a customer without judging first
+ * (`customer`). One list for the account, at most 500 rules.
+ */
+export type WhatsAppContactRule = components["schemas"]["WhatsAppContactRule"];
+/**
+ * A rule for a number.
+ */
+export type WhatsAppContactRuleCreate = components["schemas"]["WhatsAppContactRuleCreate"];
+/**
+ * A page of WhatsApp contact rules, newest first. Loop while `has_more` is true.
+ */
+export type WhatsAppContactRuleList = components["schemas"]["WhatsAppContactRuleList"];
+/**
+ * A rule's new value.
+ */
+export type WhatsAppContactRuleUpdate = components["schemas"]["WhatsAppContactRuleUpdate"];
+/**
+ * One conversation with one contact, from their first message until about 30 minutes after the last.
+ * Talki answers known customers; with an unknown contact it first judges whether they write about the
+ * business, and when they do not it keeps silent and asks the owner «è un cliente?» (`question`). The
+ * record stays as long as a call's; its messages are kept 30 days.
+ */
+export type WhatsAppConversation = components["schemas"]["WhatsAppConversation"];
+/**
+ * The owner's answer to «è un cliente?».
+ */
+export type WhatsAppConversationAnswer = components["schemas"]["WhatsAppConversationAnswer"];
+/**
+ * A page of WhatsApp conversations, newest first. Loop while `has_more` is true.
+ */
+export type WhatsAppConversationList = components["schemas"]["WhatsAppConversationList"];
+/**
+ * The messages of one conversation, oldest first: the customer's, the owner's and Talki's.
+ */
+export type WhatsAppConversationMessages = components["schemas"]["WhatsAppConversationMessages"];
+/**
+ * `off`: Talki reads and stores nothing. `always`: Talki answers every customer. `scheduled`: only
+ * inside `schedule`.
+ */
+export type WhatsAppMode = components["schemas"]["WhatsAppMode"];
+/**
+ * «È un cliente?»: Talki kept silent with an unknown contact and asks the owner. Asked once per
+ * contact: while unanswered it moves to the contact's newest conversation (same `chat_id`), and the
+ * older one's `question` becomes null.
+ */
+export type WhatsAppQuestion = components["schemas"]["WhatsAppQuestion"];
+/**
+ * `ignore`: Talki never answers the contact. `customer`: answered without judging first.
+ */
+export type WhatsAppRule = components["schemas"]["WhatsAppRule"];
+/**
+ * One time range of the `scheduled` mode, in Rome time.
+ */
+export type WhatsAppScheduleRange = components["schemas"]["WhatsAppScheduleRange"];
+/**
+ * A change of the mode, the schedule, or both. Omitted fields stay unchanged.
+ */
+export type WhatsAppUpdate = components["schemas"]["WhatsAppUpdate"];
+/**
+ * The conversations Talki answered this period, against the plan's cap.
+ */
+export type WhatsAppUsage = components["schemas"]["WhatsAppUsage"];
 /**
  * One location's regular weekly opening hours, the main one unless `?location_id=` names another: what
  * the assistant offers that location's callers and what `GET /v1/availability` is computed from for

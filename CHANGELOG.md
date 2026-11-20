@@ -5,6 +5,112 @@ version each release targets by default is `API_VERSION`.
 
 ## Unreleased
 
+## 0.5.0-beta.1
+
+Still API version `2026-10-01`. No method was renamed or removed. One type
+gained two required fields, which a hand-built object of it needs.
+
+New:
+
+- `talki.whatsapp`: how Talki answers the business's WhatsApp chats, and the
+  chats themselves. Talki answers customers as on the phone, with the same
+  knowledge, services, hours and calendar, and steps back as soon as the owner
+  writes in a chat. The owner connects the WhatsApp Business number in the
+  Talki app; the API cannot.
+  - `talki.whatsapp.get()` returns a `WhatsApp`: the number (`connection`),
+    the `mode` (`off`, `always` or `scheduled`), the `schedule`,
+    `after_hours_schedule` (every time the main location is closed, ready to
+    send as `schedule`), whether Talki can answer (`available`, and
+    `blocked_reason` when not), this period's `usage`, `pending_questions` and
+    `stored_conversations`. Needs `whatsapp:read`.
+  - `talki.whatsapp.update({ body: { mode, schedule } })` changes the mode,
+    the schedule or both. Turning the answers on from `off` is refused without
+    a plan that includes WhatsApp chats (`PermissionDeniedError`,
+    `plan_feature_unavailable`), without a connected number (`ConflictError`,
+    `whatsapp_not_connected`), or while Talki does not answer WhatsApp chats
+    yet (`ConflictError`, `whatsapp_chats_unavailable`). Set the contact rules
+    first: from then on Talki answers whoever writes, apart from the contacts
+    it judges personal. Needs `whatsapp:write`.
+  - `talki.whatsapp.listConversations()` pages through the conversations
+    Talki took part in or kept out of, newest first; `needs_answer: true`
+    lists those waiting for the owner's «è un cliente?».
+    `talki.whatsapp.getConversation(id)` returns one `WhatsAppConversation`:
+    who wrote, its summary and `outcome`, and the owner's `question`. Both
+    need `whatsapp:read`.
+  - `talki.whatsapp.getConversationMessages(id)` returns its messages, oldest
+    first. It needs `transcripts:read`, which `whatsapp:read` does not grant.
+    Messages are kept 30 days; after that `messages_expired` is true and the
+    conversation's record stays.
+  - `talki.whatsapp.answerConversation(id, { body: { answer } })` answers
+    «è un cliente?» for the owner, on any conversation, asked or not:
+    `customer` (Talki answers the contact, now if WhatsApp's 24-hour window is
+    still open), `ignore` (never again) or `owner` (the owner replies; Talki
+    leaves the chat until the next day). `customer` and `ignore` set a contact
+    rule. Needs `whatsapp:write`, and a plan that includes WhatsApp chats
+    (`PermissionDeniedError`, `plan_feature_unavailable`), as do
+    `createContactRule()` and `updateContactRule()`.
+  - `talki.whatsapp.listContactRules()`, `createContactRule()`,
+    `updateContactRule()` and `deleteContactRule()` manage the contacts Talki
+    never answers (`ignore`) or answers as customers without judging first
+    (`customer`): one rule per number, at most 500 per account. Listing needs
+    `whatsapp:read`, the rest `whatsapp:write`. A number that already has a
+    rule is a `ConflictError` with code `whatsapp_contact_rule_exists` (change
+    it with `updateContactRule()`); a rule past the 500th, also one set by
+    `answerConversation()`, is `whatsapp_contact_rule_limit_reached`. A
+    creation counts toward the 20 per minute shared with services, resources,
+    tags and caller rules. Deleting a rule leaves the contact to Talki's own
+    judgement.
+  - `talki.whatsapp.deleteConversations()` deletes every stored conversation
+    and its messages; the contact rules, the appointments booked in a chat and
+    the requests it left stay. It needs the opt-in `whatsapp:delete` scope and
+    a live-mode credential (`livemode_required`), and is refused while Talki
+    answers the chats (`ConflictError`, `whatsapp_answers_on`): set `mode` to
+    `off` first.
+- Two webhook events with the `WhatsAppConversation` as `data.object`. An
+  OAuth app gets them by subscribing to them, with `whatsapp:read`.
+  - `whatsapp.conversation_ended`: a conversation closed, about 30 minutes
+    after its last message, also one Talki kept out of; sent again if it
+    reopens and closes once more. A conversation closed otherwise (the
+    contact's two chats merged, or found still open when the contact wrote
+    again much later) sends none: `listConversations()` lists it all the same.
+  - `whatsapp.question_asked`: Talki kept silent with an unknown contact and
+    asks the owner «è un cliente?»; answer with `answerConversation()`. Sent
+    once per contact.
+- A webhook event, `whatsapp.message_sent`: after a call, the assistant sent
+  the caller a WhatsApp message from the business's own number, with the
+  caller's consent, and WhatsApp accepted it. `data.object` is the `Call`, and
+  `data.message` has the message's `id`, `type`, `language` and `sent_at`, not
+  its text. Delivery is not reported. An OAuth app gets it by subscribing to
+  it, with `calls:read`.
+- `UnresolvedRequest.source`, `call` or `whatsapp`, and
+  `UnresolvedRequest.whatsapp_conversation_id`, the conversation a request
+  from WhatsApp was raised in: null for a request from a call, and once the
+  conversation is deleted. A request from WhatsApp has `call_id` null and the
+  main location as `location_id`. Both are on `unresolved_request.updated`
+  too.
+- `ErrorDetail.code` lists five new codes: `whatsapp_not_connected`,
+  `whatsapp_chats_unavailable`, `whatsapp_answers_on`,
+  `whatsapp_contact_rule_exists` and `whatsapp_contact_rule_limit_reached`.
+- `call_auto_delete_days` on `Account` and `AccountUpdate`: how many days after
+  it started a call is deleted for good, read or not (`30`, `60`, `90` or
+  `180`), or `null` to keep calls until the 365-day retention limit. Deletion
+  runs once a night, as `talki.calls.delete` would, and sends `call.deleted`
+  for each call. Setting a number needs the `calls:delete` scope as well as
+  `account:write`, and is refused in test mode (`livemode_required`). The
+  account's own setting: the same at every location.
+- New types: `WhatsApp`, `WhatsAppUpdate`, `WhatsAppConversation`,
+  `WhatsAppChatMessage`, `WhatsAppContactRule` and the others named
+  `WhatsApp…`, with the parameter and response types of the new methods.
+
+What changes for your code:
+
+- `source` and `whatsapp_conversation_id` are required keys of
+  `UnresolvedRequest`, so a hand-built one, such as a test fixture, no longer
+  compiles until it has them.
+- Unresolved requests now come from WhatsApp chats as well as calls, with no
+  `call_id`. Treat a `source` you do not know as a request to handle all the
+  same.
+
 ## 0.4.0-beta.1
 
 Still API version `2026-10-01`. No method was renamed or removed; one type
