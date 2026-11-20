@@ -68,6 +68,19 @@ const METHODS: Record<string, string[]> = {
   unresolvedRequests: ["get", "list", "teach", "update"],
   usage: ["get", "getHistory"],
   voices: ["getPreview", "list"],
+  whatsapp: [
+    "answerConversation",
+    "createContactRule",
+    "deleteContactRule",
+    "deleteConversations",
+    "get",
+    "getConversation",
+    "getConversationMessages",
+    "listContactRules",
+    "listConversations",
+    "update",
+    "updateContactRule",
+  ],
   workingHours: ["get", "replace"],
 };
 

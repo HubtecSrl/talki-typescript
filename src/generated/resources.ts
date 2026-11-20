@@ -7,6 +7,16 @@ import type { operations } from "./schema.js";
 
 /** Every operation of the API, by its `operationId`: what the methods send. */
 export const OPERATIONS = {
+  answerWhatsappConversation: {
+    method: "POST",
+    path: "/v1/whatsapp/conversations/{conversation_id}/answer",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: false,
+    success: [200],
+    binary: false,
+  },
   approvePendingContact: {
     method: "POST",
     path: "/v1/pending_contacts/{pending_id}/approve",
@@ -137,6 +147,16 @@ export const OPERATIONS = {
     success: [201],
     binary: false,
   },
+  createWhatsappContactRule: {
+    method: "POST",
+    path: "/v1/whatsapp/contact_rules",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: false,
+    success: [201],
+    binary: false,
+  },
   deleteCall: {
     method: "DELETE",
     path: "/v1/calls/{call_id}",
@@ -220,6 +240,26 @@ export const OPERATIONS = {
   deleteTag: {
     method: "DELETE",
     path: "/v1/tags/{tag_id}",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: null,
+    form: false,
+    success: [204],
+    binary: false,
+  },
+  deleteWhatsappContactRule: {
+    method: "DELETE",
+    path: "/v1/whatsapp/contact_rules/{rule_id}",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: null,
+    form: false,
+    success: [204],
+    binary: false,
+  },
+  deleteWhatsappConversations: {
+    method: "DELETE",
+    path: "/v1/whatsapp/conversations",
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: null,
@@ -457,6 +497,36 @@ export const OPERATIONS = {
     success: [200],
     binary: true,
   },
+  getWhatsapp: {
+    method: "GET",
+    path: "/v1/whatsapp",
+    query: [],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  getWhatsappConversation: {
+    method: "GET",
+    path: "/v1/whatsapp/conversations/{conversation_id}",
+    query: [],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  getWhatsappConversationMessages: {
+    method: "GET",
+    path: "/v1/whatsapp/conversations/{conversation_id}/messages",
+    query: [],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
   getWorkingHours: {
     method: "GET",
     path: "/v1/working_hours",
@@ -631,6 +701,26 @@ export const OPERATIONS = {
     method: "GET",
     path: "/v1/voices",
     query: [],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  listWhatsappContactRules: {
+    method: "GET",
+    path: "/v1/whatsapp/contact_rules",
+    query: ["rule", "limit", "cursor"],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  listWhatsappConversations: {
+    method: "GET",
+    path: "/v1/whatsapp/conversations",
+    query: ["needs_answer", "limit", "cursor"],
     headers: {},
     body: null,
     form: false,
@@ -830,6 +920,26 @@ export const OPERATIONS = {
   updateUnresolvedRequest: {
     method: "PATCH",
     path: "/v1/unresolved_requests/{request_id}",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  updateWhatsapp: {
+    method: "PATCH",
+    path: "/v1/whatsapp",
+    query: [],
+    headers: { idempotencyKey: "Idempotency-Key" },
+    body: "required",
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  updateWhatsappContactRule: {
+    method: "PATCH",
+    path: "/v1/whatsapp/contact_rules/{rule_id}",
     query: [],
     headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
@@ -3216,7 +3326,8 @@ export class TagsResource {
    *
    * Create a tag. An account holds at most 50. Requires `Idempotency-Key`. Requires `contacts:write`.
    * Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 20
-   * creations per minute shared by the services, resources, tags and caller rules you create.
+   * creations per minute shared by the services, resources, tags, caller rules and WhatsApp contact
+   * rules you create.
    *
    * @param params - the query, body and options; see `CreateTagParams`.
    * @see POST /v1/tags
@@ -3480,7 +3591,7 @@ export class CallerRulesResource {
    * answers `200` with it, moved or relabelled as the request asks, or unchanged. Requires
    * `Idempotency-Key`. Requires `contacts:write`. Limited to 120 requests per minute per account (API
    * key) or per installation (OAuth), and to 20 creations per minute shared by the services,
-   * resources, tags and caller rules you create.
+   * resources, tags, caller rules and WhatsApp contact rules you create.
    *
    * @param params - the query, body and options; see `CreateCallerRuleParams`.
    * @see POST /v1/caller_rules
@@ -3541,6 +3652,510 @@ export class CallerRulesResource {
    */
   async update(ruleId: string, params: UpdateCallerRuleParams): Promise<UpdateCallerRuleResponse> {
     return (await this.withRawResponse.update(ruleId, params)).data;
+  }
+}
+
+/**
+ * Options for `answerWhatsappConversation`.
+ */
+export type AnswerWhatsappConversationParams = RequestOptions & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["answerWhatsappConversation"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `answerWhatsappConversation` returns.
+ */
+export type AnswerWhatsappConversationResponse = operations["answerWhatsappConversation"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `createWhatsappContactRule`.
+ */
+export type CreateWhatsappContactRuleParams = RequestOptions & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["createWhatsappContactRule"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `createWhatsappContactRule` returns.
+ */
+export type CreateWhatsappContactRuleResponse = operations["createWhatsappContactRule"]["responses"][201]["content"]["application/json"];
+
+/**
+ * Options for `deleteWhatsappContactRule`.
+ */
+export type DeleteWhatsappContactRuleParams = RequestOptions & {
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `deleteWhatsappContactRule` returns.
+ */
+export type DeleteWhatsappContactRuleResponse = undefined;
+
+/**
+ * Options for `deleteWhatsappConversations`.
+ */
+export type DeleteWhatsappConversationsParams = RequestOptions & {
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `deleteWhatsappConversations` returns.
+ */
+export type DeleteWhatsappConversationsResponse = undefined;
+
+/**
+ * Options for `getWhatsapp`.
+ */
+export type GetWhatsappParams = RequestOptions;
+
+/**
+ * What `getWhatsapp` returns.
+ */
+export type GetWhatsappResponse = operations["getWhatsapp"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `getWhatsappConversation`.
+ */
+export type GetWhatsappConversationParams = RequestOptions;
+
+/**
+ * What `getWhatsappConversation` returns.
+ */
+export type GetWhatsappConversationResponse = operations["getWhatsappConversation"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `getWhatsappConversationMessages`.
+ */
+export type GetWhatsappConversationMessagesParams = RequestOptions;
+
+/**
+ * What `getWhatsappConversationMessages` returns.
+ */
+export type GetWhatsappConversationMessagesResponse = operations["getWhatsappConversationMessages"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `listWhatsappContactRules`.
+ */
+export type ListWhatsappContactRulesParams = RequestOptions & NonNullable<operations["listWhatsappContactRules"]["parameters"]["query"]>;
+
+/**
+ * What `listWhatsappContactRules` returns.
+ */
+export type ListWhatsappContactRulesResponse = operations["listWhatsappContactRules"]["responses"][200]["content"]["application/json"];
+
+/**
+ * A row of `listWhatsappContactRules`.
+ */
+export type ListWhatsappContactRulesRow = operations["listWhatsappContactRules"]["responses"][200]["content"]["application/json"]["data"][number];
+
+/**
+ * Options for `listWhatsappConversations`.
+ */
+export type ListWhatsappConversationsParams = RequestOptions & NonNullable<operations["listWhatsappConversations"]["parameters"]["query"]>;
+
+/**
+ * What `listWhatsappConversations` returns.
+ */
+export type ListWhatsappConversationsResponse = operations["listWhatsappConversations"]["responses"][200]["content"]["application/json"];
+
+/**
+ * A row of `listWhatsappConversations`.
+ */
+export type ListWhatsappConversationsRow = operations["listWhatsappConversations"]["responses"][200]["content"]["application/json"]["data"][number];
+
+/**
+ * Options for `updateWhatsapp`.
+ */
+export type UpdateWhatsappParams = RequestOptions & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["updateWhatsapp"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `updateWhatsapp` returns.
+ */
+export type UpdateWhatsappResponse = operations["updateWhatsapp"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `updateWhatsappContactRule`.
+ */
+export type UpdateWhatsappContactRuleParams = RequestOptions & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["updateWhatsappContactRule"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `updateWhatsappContactRule` returns.
+ */
+export type UpdateWhatsappContactRuleResponse = operations["updateWhatsappContactRule"]["responses"][200]["content"]["application/json"];
+
+/**
+ * `talki.whatsapp.withRawResponse`: the methods of `talki.whatsapp`, each returning the whole
+ * answer, a `RawResponse` whose `data` is what the method returns. An error throws as it does there.
+ */
+export class WhatsappResourceWithRawResponse {
+  readonly #requester: Requester;
+
+  constructor(requester: Requester) {
+    this.#requester = requester;
+  }
+
+  /**
+   * Answer «è un cliente?»
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param conversationId - conversation_id
+   * @param params - the query, body and options; see `AnswerWhatsappConversationParams`.
+   * @see POST /v1/whatsapp/conversations/{conversation_id}/answer
+   */
+  answerConversation(conversationId: string, params: AnswerWhatsappConversationParams): Promise<RawResponse<AnswerWhatsappConversationResponse>> {
+    return this.#requester.request<AnswerWhatsappConversationResponse>(OPERATIONS.answerWhatsappConversation, [conversationId], params);
+  }
+
+  /**
+   * Add a WhatsApp contact rule
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `CreateWhatsappContactRuleParams`.
+   * @see POST /v1/whatsapp/contact_rules
+   */
+  createContactRule(params: CreateWhatsappContactRuleParams): Promise<RawResponse<CreateWhatsappContactRuleResponse>> {
+    return this.#requester.request<CreateWhatsappContactRuleResponse>(OPERATIONS.createWhatsappContactRule, [], params);
+  }
+
+  /**
+   * Delete a WhatsApp contact rule
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param ruleId - rule_id
+   * @param params - the query, body and options; see `DeleteWhatsappContactRuleParams`.
+   * @see DELETE /v1/whatsapp/contact_rules/{rule_id}
+   */
+  deleteContactRule(ruleId: string, params: DeleteWhatsappContactRuleParams = {}): Promise<RawResponse<DeleteWhatsappContactRuleResponse>> {
+    return this.#requester.request<DeleteWhatsappContactRuleResponse>(OPERATIONS.deleteWhatsappContactRule, [ruleId], params);
+  }
+
+  /**
+   * Delete the stored WhatsApp chats
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `DeleteWhatsappConversationsParams`.
+   * @see DELETE /v1/whatsapp/conversations
+   */
+  deleteConversations(params: DeleteWhatsappConversationsParams = {}): Promise<RawResponse<DeleteWhatsappConversationsResponse>> {
+    return this.#requester.request<DeleteWhatsappConversationsResponse>(OPERATIONS.deleteWhatsappConversations, [], params);
+  }
+
+  /**
+   * Retrieve the WhatsApp settings
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `GetWhatsappParams`.
+   * @see GET /v1/whatsapp
+   */
+  get(params: GetWhatsappParams = {}): Promise<RawResponse<GetWhatsappResponse>> {
+    return this.#requester.request<GetWhatsappResponse>(OPERATIONS.getWhatsapp, [], params);
+  }
+
+  /**
+   * Retrieve a WhatsApp conversation
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param conversationId - conversation_id
+   * @param params - the query, body and options; see `GetWhatsappConversationParams`.
+   * @see GET /v1/whatsapp/conversations/{conversation_id}
+   */
+  getConversation(conversationId: string, params: GetWhatsappConversationParams = {}): Promise<RawResponse<GetWhatsappConversationResponse>> {
+    return this.#requester.request<GetWhatsappConversationResponse>(OPERATIONS.getWhatsappConversation, [conversationId], params);
+  }
+
+  /**
+   * Retrieve a WhatsApp conversation's messages
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param conversationId - conversation_id
+   * @param params - the query, body and options; see `GetWhatsappConversationMessagesParams`.
+   * @see GET /v1/whatsapp/conversations/{conversation_id}/messages
+   */
+  getConversationMessages(conversationId: string, params: GetWhatsappConversationMessagesParams = {}): Promise<RawResponse<GetWhatsappConversationMessagesResponse>> {
+    return this.#requester.request<GetWhatsappConversationMessagesResponse>(OPERATIONS.getWhatsappConversationMessages, [conversationId], params);
+  }
+
+  /**
+   * List WhatsApp contact rules
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `ListWhatsappContactRulesParams`.
+   * @see GET /v1/whatsapp/contact_rules
+   */
+  listContactRules(params: ListWhatsappContactRulesParams = {}): Promise<RawResponse<Page<ListWhatsappContactRulesRow>>> {
+    return this.#requester.requestPage<ListWhatsappContactRulesRow>(OPERATIONS.listWhatsappContactRules, [], params);
+  }
+
+  /**
+   * List WhatsApp conversations
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `ListWhatsappConversationsParams`.
+   * @see GET /v1/whatsapp/conversations
+   */
+  listConversations(params: ListWhatsappConversationsParams = {}): Promise<RawResponse<Page<ListWhatsappConversationsRow>>> {
+    return this.#requester.requestPage<ListWhatsappConversationsRow>(OPERATIONS.listWhatsappConversations, [], params);
+  }
+
+  /**
+   * Update the WhatsApp settings
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `UpdateWhatsappParams`.
+   * @see PATCH /v1/whatsapp
+   */
+  update(params: UpdateWhatsappParams): Promise<RawResponse<UpdateWhatsappResponse>> {
+    return this.#requester.request<UpdateWhatsappResponse>(OPERATIONS.updateWhatsapp, [], params);
+  }
+
+  /**
+   * Update a WhatsApp contact rule
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param ruleId - rule_id
+   * @param params - the query, body and options; see `UpdateWhatsappContactRuleParams`.
+   * @see PATCH /v1/whatsapp/contact_rules/{rule_id}
+   */
+  updateContactRule(ruleId: string, params: UpdateWhatsappContactRuleParams): Promise<RawResponse<UpdateWhatsappContactRuleResponse>> {
+    return this.#requester.request<UpdateWhatsappContactRuleResponse>(OPERATIONS.updateWhatsappContactRule, [ruleId], params);
+  }
+}
+
+/**
+ * `talki.whatsapp`: Read and set how Talki answers the business's WhatsApp chats, read the
+ * conversations and their messages, answer the owner's «è un cliente?», and manage the contacts Talki
+ * ignores or treats as customers.
+ *
+ * Each method sends one operation and returns its value, or throws the `ApiError` subclass for its
+ * error.
+ */
+export class WhatsappResource {
+  /** The same methods, each returning the whole answer: its status and headers with the value. */
+  readonly withRawResponse: WhatsappResourceWithRawResponse;
+
+  constructor(requester: Requester) {
+    this.withRawResponse = new WhatsappResourceWithRawResponse(requester);
+  }
+
+  /**
+   * Answer «è un cliente?»
+   *
+   * Answer for the owner about the conversation's contact: `customer` (Talki answers them, now if
+   * WhatsApp's 24-hour window is open), `ignore` (never), or `owner` (the owner replies). Allowed on
+   * any conversation, asked or not. Requires `whatsapp:write`. Limited to 120 requests per minute per
+   * account (API key) or per installation (OAuth).
+   *
+   * @param conversationId - conversation_id
+   * @param params - the query, body and options; see `AnswerWhatsappConversationParams`.
+   * @see POST /v1/whatsapp/conversations/{conversation_id}/answer
+   */
+  async answerConversation(conversationId: string, params: AnswerWhatsappConversationParams): Promise<AnswerWhatsappConversationResponse> {
+    return (await this.withRawResponse.answerConversation(conversationId, params)).data;
+  }
+
+  /**
+   * Add a WhatsApp contact rule
+   *
+   * Add a rule for a number. A number holds one rule: change it with `PATCH`. Requires
+   * `Idempotency-Key`. Requires `whatsapp:write`. Limited to 120 requests per minute per account (API
+   * key) or per installation (OAuth), and to 20 creations per minute shared by the services,
+   * resources, tags, caller rules and WhatsApp contact rules you create.
+   *
+   * @param params - the query, body and options; see `CreateWhatsappContactRuleParams`.
+   * @see POST /v1/whatsapp/contact_rules
+   */
+  async createContactRule(params: CreateWhatsappContactRuleParams): Promise<CreateWhatsappContactRuleResponse> {
+    return (await this.withRawResponse.createContactRule(params)).data;
+  }
+
+  /**
+   * Delete a WhatsApp contact rule
+   *
+   * Remove a rule. The contact goes back to Talki's own judgement. Requires `whatsapp:write`. Limited
+   * to 120 requests per minute per account (API key) or per installation (OAuth).
+   *
+   * @param ruleId - rule_id
+   * @param params - the query, body and options; see `DeleteWhatsappContactRuleParams`.
+   * @see DELETE /v1/whatsapp/contact_rules/{rule_id}
+   */
+  async deleteContactRule(ruleId: string, params: DeleteWhatsappContactRuleParams = {}): Promise<DeleteWhatsappContactRuleResponse> {
+    return (await this.withRawResponse.deleteContactRule(ruleId, params)).data;
+  }
+
+  /**
+   * Delete the stored WhatsApp chats
+   *
+   * Delete every stored conversation and its messages. Refused while Talki answers the chats
+   * (`whatsapp_answers_on`): set `mode` to `off` first. The contact rules, the appointments booked in
+   * a chat and the requests it left stay. Not in test mode. Requires `whatsapp:delete`. Limited to 120
+   * requests per minute per account (API key) or per installation (OAuth).
+   *
+   * @param params - the query, body and options; see `DeleteWhatsappConversationsParams`.
+   * @see DELETE /v1/whatsapp/conversations
+   */
+  async deleteConversations(params: DeleteWhatsappConversationsParams = {}): Promise<DeleteWhatsappConversationsResponse> {
+    return (await this.withRawResponse.deleteConversations(params)).data;
+  }
+
+  /**
+   * Retrieve the WhatsApp settings
+   *
+   * Return the connected WhatsApp Business number and how Talki answers its chats: the mode, the
+   * schedule, the conversations used this period and the owner's open questions. Requires
+   * `whatsapp:read`. Limited to 600 requests per minute per account (API key) or per installation
+   * (OAuth).
+   *
+   * @param params - the query, body and options; see `GetWhatsappParams`.
+   * @see GET /v1/whatsapp
+   */
+  async get(params: GetWhatsappParams = {}): Promise<GetWhatsappResponse> {
+    return (await this.withRawResponse.get(params)).data;
+  }
+
+  /**
+   * Retrieve a WhatsApp conversation
+   *
+   * Return one conversation: who wrote, its summary and outcome, and the owner's question about the
+   * contact. Requires `whatsapp:read`. Limited to 600 requests per minute per account (API key) or per
+   * installation (OAuth).
+   *
+   * @param conversationId - conversation_id
+   * @param params - the query, body and options; see `GetWhatsappConversationParams`.
+   * @see GET /v1/whatsapp/conversations/{conversation_id}
+   */
+  async getConversation(conversationId: string, params: GetWhatsappConversationParams = {}): Promise<GetWhatsappConversationResponse> {
+    return (await this.withRawResponse.getConversation(conversationId, params)).data;
+  }
+
+  /**
+   * Retrieve a WhatsApp conversation's messages
+   *
+   * Return the messages of one conversation, oldest first. `whatsapp:read` does not grant them: the
+   * account owner ticks `transcripts:read` on its own. Messages are kept 30 days. Requires
+   * `transcripts:read`. Limited to 600 requests per minute per account (API key) or per installation
+   * (OAuth).
+   *
+   * @param conversationId - conversation_id
+   * @param params - the query, body and options; see `GetWhatsappConversationMessagesParams`.
+   * @see GET /v1/whatsapp/conversations/{conversation_id}/messages
+   */
+  async getConversationMessages(conversationId: string, params: GetWhatsappConversationMessagesParams = {}): Promise<GetWhatsappConversationMessagesResponse> {
+    return (await this.withRawResponse.getConversationMessages(conversationId, params)).data;
+  }
+
+  /**
+   * List WhatsApp contact rules
+   *
+   * Return the contacts Talki never answers (`ignore`) or answers as customers (`customer`), newest
+   * first. Requires `whatsapp:read`. Limited to 600 requests per minute per account (API key) or per
+   * installation (OAuth).
+   *
+   * @param params - the query, body and options; see `ListWhatsappContactRulesParams`.
+   * @see GET /v1/whatsapp/contact_rules
+   */
+  listContactRules(params: ListWhatsappContactRulesParams = {}): PagePromise<ListWhatsappContactRulesRow> {
+    return new PagePromise(async () => (await this.withRawResponse.listContactRules(params)).data);
+  }
+
+  /**
+   * List WhatsApp conversations
+   *
+   * Return the conversations Talki took part in or kept out of, newest first. `needs_answer=true`
+   * lists those waiting for the owner's «è un cliente?». Requires `whatsapp:read`. Limited to 600
+   * requests per minute per account (API key) or per installation (OAuth).
+   *
+   * @param params - the query, body and options; see `ListWhatsappConversationsParams`.
+   * @see GET /v1/whatsapp/conversations
+   */
+  listConversations(params: ListWhatsappConversationsParams = {}): PagePromise<ListWhatsappConversationsRow> {
+    return new PagePromise(async () => (await this.withRawResponse.listConversations(params)).data);
+  }
+
+  /**
+   * Update the WhatsApp settings
+   *
+   * Change the mode, the schedule, or both. Turning the answers on from `off` is refused without a
+   * plan that includes WhatsApp chats (`plan_feature_unavailable`), without a connected number
+   * (`whatsapp_not_connected`), or while Talki does not answer WhatsApp chats for any account yet
+   * (`whatsapp_chats_unavailable`; `blocked_reason` is `disabled`). Set the contact rules first: from
+   * then on Talki answers whoever writes, apart from the contacts it judges personal. Requires
+   * `whatsapp:write`. Limited to 120 requests per minute per account (API key) or per installation
+   * (OAuth).
+   *
+   * @param params - the query, body and options; see `UpdateWhatsappParams`.
+   * @see PATCH /v1/whatsapp
+   */
+  async update(params: UpdateWhatsappParams): Promise<UpdateWhatsappResponse> {
+    return (await this.withRawResponse.update(params)).data;
+  }
+
+  /**
+   * Update a WhatsApp contact rule
+   *
+   * Change a rule from `ignore` to `customer` or back. Requires `whatsapp:write`. Limited to 120
+   * requests per minute per account (API key) or per installation (OAuth).
+   *
+   * @param ruleId - rule_id
+   * @param params - the query, body and options; see `UpdateWhatsappContactRuleParams`.
+   * @see PATCH /v1/whatsapp/contact_rules/{rule_id}
+   */
+  async updateContactRule(ruleId: string, params: UpdateWhatsappContactRuleParams): Promise<UpdateWhatsappContactRuleResponse> {
+    return (await this.withRawResponse.updateContactRule(ruleId, params)).data;
   }
 }
 
@@ -3726,7 +4341,7 @@ export class ServicesResource {
    * the same location); with neither, it draws on that location's default resource. Requires
    * `Idempotency-Key`. Requires `services:write`. Limited to 120 requests per minute per account (API
    * key) or per installation (OAuth), and to 20 creations per minute shared by the services,
-   * resources, tags and caller rules you create.
+   * resources, tags, caller rules and WhatsApp contact rules you create.
    *
    * @param params - the query, body and options; see `CreateServiceParams`.
    * @see POST /v1/services
@@ -3978,8 +4593,8 @@ export class ResourcesResource {
    * Create a `shared` resource at the location `location_id` names, the main location without it,
    * optionally drawn on by existing services of that location. Requires `Idempotency-Key`. Requires
    * `resources:write`. Limited to 120 requests per minute per account (API key) or per installation
-   * (OAuth), and to 20 creations per minute shared by the services, resources, tags and caller rules
-   * you create.
+   * (OAuth), and to 20 creations per minute shared by the services, resources, tags, caller rules and
+   * WhatsApp contact rules you create.
    *
    * @param params - the query, body and options; see `CreateResourceParams`.
    * @see POST /v1/resources
@@ -5072,6 +5687,7 @@ export class Resources {
   #pendingContacts: PendingContactsResource | undefined;
   #tags: TagsResource | undefined;
   #callerRules: CallerRulesResource | undefined;
+  #whatsapp: WhatsappResource | undefined;
   #services: ServicesResource | undefined;
   #resources: ResourcesResource | undefined;
   #unresolvedRequests: UnresolvedRequestsResource | undefined;
@@ -5192,6 +5808,16 @@ export class Resources {
   }
 
   /**
+   * Read and set how Talki answers the business's WhatsApp chats, read the conversations and their
+   * messages, answer the owner's «è un cliente?», and manage the contacts Talki ignores or treats as
+   * customers.
+   */
+  get whatsapp(): WhatsappResource {
+    this.#whatsapp ??= new WhatsappResource(this.#requester);
+    return this.#whatsapp;
+  }
+
+  /**
    * Sync the service catalogue, create a service with a fixed duration, update a service's name,
    * description, price, duration or active state, and delete a service with no bookings still to come.
    */
@@ -5261,6 +5887,7 @@ export const SURFACE = {
   pendingContacts: ["approve", "discard", "list"],
   tags: ["create", "delete", "list", "tagContact", "untagContact", "update"],
   callerRules: ["create", "delete", "list", "listBlockedCallAttempts", "update"],
+  whatsapp: ["answerConversation", "createContactRule", "deleteContactRule", "deleteConversations", "get", "getConversation", "getConversationMessages", "listContactRules", "listConversations", "update", "updateContactRule"],
   services: ["create", "delete", "get", "list", "update"],
   resources: ["create", "delete", "get", "list", "update"],
   unresolvedRequests: ["get", "list", "teach", "update"],
