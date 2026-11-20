@@ -323,16 +323,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -853,16 +854,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -3408,16 +3410,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -3675,16 +3678,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -4151,16 +4155,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -4920,16 +4925,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -5172,16 +5178,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -5431,16 +5438,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -6107,16 +6115,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -6357,16 +6366,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -6884,16 +6894,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -7370,16 +7381,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -7623,16 +7635,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -8141,16 +8154,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -8619,16 +8633,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -8891,16 +8906,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -9604,16 +9620,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -9878,16 +9895,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -10465,16 +10483,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -11015,16 +11034,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -11368,16 +11388,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -11658,16 +11679,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -13232,16 +13254,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -14009,16 +14032,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -14055,16 +14079,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -14317,16 +14342,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -14777,16 +14803,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -15344,16 +15371,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -15392,16 +15420,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -16332,16 +16361,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -16969,16 +16999,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -17012,16 +17043,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -17264,16 +17296,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -17503,16 +17536,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -17748,16 +17782,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -18183,16 +18218,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -18440,16 +18476,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -18940,16 +18977,17 @@ paths:
         required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -19462,16 +19500,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -19718,16 +19757,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -20155,16 +20195,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -20216,16 +20257,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -20936,16 +20978,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -21398,16 +21441,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -21879,16 +21923,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -22568,19 +22613,20 @@ paths:
         schema: *id001
       - name: Idempotency-Key
         in: header
-        required: false
+        required: true
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -22612,16 +22658,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -22873,16 +22920,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -23514,16 +23562,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255
@@ -23764,16 +23813,17 @@ paths:
         required: false
         description: 'Unique key for this logical write. Reuse it only when retrying
           the same method, path, query and body. Required on appointment writes, on
-          creating a service, a resource, a closure, a tag, a caller rule or a document,
-          and on teaching the assistant; optional on every other write. Retained for
-          24 hours: a retry with the same key gets the first response again, marked
-          `Idempotency-Replayed: true`, and a refusal that holds until the state changes
-          (a time taken, a list full) is replayed too. A response a retry can change
-          is not kept when the request saved nothing, and the retry runs the request
-          again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`,
-          `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`,
-          `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`,
-          `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.'
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
         schema:
           type: string
           maxLength: 255

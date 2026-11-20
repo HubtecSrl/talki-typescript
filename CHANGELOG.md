@@ -5,6 +5,13 @@ version each release targets by default is `API_VERSION`.
 
 ## Unreleased
 
+- `whatsapp.createContactRule()`: its `idempotencyKey` doc says the key is
+  required, as the API has always enforced (the spec now marks it so). `Talki`
+  already adds one unless built with `autoIdempotency: false`.
+- The exported `operations` type marks `createWhatsappContactRule`'s
+  `Idempotency-Key` header as required. Code that builds that type's
+  `parameters` by hand without the header no longer type-checks.
+
 ## 0.5.0-beta.1
 
 Still API version `2026-10-01`. No method was renamed or removed. One type
