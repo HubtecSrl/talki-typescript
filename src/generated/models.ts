@@ -46,6 +46,20 @@ export type AgentTestMessage = components["schemas"]["AgentTestMessage"];
  */
 export type AgentTestReply = components["schemas"]["AgentTestReply"];
 /**
+ * One of your app's tools, as its approved revision declares it.
+ */
+export type AgentTool = components["schemas"]["AgentTool"];
+/**
+ * Your app's tools with an approved revision on one account, and which of them the assistant may call:
+ * the account's list, used at every location without its own, or one location's (`location_id`). A
+ * tool reaches a call only while it is in `enabled` and `owner_off` is false.
+ */
+export type AgentTools = components["schemas"]["AgentTools"];
+/**
+ * The list of tools to switch on, replacing the one stored at this level.
+ */
+export type AgentToolsUpdate = components["schemas"]["AgentToolsUpdate"];
+/**
  * Which name the assistant answers calls in and speaks for: `business` uses the business name, `owner`
  * the account holder's own name.
  */
