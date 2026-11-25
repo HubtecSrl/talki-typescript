@@ -448,6 +448,31 @@ const talki = new Talki({ tokens, oauthApp: app, onTokenRefresh: save });
   `new Talki({ baseUrl })`, `authorizationUrl(…, { authorizeUrl })` and
   `readCallback(…, { issuer })`.
 
+## Agent tools
+
+`talki.agentTools` chooses which of your app's tools the assistant may call on
+an installed account's calls: the account's list, used at every location
+without its own, or one location's with `location_id`. Every tool starts off.
+It takes only your app's access token, on an installation that holds
+`agent_tools:write`; an API key is refused (`insufficient_scope`).
+
+```ts
+const talki = new Talki({ tokens, oauthApp: app, onTokenRefresh: save });
+
+const current = await talki.agentTools.get(); // current.tools, current.enabled, current.owner_off
+await talki.agentTools.update({ body: { enabled: ["stato_ordine"] } }); // replaces the account's list
+await talki.agentTools.update({ body: { enabled: [] }, location_id: locationId }); // all off at one location
+await talki.agentTools.update({ body: { enabled: null }, location_id: locationId }); // it follows the account's again
+```
+
+- `403 agent_tools_not_enabled` (a `PermissionDeniedError`): Talki has not
+  enabled your app for agent tools yet.
+- `409 tool_limit` (a `ConflictError`): the change would raise a location
+  above `limit_per_call` agent tools, counting every app the account granted
+  `agent_tools:write`, those the owner switched off included. Switch fewer on.
+- While `owner_off` is true the owner has switched your app's tools off: the
+  lists are kept, and none reaches a call.
+
 ## Not covered yet
 
 The partner routes (`/oauth/app/*`, `/oauth/managed-accounts`,

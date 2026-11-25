@@ -869,6 +869,551 @@ paths:
           type: string
           maxLength: 255
         example: onboarding-done
+  /v1/agent_tools:
+    get:
+      tags:
+      - Agent tools
+      summary: Retrieve the agent tools
+      operationId: getAgentTools
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: location_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: A location's own list, an id from `GET /v1/locations`. Omit
+            it for the account's list, used at every location without its own.
+          title: Location Id
+        description: A location's own list, an id from `GET /v1/locations`. Omit it
+          for the account's list, used at every location without its own.
+      - name: Talki-Version
+        in: header
+        required: false
+        description: Serve this one request at the given dated contract version instead
+          of the credential's pin. An unsupported value is refused with `400 unsupported_version`,
+          never downgraded.
+        schema: *id001
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTools'
+              example:
+                object: agent_tools
+                location_id: null
+                inherited: false
+                enabled:
+                - stato_ordine
+                owner_off: false
+                limit_per_call: 20
+                tools:
+                - name: apri_ticket
+                  description: Apre una richiesta di assistenza per il chiamante.
+                    Usalo quando il chiamante segnala un problema con un ordine.
+                  kind: write
+                  logs_requests: true
+                  revision: 2
+                  enabled: false
+                - name: stato_ordine
+                  description: Legge lo stato di un ordine del chiamante. Usalo quando
+                    il chiamante chiede a che punto è un suo ordine.
+                  kind: read
+                  logs_requests: false
+                  revision: 1
+                  enabled: true
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+            Talki-Version:
+              description: The dated contract version this response was served at.
+              schema:
+                type: string
+                example: '2026-10-01'
+        '401':
+          description: The credential is missing, malformed, expired, revoked, or
+            unknown.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: authentication_error
+                  code: invalid_credentials
+                  message: The supplied API credential is invalid.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '402':
+          description: The account does not have an active subscription.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: subscription_inactive
+                  message: This account does not have an active subscription.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '403':
+          description: Talki has not enabled your app for agent tools (`agent_tools_not_enabled`).
+            Or the credential or account may not make this request (`insufficient_scope`,
+            `plan_upgrade_required`, `account_closed`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: agent_tools_not_enabled
+                  message: 'Agent tools belong to an app Talki has enabled for them:
+                    call with that app''s access token.'
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '429':
+          description: The account or installation exceeded its request rate (`rate_limit_exceeded`),
+            or the calling address did (`ip_rate_limited`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+            Retry-After: *id005
+            X-RateLimit-Limit: *id006
+            X-RateLimit-Remaining: *id007
+            X-RateLimit-Reset: *id008
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: rate_limit_error
+                  code: rate_limit_exceeded
+                  message: Too many requests. Retry after the interval in Retry-After.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '500':
+          description: An unexpected error occurred.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: api_error
+                  code: internal_error
+                  message: An unexpected error occurred. Quote the request_id when
+                    reporting it.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '400':
+          description: '`Talki-Version`, or the credential''s pin, names a version
+            this API does not serve.'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: unsupported_version
+                  message: '''2025-01-01'' is not a supported API version. Supported:
+                    2026-10-01.'
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '404':
+          description: '`location_id` names no location of the authenticated account.'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: resource_not_found
+                  message: No such location.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+      description: 'Return your app''s tools that have an approved revision, and which
+        of them the assistant may call on this account''s calls: the account''s list,
+        used at every location without one of its own, or with `location_id` that
+        location''s list, or the account''s it follows (`inherited`). Every tool starts
+        off. Only your app''s OAuth access token is accepted, on an installation that
+        holds `agent_tools:write`, and only once Talki has enabled the app for agent
+        tools (`agent_tools_not_enabled`). An API key is refused (`insufficient_scope`):
+        it cannot hold `agent_tools:write`. Requires `agent_tools:write`. Limited
+        to 600 requests per minute per account (API key) or per installation (OAuth).'
+      x-codeSamples:
+      - lang: sh
+        label: cURL
+        source: "curl --fail-with-body -X GET 'https://api.talki.it/v1/agent_tools'\
+          \ \\\n  -H \"Authorization: Bearer $TALKI_ACCESS_TOKEN\""
+      - lang: python
+        label: Python
+        source: 'import os
+
+
+          from talki import Talki
+
+
+          talki = Talki(access_token=os.environ["TALKI_ACCESS_TOKEN"])
+
+
+          agent_tools = talki.agent_tools.get()
+
+          print(agent_tools)'
+      - lang: ts
+        label: TypeScript
+        source: 'import { Talki } from "@hubtec/talki";
+
+
+          const talki = new Talki({ accessToken: process.env.TALKI_ACCESS_TOKEN });
+
+
+          const agentTools = await talki.agentTools.get();
+
+          console.log(agentTools);'
+    patch:
+      tags:
+      - Agent tools
+      summary: Update the agent tools
+      operationId: updateAgentTools
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: location_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: A location's own list, an id from `GET /v1/locations`. Omit
+            it for the account's list, used at every location without its own.
+          title: Location Id
+        description: A location's own list, an id from `GET /v1/locations`. Omit it
+          for the account's list, used at every location without its own.
+      - name: Talki-Version
+        in: header
+        required: false
+        description: Serve this one request at the given dated contract version instead
+          of the credential's pin. An unsupported value is refused with `400 unsupported_version`,
+          never downgraded.
+        schema: *id001
+      - name: Idempotency-Key
+        in: header
+        required: false
+        description: 'Unique key for this logical write. Reuse it only when retrying
+          the same method, path, query and body. Required on appointment writes, on
+          creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp
+          contact rule or a document, and on teaching the assistant; optional on every
+          other write. Retained for 24 hours: a retry with the same key gets the first
+          response again, marked `Idempotency-Replayed: true`, and a refusal that
+          holds until the state changes (a time taken, a list full) is replayed too.
+          A response a retry can change is not kept when the request saved nothing,
+          and the retry runs the request again: a `400` asking for a different request
+          (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`,
+          `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`),
+          a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`,
+          a `412`, a `429` and a `5xx`.'
+        schema:
+          type: string
+          maxLength: 255
+        example: agent-tools-1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentToolsUpdate'
+            example:
+              enabled:
+              - apri_ticket
+              - stato_ordine
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTools'
+              example:
+                object: agent_tools
+                location_id: null
+                inherited: false
+                enabled:
+                - apri_ticket
+                - stato_ordine
+                owner_off: false
+                limit_per_call: 20
+                tools:
+                - name: apri_ticket
+                  description: Apre una richiesta di assistenza per il chiamante.
+                    Usalo quando il chiamante segnala un problema con un ordine.
+                  kind: write
+                  logs_requests: true
+                  revision: 2
+                  enabled: true
+                - name: stato_ordine
+                  description: Legge lo stato di un ordine del chiamante. Usalo quando
+                    il chiamante chiede a che punto è un suo ordine.
+                  kind: read
+                  logs_requests: false
+                  revision: 1
+                  enabled: true
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+            Talki-Version:
+              description: The dated contract version this response was served at.
+              schema:
+                type: string
+                example: '2026-10-01'
+            Idempotency-Replayed:
+              description: '`true` when this response was replayed from a prior request
+                with the same key.'
+              schema:
+                type: string
+                enum:
+                - 'true'
+        '401':
+          description: The credential is missing, malformed, expired, revoked, or
+            unknown.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: authentication_error
+                  code: invalid_credentials
+                  message: The supplied API credential is invalid.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '402':
+          description: The account does not have an active subscription.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: subscription_inactive
+                  message: This account does not have an active subscription.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '403':
+          description: Talki has not enabled your app for agent tools (`agent_tools_not_enabled`).
+            Or the credential or account may not make this request (`insufficient_scope`,
+            `plan_upgrade_required`, `account_closed`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: permission_error
+                  code: agent_tools_not_enabled
+                  message: 'Agent tools belong to an app Talki has enabled for them:
+                    call with that app''s access token.'
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '429':
+          description: The account or installation exceeded its request rate (`rate_limit_exceeded`),
+            or the calling address did (`ip_rate_limited`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+            Retry-After: *id005
+            X-RateLimit-Limit: *id006
+            X-RateLimit-Remaining: *id007
+            X-RateLimit-Reset: *id008
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: rate_limit_error
+                  code: rate_limit_exceeded
+                  message: Too many requests. Retry after the interval in Retry-After.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '500':
+          description: An unexpected error occurred.
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: api_error
+                  code: internal_error
+                  message: An unexpected error occurred. Quote the request_id when
+                    reporting it.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '400':
+          description: A parameter, cursor, body field, or required idempotency key
+            is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`).
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: invalid_parameter
+                  message: One or more request values are invalid.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '404':
+          description: '`location_id` names no location of the authenticated account.'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: invalid_request
+                  code: resource_not_found
+                  message: No such location.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+        '409':
+          description: 'The change would raise a location''s count of agent tools
+            above `limit_per_call`, counting every app the account granted `agent_tools:write`
+            (`tool_limit`): switch fewer on. Or the idempotency key was reused for
+            a different request. Except `idempotency_key_reuse`, the other refusals
+            are replayed for 24 hours to a request with the same idempotency key:
+            once the cause is gone, retry with a new key.'
+          headers:
+            X-Request-Id:
+              description: Identifier to include when contacting Talki support.
+              schema:
+                type: string
+                example: req_7f24a2f8c6b64e699901563a458b5031
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                error:
+                  type: conflict
+                  code: tool_limit
+                  message: A call can have at most 20 agent tools, from every app
+                    of the account together; this would give location 0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40
+                    22. Switch fewer on.
+                  request_id: req_7f24a2f8c6b64e699901563a458b5031
+      description: 'Replace the list of tools the assistant may call: the account''s,
+        or with `location_id` that location''s own, which replaces the account''s
+        there. Only tools with an approved revision can be switched on, and `[]` switches
+        every tool off. `"enabled": null` with `location_id` drops the location''s
+        own list, so it follows the account''s again; the account''s list cannot be
+        null. One call has at most `limit_per_call` agent tools, counted across every
+        app the account granted `agent_tools:write`, those the owner switched off
+        included: a change that raises any location''s count above that is refused
+        (`tool_limit`), and one that does not raise it never is. While the owner has
+        switched your app''s tools off (`owner_off`), the lists are kept and none
+        of the tools reaches a call. Only your app''s OAuth access token is accepted,
+        as for `GET`; an API key is refused (`insufficient_scope`). Requires `agent_tools:write`.
+        Limited to 120 requests per minute per account (API key) or per installation
+        (OAuth).'
+      x-codeSamples:
+      - lang: sh
+        label: cURL
+        source: "curl --fail-with-body -X PATCH 'https://api.talki.it/v1/agent_tools'\
+          \ \\\n  -H \"Authorization: Bearer $TALKI_ACCESS_TOKEN\" \\\n  -H \"Idempotency-Key:\
+          \ agent-tools-1\" \\\n  -H \"Content-Type: application/json\" \\\n  --data\
+          \ '{\"enabled\":[\"apri_ticket\",\"stato_ordine\"]}'"
+      - lang: python
+        label: Python
+        source: "import os\n\nfrom talki import Talki\n\ntalki = Talki(access_token=os.environ[\"\
+          TALKI_ACCESS_TOKEN\"])\n\nagent_tools = talki.agent_tools.update(\n    body={\"\
+          enabled\": [\"apri_ticket\", \"stato_ordine\"]},\n    idempotency_key=\"\
+          agent-tools-1\",\n)\nprint(agent_tools)"
+      - lang: ts
+        label: TypeScript
+        source: "import { Talki } from \"@hubtec/talki\";\n\nconst talki = new Talki({\
+          \ accessToken: process.env.TALKI_ACCESS_TOKEN });\n\nconst agentTools =\
+          \ await talki.agentTools.update({\n  body: { enabled: [\"apri_ticket\",\
+          \ \"stato_ordine\"] },\n  idempotencyKey: \"agent-tools-1\",\n});\nconsole.log(agentTools);"
   /v1/locations:
     get:
       tags:
@@ -15091,16 +15636,16 @@ paths:
       summary: Send a test message
       description: 'Send one message to the account''s assistant, as a caller would
         say it, and return its answer: what a call to the location would hear, from
-        the same settings, documents, services, calendar and partner tools, written
+        the same settings, documents, services, calendar and agent tools, written
         as text. Nothing is saved: a booking the assistant makes is not made, and
         no call, appointment or unresolved request is recorded. The first message
         starts a session; send its `session_id` with the next ones. Talki keeps the
         history for 30 minutes after the last turn, and a session holds at most 20
         turns (then `agent_test_session_full`). A session belongs to the credential
-        that started it. Your app''s own partner tools run, sent with `test_drive:
-        true`, writes included; no other app''s do. The assistant here runs on a text
-        model, not the one that answers calls, so a reply can be worded differently
-        from what a caller would hear. Refused while the managing partner has suspended
+        that started it. Your app''s own agent tools run, sent with `test_drive: true`,
+        writes included; no other app''s do. The assistant here runs on a text model,
+        not the one that answers calls, so a reply can be worded differently from
+        what a caller would hear. Refused while the managing partner has suspended
         the account (`account_suspended`). An account may send 25 test messages a
         day, shared with the test in the Talki apps, and an OAuth app 300 a day across
         all the accounts it is installed on; past either, `429` `rate_limit_exceeded`
@@ -24403,6 +24948,123 @@ components:
       description: The assistant's answer to one test message, and where the session
         stands. Send `session_id` with the next message before `expires_at`, at most
         `max_turns` turns in all.
+    AgentTool:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: The tool's name in your app's catalogue, as registered. The
+            assistant sees it as `<prefix>__<name>`.
+        description:
+          type: string
+          title: Description
+          description: What the tool does, as the assistant reads it.
+        kind:
+          type: string
+          enum:
+          - read
+          - write
+          title: Kind
+          description: '`read` looks something up; `write` changes something at your
+            app.'
+        logs_requests:
+          type: boolean
+          title: Logs Requests
+          description: Whether the tool records a caller's request for the business.
+            On a call that gets such a tool, Talki does not record unresolved requests
+            of its own.
+        revision:
+          type: integer
+          title: Revision
+          description: The approved revision calls use.
+        enabled:
+          type: boolean
+          title: Enabled
+          description: Whether the tool is on at this level.
+      type: object
+      required:
+      - name
+      - description
+      - kind
+      - logs_requests
+      - revision
+      - enabled
+      title: AgentTool
+      description: One of your app's tools, as its approved revision declares it.
+    AgentTools:
+      properties:
+        object:
+          type: string
+          title: Object
+          description: Always `agent_tools`.
+        location_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Id
+          description: The location this list is for, or null for the account's list.
+        inherited:
+          type: boolean
+          title: Inherited
+          description: True when the location has no list of its own and follows the
+            account's. Always false for the account's list.
+        enabled:
+          items:
+            type: string
+          type: array
+          title: Enabled
+          description: The names of the live tools on at this level, sorted.
+        owner_off:
+          type: boolean
+          title: Owner Off
+          description: Whether the account owner has switched your app's tools off
+            on their calls. While true, no tool reaches a call, whatever the lists
+            say; the lists are kept for when the owner switches them back on.
+        limit_per_call:
+          type: integer
+          title: Limit Per Call
+          description: The most agent tools one call can have, every app of the account
+            together.
+        tools:
+          items:
+            $ref: '#/components/schemas/AgentTool'
+          type: array
+          title: Tools
+          description: Every tool of your app with an approved revision, by name.
+      type: object
+      required:
+      - object
+      - location_id
+      - inherited
+      - enabled
+      - owner_off
+      - limit_per_call
+      - tools
+      title: AgentTools
+      description: 'Your app''s tools with an approved revision on one account, and
+        which of them the assistant may call: the account''s list, used at every location
+        without its own, or one location''s (`location_id`). A tool reaches a call
+        only while it is in `enabled` and `owner_off` is false.'
+    AgentToolsUpdate:
+      properties:
+        enabled:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 200
+          - type: 'null'
+          title: Enabled
+          description: 'The names of the live tools to switch on; every other tool
+            is off. `[]` switches them all off. `null` only with `location_id`: the
+            location drops its own list and follows the account''s again.'
+      additionalProperties: false
+      type: object
+      required:
+      - enabled
+      title: AgentToolsUpdate
+      description: The list of tools to switch on, replacing the one stored at this
+        level.
     Appointment:
       properties:
         id:
@@ -28908,13 +29570,13 @@ components:
             `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`,
             `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`,
             `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`,
-            `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`,
-            `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`,
-            `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`,
-            `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`,
-            `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`,
-            `stay_dates_invalid`. New codes may be added; treat an unknown one by
-            its HTTP status.'
+            `account_refused`, `installation_inactive`, `agent_tools_not_enabled`,
+            `tool_limit`, `invalid_client`, `invalid_request`, `unauthorized_client`,
+            `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`,
+            `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`,
+            `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`,
+            `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may
+            be added; treat an unknown one by its HTTP status.'
         message:
           type: string
         request_id:
@@ -29042,6 +29704,9 @@ tags:
 - name: Agent test
   description: Chat in text with the account's assistant, as the test in the Talki
     apps does, to check how it answers before a caller does.
+- name: Agent tools
+  description: Choose which of your app's tools the assistant may call on an account's
+    calls, for the whole account or one location.
 - name: Usage
   description: Read the talk time used and left in the current period.
 - name: Voices

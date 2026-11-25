@@ -11,6 +11,7 @@ import {
   Page,
   PagePromise,
   PaginationError,
+  PermissionDeniedError,
   position,
   RateLimitError,
   type RawResponse,
@@ -26,6 +27,7 @@ import { empty, envelope, json, make, Recorder, type Seen } from "./helpers.js";
 const METHODS: Record<string, string[]> = {
   account: ["completeOnboarding", "get", "getForwardingCheck", "startForwardingCheck", "update"],
   agentTest: ["end", "send"],
+  agentTools: ["get", "update"],
   appointments: ["cancel", "create", "get", "list", "reschedule", "restore"],
   availability: ["get"],
   callerRules: ["create", "delete", "list", "listBlockedCallAttempts", "update"],
@@ -329,6 +331,68 @@ describe("methods", () => {
     expect(error).toBeInstanceOf(RateLimitError);
     expect(recorder.requests).toHaveLength(1);
     expect(sleeps).toEqual([]);
+  });
+
+  it("read and change the agent tools with an app's access token", async () => {
+    const tools = {
+      object: "agent_tools",
+      location_id: "11111111-1111-1111-1111-111111111111",
+      inherited: true,
+      enabled: [],
+      owner_off: false,
+      limit_per_call: 20,
+      tools: [
+        {
+          name: "stato_ordine",
+          description: "Legge lo stato di un ordine.",
+          kind: "read",
+          logs_requests: false,
+          revision: 1,
+          enabled: false,
+        },
+      ],
+    };
+    const recorder = new Recorder(json(200, tools), json(200, { ...tools, inherited: false }), json(200, tools));
+    const client = new Talki({ accessToken: "talki_at_x", fetch: recorder.fetch });
+    const location_id = tools.location_id;
+    const read = await client.agentTools.get({ location_id });
+    expectTypeOf(read.tools[0]?.kind).toEqualTypeOf<"read" | "write" | undefined>();
+    expect(read.inherited).toBe(true);
+    await client.agentTools.update({
+      body: { enabled: ["stato_ordine"] },
+      location_id,
+      idempotencyKey: "agent-tools-1",
+    });
+    await client.agentTools.update({ body: { enabled: null }, location_id });
+    expect(
+      recorder.requests.map((request) => `${request.method} ${request.url.pathname}${request.url.search}`),
+    ).toEqual([
+      `GET /v1/agent_tools?location_id=${location_id}`,
+      `PATCH /v1/agent_tools?location_id=${location_id}`,
+      `PATCH /v1/agent_tools?location_id=${location_id}`,
+    ]);
+    for (const request of recorder.requests) expect(request.headers.get("Authorization")).toBe("Bearer talki_at_x");
+    expect(recorder.requests[1]?.headers.get("Idempotency-Key")).toBe("agent-tools-1");
+    expect(recorder.requests[2]?.headers.get("Idempotency-Key")).toBeTruthy();
+    expect(JSON.parse(recorder.requests[1]?.body ?? "")).toEqual({ enabled: ["stato_ordine"] });
+    expect(JSON.parse(recorder.requests[2]?.body ?? "")).toEqual({ enabled: null });
+  });
+
+  it("throw an app not enabled for agent tools, and a list over the limit, by class and code", async () => {
+    const recorder = new Recorder(
+      envelope(403, "permission_error", "agent_tools_not_enabled"),
+      envelope(409, "conflict", "tool_limit"),
+    );
+    const client = new Talki({ accessToken: "talki_at_x", fetch: recorder.fetch });
+    const refused = await client.agentTools.get().catch((caught: unknown) => caught);
+    expect(refused).toBeInstanceOf(PermissionDeniedError);
+    expect((refused as PermissionDeniedError).code).toBe("agent_tools_not_enabled");
+    const full = await client.agentTools
+      .update({ body: { enabled: ["apri_ticket", "stato_ordine"] } })
+      .catch((caught: unknown) => caught);
+    expect(full).toBeInstanceOf(ConflictError);
+    expect((full as ConflictError).code).toBe("tool_limit");
+    expect(recorder.requests).toHaveLength(2);
   });
 
   it("read one location's usage history", async () => {

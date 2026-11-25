@@ -327,6 +327,16 @@ export const OPERATIONS = {
     success: [200],
     binary: false,
   },
+  getAgentTools: {
+    method: "GET",
+    path: "/v1/agent_tools",
+    query: ["location_id"],
+    headers: {},
+    body: null,
+    form: false,
+    success: [200],
+    binary: false,
+  },
   getAppointment: {
     method: "GET",
     path: "/v1/appointments/{appointment_id}",
@@ -842,6 +852,16 @@ export const OPERATIONS = {
     path: "/v1/account",
     query: ["location_id"],
     headers: { idempotencyKey: "Idempotency-Key", ifMatch: "If-Match" },
+    body: "required",
+    form: false,
+    success: [200],
+    binary: false,
+  },
+  updateAgentTools: {
+    method: "PATCH",
+    path: "/v1/agent_tools",
+    query: ["location_id"],
+    headers: { idempotencyKey: "Idempotency-Key" },
     body: "required",
     form: false,
     success: [200],
@@ -1376,12 +1396,12 @@ export class AgentTestResource {
    * Send a test message
    *
    * Send one message to the account's assistant, as a caller would say it, and return its answer: what
-   * a call to the location would hear, from the same settings, documents, services, calendar and
-   * partner tools, written as text. Nothing is saved: a booking the assistant makes is not made, and
-   * no call, appointment or unresolved request is recorded. The first message starts a session; send
-   * its `session_id` with the next ones. Talki keeps the history for 30 minutes after the last turn,
-   * and a session holds at most 20 turns (then `agent_test_session_full`). A session belongs to the
-   * credential that started it. Your app's own partner tools run, sent with `test_drive: true`, writes
+   * a call to the location would hear, from the same settings, documents, services, calendar and agent
+   * tools, written as text. Nothing is saved: a booking the assistant makes is not made, and no call,
+   * appointment or unresolved request is recorded. The first message starts a session; send its
+   * `session_id` with the next ones. Talki keeps the history for 30 minutes after the last turn, and a
+   * session holds at most 20 turns (then `agent_test_session_full`). A session belongs to the
+   * credential that started it. Your app's own agent tools run, sent with `test_drive: true`, writes
    * included; no other app's do. The assistant here runs on a text model, not the one that answers
    * calls, so a reply can be worded differently from what a caller would hear. Refused while the
    * managing partner has suspended the account (`account_suspended`). An account may send 25 test
@@ -1395,6 +1415,129 @@ export class AgentTestResource {
    */
   async send(params: SendAgentTestParams): Promise<SendAgentTestResponse> {
     return (await this.withRawResponse.send(params)).data;
+  }
+}
+
+/**
+ * Options for `getAgentTools`.
+ */
+export type GetAgentToolsParams = RequestOptions & NonNullable<operations["getAgentTools"]["parameters"]["query"]>;
+
+/**
+ * What `getAgentTools` returns.
+ */
+export type GetAgentToolsResponse = operations["getAgentTools"]["responses"][200]["content"]["application/json"];
+
+/**
+ * Options for `updateAgentTools`.
+ */
+export type UpdateAgentToolsParams = RequestOptions & NonNullable<operations["updateAgentTools"]["parameters"]["query"]> & {
+  /**
+   * The request body, as the API reference describes it.
+   */
+  body: NonNullable<operations["updateAgentTools"]["requestBody"]>["content"]["application/json"];
+  /**
+   * The write's `Idempotency-Key`. `Talki` adds a new one unless built with `autoIdempotency: false`;
+   * pass your own to send the same write again as the same one.
+   */
+  idempotencyKey?: string | undefined;
+};
+
+/**
+ * What `updateAgentTools` returns.
+ */
+export type UpdateAgentToolsResponse = operations["updateAgentTools"]["responses"][200]["content"]["application/json"];
+
+/**
+ * `talki.agentTools.withRawResponse`: the methods of `talki.agentTools`, each returning the whole
+ * answer, a `RawResponse` whose `data` is what the method returns. An error throws as it does there.
+ */
+export class AgentToolsResourceWithRawResponse {
+  readonly #requester: Requester;
+
+  constructor(requester: Requester) {
+    this.#requester = requester;
+  }
+
+  /**
+   * Retrieve the agent tools
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `GetAgentToolsParams`.
+   * @see GET /v1/agent_tools
+   */
+  get(params: GetAgentToolsParams = {}): Promise<RawResponse<GetAgentToolsResponse>> {
+    return this.#requester.request<GetAgentToolsResponse>(OPERATIONS.getAgentTools, [], params);
+  }
+
+  /**
+   * Update the agent tools
+   *
+   * Returns the whole answer: its status and headers, and `data`, the value.
+   *
+   * @param params - the query, body and options; see `UpdateAgentToolsParams`.
+   * @see PATCH /v1/agent_tools
+   */
+  update(params: UpdateAgentToolsParams): Promise<RawResponse<UpdateAgentToolsResponse>> {
+    return this.#requester.request<UpdateAgentToolsResponse>(OPERATIONS.updateAgentTools, [], params);
+  }
+}
+
+/**
+ * `talki.agentTools`: Choose which of your app's tools the assistant may call on an account's calls,
+ * for the whole account or one location.
+ *
+ * Each method sends one operation and returns its value, or throws the `ApiError` subclass for its
+ * error.
+ */
+export class AgentToolsResource {
+  /** The same methods, each returning the whole answer: its status and headers with the value. */
+  readonly withRawResponse: AgentToolsResourceWithRawResponse;
+
+  constructor(requester: Requester) {
+    this.withRawResponse = new AgentToolsResourceWithRawResponse(requester);
+  }
+
+  /**
+   * Retrieve the agent tools
+   *
+   * Return your app's tools that have an approved revision, and which of them the assistant may call
+   * on this account's calls: the account's list, used at every location without one of its own, or
+   * with `location_id` that location's list, or the account's it follows (`inherited`). Every tool
+   * starts off. Only your app's OAuth access token is accepted, on an installation that holds
+   * `agent_tools:write`, and only once Talki has enabled the app for agent tools
+   * (`agent_tools_not_enabled`). An API key is refused (`insufficient_scope`): it cannot hold
+   * `agent_tools:write`. Requires `agent_tools:write`. Limited to 600 requests per minute per account
+   * (API key) or per installation (OAuth).
+   *
+   * @param params - the query, body and options; see `GetAgentToolsParams`.
+   * @see GET /v1/agent_tools
+   */
+  async get(params: GetAgentToolsParams = {}): Promise<GetAgentToolsResponse> {
+    return (await this.withRawResponse.get(params)).data;
+  }
+
+  /**
+   * Update the agent tools
+   *
+   * Replace the list of tools the assistant may call: the account's, or with `location_id` that
+   * location's own, which replaces the account's there. Only tools with an approved revision can be
+   * switched on, and `[]` switches every tool off. `"enabled": null` with `location_id` drops the
+   * location's own list, so it follows the account's again; the account's list cannot be null. One
+   * call has at most `limit_per_call` agent tools, counted across every app the account granted
+   * `agent_tools:write`, those the owner switched off included: a change that raises any location's
+   * count above that is refused (`tool_limit`), and one that does not raise it never is. While the
+   * owner has switched your app's tools off (`owner_off`), the lists are kept and none of the tools
+   * reaches a call. Only your app's OAuth access token is accepted, as for `GET`; an API key is
+   * refused (`insufficient_scope`). Requires `agent_tools:write`. Limited to 120 requests per minute
+   * per account (API key) or per installation (OAuth).
+   *
+   * @param params - the query, body and options; see `UpdateAgentToolsParams`.
+   * @see PATCH /v1/agent_tools
+   */
+  async update(params: UpdateAgentToolsParams): Promise<UpdateAgentToolsResponse> {
+    return (await this.withRawResponse.update(params)).data;
   }
 }
 
@@ -5679,6 +5822,7 @@ export class Resources {
   #account: AccountResource | undefined;
   #locations: LocationsResource | undefined;
   #agentTest: AgentTestResource | undefined;
+  #agentTools: AgentToolsResource | undefined;
   #usage: UsageResource | undefined;
   #voices: VoicesResource | undefined;
   #workingHours: WorkingHoursResource | undefined;
@@ -5725,6 +5869,15 @@ export class Resources {
   get agentTest(): AgentTestResource {
     this.#agentTest ??= new AgentTestResource(this.#requester);
     return this.#agentTest;
+  }
+
+  /**
+   * Choose which of your app's tools the assistant may call on an account's calls, for the whole
+   * account or one location.
+   */
+  get agentTools(): AgentToolsResource {
+    this.#agentTools ??= new AgentToolsResource(this.#requester);
+    return this.#agentTools;
   }
 
   /**
@@ -5879,6 +6032,7 @@ export const SURFACE = {
   account: ["completeOnboarding", "get", "getForwardingCheck", "startForwardingCheck", "update"],
   locations: ["list"],
   agentTest: ["end", "send"],
+  agentTools: ["get", "update"],
   usage: ["get", "getHistory"],
   voices: ["getPreview", "list"],
   workingHours: ["get", "replace"],

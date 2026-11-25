@@ -45,6 +45,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/agent_tools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve the agent tools
+         * @description Return your app's tools that have an approved revision, and which of them the assistant may call on this account's calls: the account's list, used at every location without one of its own, or with `location_id` that location's list, or the account's it follows (`inherited`). Every tool starts off. Only your app's OAuth access token is accepted, on an installation that holds `agent_tools:write`, and only once Talki has enabled the app for agent tools (`agent_tools_not_enabled`). An API key is refused (`insufficient_scope`): it cannot hold `agent_tools:write`. Requires `agent_tools:write`. Limited to 600 requests per minute per account (API key) or per installation (OAuth).
+         */
+        get: operations["getAgentTools"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update the agent tools
+         * @description Replace the list of tools the assistant may call: the account's, or with `location_id` that location's own, which replaces the account's there. Only tools with an approved revision can be switched on, and `[]` switches every tool off. `"enabled": null` with `location_id` drops the location's own list, so it follows the account's again; the account's list cannot be null. One call has at most `limit_per_call` agent tools, counted across every app the account granted `agent_tools:write`, those the owner switched off included: a change that raises any location's count above that is refused (`tool_limit`), and one that does not raise it never is. While the owner has switched your app's tools off (`owner_off`), the lists are kept and none of the tools reaches a call. Only your app's OAuth access token is accepted, as for `GET`; an API key is refused (`insufficient_scope`). Requires `agent_tools:write`. Limited to 120 requests per minute per account (API key) or per installation (OAuth).
+         */
+        patch: operations["updateAgentTools"];
+        trace?: never;
+    };
     "/v1/locations": {
         parameters: {
             query?: never;
@@ -824,7 +848,7 @@ export interface paths {
         put?: never;
         /**
          * Send a test message
-         * @description Send one message to the account's assistant, as a caller would say it, and return its answer: what a call to the location would hear, from the same settings, documents, services, calendar and partner tools, written as text. Nothing is saved: a booking the assistant makes is not made, and no call, appointment or unresolved request is recorded. The first message starts a session; send its `session_id` with the next ones. Talki keeps the history for 30 minutes after the last turn, and a session holds at most 20 turns (then `agent_test_session_full`). A session belongs to the credential that started it. Your app's own partner tools run, sent with `test_drive: true`, writes included; no other app's do. The assistant here runs on a text model, not the one that answers calls, so a reply can be worded differently from what a caller would hear. Refused while the managing partner has suspended the account (`account_suspended`). An account may send 25 test messages a day, shared with the test in the Talki apps, and an OAuth app 300 a day across all the accounts it is installed on; past either, `429` `rate_limit_exceeded` with `Retry-After`. Requires `account:write` and `knowledge:read`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 15 test messages per minute.
+         * @description Send one message to the account's assistant, as a caller would say it, and return its answer: what a call to the location would hear, from the same settings, documents, services, calendar and agent tools, written as text. Nothing is saved: a booking the assistant makes is not made, and no call, appointment or unresolved request is recorded. The first message starts a session; send its `session_id` with the next ones. Talki keeps the history for 30 minutes after the last turn, and a session holds at most 20 turns (then `agent_test_session_full`). A session belongs to the credential that started it. Your app's own agent tools run, sent with `test_drive: true`, writes included; no other app's do. The assistant here runs on a text model, not the one that answers calls, so a reply can be worded differently from what a caller would hear. Refused while the managing partner has suspended the account (`account_suspended`). An account may send 25 test messages a day, shared with the test in the Talki apps, and an OAuth app 300 a day across all the accounts it is installed on; past either, `429` `rate_limit_exceeded` with `Retry-After`. Requires `account:write` and `knowledge:read`. Limited to 120 requests per minute per account (API key) or per installation (OAuth), and to 15 test messages per minute.
          */
         post: operations["sendAgentTest"];
         delete?: never;
@@ -9495,6 +9519,95 @@ export interface components {
             tools_called: string[];
         };
         /**
+         * AgentTool
+         * @description One of your app's tools, as its approved revision declares it.
+         */
+        AgentTool: {
+            /**
+             * Name
+             * @description The tool's name in your app's catalogue, as registered. The assistant sees it as `<prefix>__<name>`.
+             */
+            name: string;
+            /**
+             * Description
+             * @description What the tool does, as the assistant reads it.
+             */
+            description: string;
+            /**
+             * Kind
+             * @description `read` looks something up; `write` changes something at your app.
+             * @enum {string}
+             */
+            kind: "read" | "write";
+            /**
+             * Logs Requests
+             * @description Whether the tool records a caller's request for the business. On a call that gets such a tool, Talki does not record unresolved requests of its own.
+             */
+            logs_requests: boolean;
+            /**
+             * Revision
+             * @description The approved revision calls use.
+             */
+            revision: number;
+            /**
+             * Enabled
+             * @description Whether the tool is on at this level.
+             */
+            enabled: boolean;
+        };
+        /**
+         * AgentTools
+         * @description Your app's tools with an approved revision on one account, and which of them the assistant may call: the account's list, used at every location without its own, or one location's (`location_id`). A tool reaches a call only while it is in `enabled` and `owner_off` is false.
+         */
+        AgentTools: {
+            /**
+             * Object
+             * @description Always `agent_tools`.
+             */
+            object: string;
+            /**
+             * Location Id
+             * @description The location this list is for, or null for the account's list.
+             */
+            location_id: string | null;
+            /**
+             * Inherited
+             * @description True when the location has no list of its own and follows the account's. Always false for the account's list.
+             */
+            inherited: boolean;
+            /**
+             * Enabled
+             * @description The names of the live tools on at this level, sorted.
+             */
+            enabled: string[];
+            /**
+             * Owner Off
+             * @description Whether the account owner has switched your app's tools off on their calls. While true, no tool reaches a call, whatever the lists say; the lists are kept for when the owner switches them back on.
+             */
+            owner_off: boolean;
+            /**
+             * Limit Per Call
+             * @description The most agent tools one call can have, every app of the account together.
+             */
+            limit_per_call: number;
+            /**
+             * Tools
+             * @description Every tool of your app with an approved revision, by name.
+             */
+            tools: components["schemas"]["AgentTool"][];
+        };
+        /**
+         * AgentToolsUpdate
+         * @description The list of tools to switch on, replacing the one stored at this level.
+         */
+        AgentToolsUpdate: {
+            /**
+             * Enabled
+             * @description The names of the live tools to switch on; every other tool is off. `[]` switches them all off. `null` only with `location_id`: the location drops its own list and follows the account's again.
+             */
+            enabled: string[] | null;
+        };
+        /**
          * Appointment
          * @description One booking in the account's calendar. This object is the record: a connected Google or Outlook calendar holds a copy, so reconcile against this object, not against the provider calendar.
          */
@@ -12576,7 +12689,7 @@ export interface components {
         ErrorDetail: {
             /** @enum {string} */
             type: "authentication_error" | "permission_error" | "invalid_request" | "conflict" | "rate_limit_error" | "api_error";
-            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `document_not_ready`, `unsupported_file_type`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `whatsapp_not_connected`, `whatsapp_chats_unavailable`, `whatsapp_answers_on`, `whatsapp_contact_rule_exists`, `whatsapp_contact_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `account_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `agent_test_session_full`, `agent_test_unavailable`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
+            /** @description Stable machine code; branch on this, not on `message`. Known codes: `invalid_credentials`, `insufficient_scope`, `account_closed`, `subscription_inactive`, `plan_upgrade_required`, `plan_feature_unavailable`, `forbidden`, `livemode_required`, `sandbox_api_key_required`, `unsupported_version`, `invalid_parameter`, `invalid_cursor`, `method_not_allowed`, `resource_not_found`, `conflict`, `precondition_failed`, `payload_too_large`, `export_too_large`, `idempotency_key_required`, `idempotency_key_reuse`, `request_in_progress`, `request_conflict`, `rate_limit_exceeded`, `ip_rate_limited`, `internal_error`, `api_error`, `booking_refused`, `appointment_cancelled`, `appointment_not_cancelled`, `unresolved_request_not_resolved`, `faq_full`, `document_not_ready`, `unsupported_file_type`, `service_has_upcoming_bookings`, `resource_is_default`, `resource_required_by_service`, `capacity_below_committed`, `capacity_below_service_requirement`, `resource_too_small`, `tag_limit_reached`, `caller_rule_limit_reached`, `whatsapp_not_connected`, `whatsapp_chats_unavailable`, `whatsapp_answers_on`, `whatsapp_contact_rule_exists`, `whatsapp_contact_rule_limit_reached`, `transcript_not_available`, `trial_suspended`, `account_suspended`, `phone_number_missing`, `forwarding_number_missing`, `forwarding_number_invalid`, `check_in_progress`, `check_quota_exceeded`, `checks_busy`, `check_call_failed`, `agent_test_session_full`, `agent_test_unavailable`, `unknown_scenario`, `sandbox_not_ready`, `too_many_keys`, `key_not_active`, `key_already_rolled`, `invalid_registration`, `client_disabled`, `client_changed`, `delivery_in_progress`, `events_url_unset`, `events_paused`, `event_unsubscribed`, `account_refused`, `installation_inactive`, `agent_tools_not_enabled`, `tool_limit`, `invalid_client`, `invalid_request`, `unauthorized_client`, `access_denied`, `invalid_scope`, `slot_unavailable`, `capacity_exhausted`, `service_exclusion`, `closed_day`, `in_the_past`, `outside_hours`, `service_inactive`, `location_inactive`, `service_deleted`, `no_services_requested`, `party_too_large`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`. New codes may be added; treat an unknown one by its HTTP status. */
             code: string;
             message: string;
             request_id: string;
@@ -13377,6 +13490,477 @@ export interface operations {
                      *         "type": "conflict",
                      *         "code": "idempotency_key_reuse",
                      *         "message": "This Idempotency-Key was already used for a different request.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getAgentTools: {
+        parameters: {
+            query?: {
+                /** @description A location's own list, an id from `GET /v1/locations`. Omit it for the account's list, used at every location without its own. */
+                location_id?: string | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "object": "agent_tools",
+                     *       "location_id": null,
+                     *       "inherited": false,
+                     *       "enabled": [
+                     *         "stato_ordine"
+                     *       ],
+                     *       "owner_off": false,
+                     *       "limit_per_call": 20,
+                     *       "tools": [
+                     *         {
+                     *           "name": "apri_ticket",
+                     *           "description": "Apre una richiesta di assistenza per il chiamante. Usalo quando il chiamante segnala un problema con un ordine.",
+                     *           "kind": "write",
+                     *           "logs_requests": true,
+                     *           "revision": 2,
+                     *           "enabled": false
+                     *         },
+                     *         {
+                     *           "name": "stato_ordine",
+                     *           "description": "Legge lo stato di un ordine del chiamante. Usalo quando il chiamante chiede a che punto è un suo ordine.",
+                     *           "kind": "read",
+                     *           "logs_requests": false,
+                     *           "revision": 1,
+                     *           "enabled": true
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentTools"];
+                };
+            };
+            /** @description `Talki-Version`, or the credential's pin, names a version this API does not serve. */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "unsupported_version",
+                     *         "message": "'2025-01-01' is not a supported API version. Supported: 2026-10-01.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Talki has not enabled your app for agent tools (`agent_tools_not_enabled`). Or the credential or account may not make this request (`insufficient_scope`, `plan_upgrade_required`, `account_closed`). */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "agent_tools_not_enabled",
+                     *         "message": "Agent tools belong to an app Talki has enabled for them: call with that app's access token.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `location_id` names no location of the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such location.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account or installation exceeded its request rate (`rate_limit_exceeded`), or the calling address did (`ip_rate_limited`). */
+            429: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    /** @description The budget of the window that was exceeded. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Limit"?: string;
+                    /** @description Requests left in the window. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Remaining"?: number;
+                    /** @description When the window resets, in Unix seconds. Absent on `ip_rate_limited`. */
+                    "X-RateLimit-Reset"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "rate_limit_error",
+                     *         "code": "rate_limit_exceeded",
+                     *         "message": "Too many requests. Retry after the interval in Retry-After.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description An unexpected error occurred. */
+            500: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "api_error",
+                     *         "code": "internal_error",
+                     *         "message": "An unexpected error occurred. Quote the request_id when reporting it.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    updateAgentTools: {
+        parameters: {
+            query?: {
+                /** @description A location's own list, an id from `GET /v1/locations`. Omit it for the account's list, used at every location without its own. */
+                location_id?: string | null;
+            };
+            header?: {
+                /** @description Serve this one request at the given dated contract version instead of the credential's pin. An unsupported value is refused with `400 unsupported_version`, never downgraded. */
+                "Talki-Version"?: string;
+                /**
+                 * @description Unique key for this logical write. Reuse it only when retrying the same method, path, query and body. Required on appointment writes, on creating a service, a resource, a closure, a tag, a caller rule, a WhatsApp contact rule or a document, and on teaching the assistant; optional on every other write. Retained for 24 hours: a retry with the same key gets the first response again, marked `Idempotency-Replayed: true`, and a refusal that holds until the state changes (a time taken, a list full) is replayed too. A response a retry can change is not kept when the request saved nothing, and the retry runs the request again: a `400` asking for a different request (`invalid_parameter`, `invalid_cursor`, `export_too_large`, `unknown_scenario`, `no_services_requested`, `stay_too_short`, `stay_too_long`, `stay_dates_invalid`), a `415`, a `409` `request_conflict`, `document_not_ready` or `check_in_progress`, a `412`, a `429` and a `5xx`.
+                 * @example agent-tools-1
+                 */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "enabled": [
+                 *         "apri_ticket",
+                 *         "stato_ordine"
+                 *       ]
+                 *     }
+                 */
+                "application/json": components["schemas"]["AgentToolsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    /** @description The dated contract version this response was served at. */
+                    "Talki-Version"?: string;
+                    /** @description `true` when this response was replayed from a prior request with the same key. */
+                    "Idempotency-Replayed"?: "true";
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "object": "agent_tools",
+                     *       "location_id": null,
+                     *       "inherited": false,
+                     *       "enabled": [
+                     *         "apri_ticket",
+                     *         "stato_ordine"
+                     *       ],
+                     *       "owner_off": false,
+                     *       "limit_per_call": 20,
+                     *       "tools": [
+                     *         {
+                     *           "name": "apri_ticket",
+                     *           "description": "Apre una richiesta di assistenza per il chiamante. Usalo quando il chiamante segnala un problema con un ordine.",
+                     *           "kind": "write",
+                     *           "logs_requests": true,
+                     *           "revision": 2,
+                     *           "enabled": true
+                     *         },
+                     *         {
+                     *           "name": "stato_ordine",
+                     *           "description": "Legge lo stato di un ordine del chiamante. Usalo quando il chiamante chiede a che punto è un suo ordine.",
+                     *           "kind": "read",
+                     *           "logs_requests": false,
+                     *           "revision": 1,
+                     *           "enabled": true
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AgentTools"];
+                };
+            };
+            /** @description A parameter, cursor, body field, or required idempotency key is invalid, or `Talki-Version` names an unsupported version (`unsupported_version`). */
+            400: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "invalid_parameter",
+                     *         "message": "One or more request values are invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The credential is missing, malformed, expired, revoked, or unknown. */
+            401: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "authentication_error",
+                     *         "code": "invalid_credentials",
+                     *         "message": "The supplied API credential is invalid.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The account does not have an active subscription. */
+            402: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "subscription_inactive",
+                     *         "message": "This account does not have an active subscription.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Talki has not enabled your app for agent tools (`agent_tools_not_enabled`). Or the credential or account may not make this request (`insufficient_scope`, `plan_upgrade_required`, `account_closed`). */
+            403: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "permission_error",
+                     *         "code": "agent_tools_not_enabled",
+                     *         "message": "Agent tools belong to an app Talki has enabled for them: call with that app's access token.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `location_id` names no location of the authenticated account. */
+            404: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "invalid_request",
+                     *         "code": "resource_not_found",
+                     *         "message": "No such location.",
+                     *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The change would raise a location's count of agent tools above `limit_per_call`, counting every app the account granted `agent_tools:write` (`tool_limit`): switch fewer on. Or the idempotency key was reused for a different request. Except `idempotency_key_reuse`, the other refusals are replayed for 24 hours to a request with the same idempotency key: once the cause is gone, retry with a new key. */
+            409: {
+                headers: {
+                    /** @description Identifier to include when contacting Talki support. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "type": "conflict",
+                     *         "code": "tool_limit",
+                     *         "message": "A call can have at most 20 agent tools, from every app of the account together; this would give location 0b7d4e19-8a2c-4f61-9d3e-5c1a7b2f8e40 22. Switch fewer on.",
                      *         "request_id": "req_7f24a2f8c6b64e699901563a458b5031"
                      *       }
                      *     }
